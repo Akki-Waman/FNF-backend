@@ -1,6 +1,6 @@
 package com.sipl.ticket.core.dto.request;
 
-import com.sipl.ticket.core.dao.entity.AuditEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,9 @@ public class ContactRequestDto {
     private String contactName;
     private String emailAddress;
     private String mobileNo;
-    private String department;
+    // FK reference
+    private Long departmentId;
     private Boolean isActive;
+    private String name;
 
 }

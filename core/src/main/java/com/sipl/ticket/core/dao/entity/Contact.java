@@ -29,8 +29,14 @@ public class Contact extends AuditEntity {
     @Column(name = "mobile_no", length = 15)
     private String mobileNo;
 
-    @Column(name = "department", length = 100)
-    private String department;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "department_id",          // FK column in contact table
+            referencedColumnName = "department_id",
+            foreignKey = @ForeignKey(name = "fk_contact_department")
+    )
+    private Department department;
+
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
