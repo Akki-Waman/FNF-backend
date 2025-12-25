@@ -15,7 +15,7 @@ public class DepartmentResponseDTO {
 
     private Long departmentId;
 
-    private String name;
+    private String departmentName;
 
     private Boolean isActive;
 

@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    List<Department> findByName(String name);
+
+    boolean existsByDepartmentNameIgnoreCaseAndIsDeletedFalse(String departmentName);
+
+    boolean existsByDepartmentNameIgnoreCaseAndDepartmentIdNotAndIsDeletedFalse(
+            String departmentName, Long departmentId
+    );
 
     List<Department> findByIsDeletedFalse();
-
-
 }

@@ -22,13 +22,12 @@ public class DepartmentControllerImpl implements DepartmentController {
     public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> saveDepartment(
             DepartmentRequestDto departmentRequestDto) {
 
-        log.info("DepartmentControllerImpl :: saveDepartment :: started");
+        log.info("<<Start>>saveDepartment endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> response =
                 ResponseEntity.ok(departmentService.saveDepartment(departmentRequestDto));
 
-        log.info("DepartmentControllerImpl :: saveDepartment :: ended");
-
+        log.info("<<End>>saveDepartment endpoint called<<End>>");
         return response;
     }
 
@@ -36,13 +35,12 @@ public class DepartmentControllerImpl implements DepartmentController {
     public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> updateDepartment(
             DepartmentRequestDto departmentRequestDto) {
 
-        log.info("DepartmentControllerImpl :: updateDepartment :: started");
+        log.info("<<Start>>updateDepartment endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> response =
                 ResponseEntity.ok(departmentService.updateDepartment(departmentRequestDto));
 
-        log.info("DepartmentControllerImpl :: updateDepartment :: ended");
-
+        log.info("<<End>>updateDepartment endpoint called<<End>>");
         return response;
     }
 
@@ -50,13 +48,12 @@ public class DepartmentControllerImpl implements DepartmentController {
     public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getById(
             Long departmentId) {
 
-        log.info("DepartmentControllerImpl :: getById :: started");
+        log.info("<<Start>>getById endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> response =
                 ResponseEntity.ok(departmentService.getById(departmentId));
 
-        log.info("DepartmentControllerImpl :: getById :: ended");
-
+        log.info("<<End>>getById endpoint called<<End>>");
         return response;
     }
 
@@ -64,26 +61,24 @@ public class DepartmentControllerImpl implements DepartmentController {
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long departmentId) {
 
-        log.info("DepartmentControllerImpl :: deleteById :: started");
+        log.info("<<Start>>deleteById endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<String>> response =
                 ResponseEntity.ok(departmentService.deleteById(departmentId));
 
-        log.info("DepartmentControllerImpl :: deleteById :: ended");
-
+        log.info("<<End>>deleteById endpoint called<<End>>");
         return response;
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> getAllDepartments() {
 
-        log.info("DepartmentControllerImpl :: getAllDepartments :: started");
+        log.info("<<Start>>getAllDepartments endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> response =
                 ResponseEntity.ok(departmentService.getAllDepartments());
 
-        log.info("DepartmentControllerImpl :: getAllDepartments :: ended");
-
+        log.info("<<End>>getAllDepartments endpoint called<<End>>");
         return response;
     }
 }
