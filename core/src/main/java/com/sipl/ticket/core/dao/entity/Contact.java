@@ -12,29 +12,27 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "ContactMaster")
-public class ContactMasterEntity extends AuditEntity {
+@Table(name = "contact")
+public class Contact extends AuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ContactId")
+    @Column(name = "contact_id")
     private Long contactId;
 
-    @Column(name = "ContactName", nullable = false, length = 150)
+    @Column(name = "contact_name", nullable = false, length = 150)
     private String contactName;
 
-    @Column(name = "EmailAddress", length = 150)
+    @Column(name = "email_address", length = 150)
     private String emailAddress;
 
-    @Column(name = "MobileNo", length = 15)
+    @Column(name = "mobile_no", length = 15)
     private String mobileNo;
 
-    @Column(name = "Department", length = 100)
+    @Column(name = "department", length = 100)
     private String department;
 
-    @Column(name = "IsActive", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    @Embedded
-    private AuditEntity auditEntity;
 }

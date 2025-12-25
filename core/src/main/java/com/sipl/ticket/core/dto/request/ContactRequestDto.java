@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContactMasterDto {
+public class ContactRequestDto {
 
     private Long contactId;
     private String contactName;
@@ -18,5 +18,5 @@ public class ContactMasterDto {
     private String mobileNo;
     private String department;
     private Boolean isActive;
-    private AuditEntity auditEntity;
+
 }
