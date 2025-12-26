@@ -6,24 +6,24 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "departments")
+@Table(name = "services")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Audited
-public class Department extends AuditEntity {
+public class Service extends AuditEntity {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "department_id")
-    private Long departmentId;
+    @Column(name = "service_id")
+    private Long serviceId;
 
-    @Column(name = "name", length = 150, nullable = true)
-    private String departmentName;
+    @Column(name = "service_name", length = 150, nullable = true)
+    private String serviceName;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
@@ -31,3 +31,4 @@ public class Department extends AuditEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 }
+

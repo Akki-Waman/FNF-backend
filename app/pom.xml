@@ -90,6 +90,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>faqCategory</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>department</artifactId>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
 <!--            <artifactId>redisCache</artifactId>-->
