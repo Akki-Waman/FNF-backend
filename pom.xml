@@ -19,6 +19,7 @@
         <module>redisCache</module>
         <module>android</module>
         <module>department</module>
+        <module>service</module>
     </modules>
 
 	<properties>
@@ -189,6 +190,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>department</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>service</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>

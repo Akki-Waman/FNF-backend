@@ -1,19 +1,20 @@
 package com.sipl.ticket.core.dao.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "services")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Audited
-public class Service extends AuditEntity {
+@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+public class ServiceEntity extends AuditEntity {
 
     private static final long serialVersionUID = 1L;
 
