@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class DepartmentRequestDto {
 
     private Long departmentId;
-    private String name;
+    private String departmentName;
 }
