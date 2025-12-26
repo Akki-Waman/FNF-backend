@@ -78,11 +78,12 @@ public class ServiceServiceImpl implements ServiceService {
     @CacheEvict(value = "services", allEntries = true)
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
-        log.info("<<Start>>updateService endpoint called<<Start>>");
+        log.info("Updating service, id={}, name={}", dto.getServiceId(), dto.getServiceName());
 
         try {
             if (dto == null || dto.getServiceId() == null ||
                     dto.getServiceName() == null || dto.getServiceName().trim().isEmpty()) {
+
                 return new ApiResponseDTO<>(
                         null,
                         "Service ID and name are required",
@@ -108,9 +109,12 @@ public class ServiceServiceImpl implements ServiceService {
 
             if (repository.existsByServiceNameIgnoreCaseAndServiceIdNotAndIsDeletedFalse(
                     name, dto.getServiceId())) {
+
+                log.warn("Duplicate service name '{}' found while updating", name);
+
                 return new ApiResponseDTO<>(
                         null,
-                        "Service with same name already exists",
+                        "Service with the name '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
@@ -118,6 +122,8 @@ public class ServiceServiceImpl implements ServiceService {
 
             service.setServiceName(name);
             ServiceEntity updated = repository.save(service);
+
+            log.info("Service updated successfully, id={}", updated.getServiceId());
 
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(updated),
@@ -134,15 +140,13 @@ public class ServiceServiceImpl implements ServiceService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>>updateService endpoint called<<End>>");
         }
     }
 
     @Override
     public ApiResponseDTO<ServiceResponseDTO> getById(Long id) {
 
-        log.info("<<Start>>getById endpoint called<<Start>>");
+        log.info("Fetching service by id={}", id);
 
         try {
             return repository.findById(id)
@@ -159,16 +163,15 @@ public class ServiceServiceImpl implements ServiceService {
                             HttpStatus.NOT_FOUND,
                             true
                     ));
+
         } catch (Exception e) {
-            log.error("getById unexpected error", e);
+            log.error("getById unexpected error, id={}", id, e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>>getById endpoint called<<End>>");
         }
     }
 
@@ -176,7 +179,7 @@ public class ServiceServiceImpl implements ServiceService {
     @CacheEvict(value = "services", allEntries = true)
     public ApiResponseDTO<String> deleteById(Long id) {
 
-        log.info("<<Start>> deleteById endpoint called<<Start>>");
+        log.info("Deleting service, id={}", id);
 
         try {
             ServiceEntity service = repository.findById(id).orElse(null);
@@ -193,7 +196,7 @@ public class ServiceServiceImpl implements ServiceService {
             if (Boolean.TRUE.equals(service.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Service already deleted",
+                        "Service is already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -203,6 +206,8 @@ public class ServiceServiceImpl implements ServiceService {
             service.setIsDeleted(true);
             repository.save(service);
 
+            log.info("Service deleted successfully, id={}", id);
+
             return new ApiResponseDTO<>(
                     null,
                     "Service deleted successfully",
@@ -211,15 +216,13 @@ public class ServiceServiceImpl implements ServiceService {
             );
 
         } catch (Exception e) {
-            log.error("Error while deleting service, id={}", id, e);
+            log.error("deleteById unexpected error, id={}", id, e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>> deleteById endpoint called<<End>>");
         }
     }
 
@@ -227,7 +230,7 @@ public class ServiceServiceImpl implements ServiceService {
     @Cacheable("services")
     public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> getAllServices() {
 
-        log.info("<<Start>>getAllServices endpoint called<<Start>>");
+        log.info("Fetching all services");
 
         try {
             List<ServiceEntity> list = repository.findByIsDeletedFalse();
@@ -241,8 +244,7 @@ public class ServiceServiceImpl implements ServiceService {
                 );
             }
 
-            List<ServiceResponseDTO> response =
-                    mapper.toResponseDtoList(list);
+            List<ServiceResponseDTO> response = mapper.toResponseDtoList(list);
 
             return new ApiResponseDTO<>(
                     new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
@@ -259,8 +261,6 @@ public class ServiceServiceImpl implements ServiceService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>>getAllServices endpoint called<<End>>");
         }
     }
 }
