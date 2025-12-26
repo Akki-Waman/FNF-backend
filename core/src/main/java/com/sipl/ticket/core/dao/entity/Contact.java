@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "contact")
+@Table(name = "contacts")
 public class Contact extends AuditEntity {
 
     @Id
