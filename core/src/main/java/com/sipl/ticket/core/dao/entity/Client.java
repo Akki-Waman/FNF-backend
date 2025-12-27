@@ -14,7 +14,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Table(name = "clients")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Client {
+public class Client extends AuditEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
