@@ -20,6 +20,9 @@
         <module>android</module>
         <module>department</module>
         <module>service</module>
+        <module>client</module>
+
+
     </modules>
 
 	<properties>
@@ -182,6 +185,11 @@
                 <artifactId>movement</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>android</artifactId>

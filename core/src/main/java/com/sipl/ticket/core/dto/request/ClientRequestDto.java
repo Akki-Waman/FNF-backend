@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ClientDto {
+public class ClientRequestDto  {
 
     private Long clientId;
     private String clientCode;
