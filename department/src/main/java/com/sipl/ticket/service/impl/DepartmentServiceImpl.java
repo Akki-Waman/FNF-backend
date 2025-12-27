@@ -42,11 +42,11 @@ public class DepartmentServiceImpl implements DepartmentService {
                         true);
             }
 
-            String name = dto.getDepartmentName().trim();
+            String departmentName = dto.getDepartmentName().trim();
 
-            if (repository.existsByDepartmentNameIgnoreCaseAndIsDeletedFalse(name)) {
+            if (repository.existsByDepartmentNameIgnoreCaseAndIsDeletedFalse(departmentName)) {
                 return new ApiResponseDTO<>(null,
-                        "Department with same name already exists",
+                        "Department "+departmentName+" already exists",
                         HttpStatus.CONFLICT,
                         true);
             }
@@ -59,7 +59,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(saved),
-                    "Department created successfully",
+                    "Department "+departmentName+" created successfully",
                     HttpStatus.OK,
                     false
             );
@@ -97,27 +97,27 @@ public class DepartmentServiceImpl implements DepartmentService {
 
             if (department == null) {
                 return new ApiResponseDTO<>(null,
-                        "Department not found",
+                        "Department "+department+" not found",
                         HttpStatus.NOT_FOUND,
                         true);
             }
 
-            String name = dto.getDepartmentName().trim();
+            String departmentName = dto.getDepartmentName().trim();
 
             if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNotAndIsDeletedFalse(
-                    name, dto.getDepartmentId())) {
+                    departmentName, dto.getDepartmentId())) {
                 return new ApiResponseDTO<>(null,
                         "Department with same name already exists",
                         HttpStatus.CONFLICT,
                         true);
             }
 
-            department.setDepartmentName(name);
+            department.setDepartmentName(departmentName);
             Department updated = repository.save(department);
 
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(updated),
-                    "Department updated successfully",
+                    "Department "+departmentName+" updated successfully",
                     HttpStatus.OK,
                     false
             );

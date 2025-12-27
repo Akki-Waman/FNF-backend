@@ -22,7 +22,7 @@ public class Department extends AuditEntity {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "name", length = 150, nullable = true)
+    @Column(name = "department_name", length = 150, nullable = true)
     private String departmentName;
 
     @Column(name = "is_active")
