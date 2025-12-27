@@ -3,7 +3,6 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.Client;
 import com.sipl.ticket.core.dao.repository.ClientRepository;
 import com.sipl.ticket.core.dto.request.ClientRequestDto;
-
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -14,9 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +28,6 @@ public class ClientServiceImpl implements ClientService {
     private final ClientRepository repository;
     private final ClientMapper mapper;
 
-
     @Override
     @CacheEvict(value = "clients", allEntries = true)
     public ApiResponseDTO<ClientResponseDto> saveClient(ClientRequestDto dto) {
@@ -40,15 +35,6 @@ public class ClientServiceImpl implements ClientService {
         log.info("Saving client with code={}, name={}", dto.getClientCode(), dto.getClientName());
 
         try {
-            if (dto == null || dto.getClientCode() == null || dto.getClientName() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Client code and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             Client client = mapper.toEntity(dto);
             client.setIsActive(true);
 
@@ -81,15 +67,6 @@ public class ClientServiceImpl implements ClientService {
         log.info("Updating client id={}", dto.getClientId());
 
         try {
-            if (dto == null || dto.getClientId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Client ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             Client client = repository.findById(dto.getClientId()).orElse(null);
 
             if (client == null) {
@@ -103,7 +80,6 @@ public class ClientServiceImpl implements ClientService {
 
             client.setClientCode(dto.getClientCode());
             client.setClientName(dto.getClientName());
-
 
             Client updated = repository.save(client);
 
@@ -126,7 +102,6 @@ public class ClientServiceImpl implements ClientService {
             );
         }
     }
-
 
     @Override
     public ApiResponseDTO<ClientResponseDto> getById(Long id) {
@@ -209,7 +184,6 @@ public class ClientServiceImpl implements ClientService {
         }
     }
 
-
     @Override
     public ApiResponseDTO<PagedResponse<ClientResponseDto>> searchClient(
             SearchClientRequestDto dto) {
@@ -217,7 +191,6 @@ public class ClientServiceImpl implements ClientService {
         log.info("<<Start>> searchClient endpoint called <<Start>>");
 
         try {
-
             List<Client> clients = repository.searchClients(
                     dto.getClientCode(),
                     dto.getClientName()
@@ -232,21 +205,10 @@ public class ClientServiceImpl implements ClientService {
                 );
             }
 
-            List<ClientResponseDto> responseList =
-                    mapper.toDtoList(clients);
-
-            PagedResponse<ClientResponseDto> response =
-                    new PagedResponse<>(
-                            responseList,
-                            0,
-                            responseList.size(),
-                            1,
-                            responseList.size(),
-                            true
-                    );
+            List<ClientResponseDto> responseList = mapper.toDtoList(clients);
 
             return new ApiResponseDTO<>(
-                    response,
+                    new PagedResponse<>(responseList, 0, responseList.size(), 1, responseList.size(), true),
                     "Clients fetched successfully",
                     HttpStatus.OK,
                     false
@@ -262,8 +224,6 @@ public class ClientServiceImpl implements ClientService {
             );
         }
     }
-
-
 
     @Override
     @Cacheable("clients")
@@ -303,4 +263,3 @@ public class ClientServiceImpl implements ClientService {
         }
     }
 }
-

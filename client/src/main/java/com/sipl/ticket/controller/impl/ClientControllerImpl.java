@@ -10,6 +10,7 @@ import com.sipl.ticket.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -21,10 +22,9 @@ public class ClientControllerImpl implements ClientController {
 
     private final ClientService clientService;
 
-    // ================= SAVE =================
     @Override
     public ResponseEntity<ApiResponseDTO<ClientResponseDto>> saveClient(
-            @Valid ClientRequestDto dto) {
+            @Valid @RequestBody ClientRequestDto dto) {
 
         log.info("<<Start>> saveClient endpoint called <<Start>>");
 
@@ -35,10 +35,9 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ================= UPDATE =================
     @Override
     public ResponseEntity<ApiResponseDTO<ClientResponseDto>> updateClient(
-            @Valid ClientRequestDto dto) {
+            @Valid @RequestBody ClientRequestDto dto) {
 
         log.info("<<Start>> updateClient endpoint called <<Start>>");
 
@@ -49,10 +48,9 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ================= SEARCH =================
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientResponseDto>>>  searchClient(
-            SearchClientRequestDto searchDto) {
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientResponseDto>>> searchClient(
+            @Valid @RequestBody SearchClientRequestDto searchDto) {
 
         log.info("<<Start>> searchClient endpoint called <<Start>>");
 
@@ -63,7 +61,6 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ================= GET BY ID =================
     @Override
     public ResponseEntity<ApiResponseDTO<ClientResponseDto>> getById(
             Long clientId) {
@@ -77,7 +74,6 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ================= DELETE =================
     @Override
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long clientId) {
@@ -91,7 +87,6 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ================= GET ALL =================
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<ClientResponseDto>>> getAllClients() {
 
@@ -104,4 +99,3 @@ public class ClientControllerImpl implements ClientController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
-
