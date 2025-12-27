@@ -1,5 +1,4 @@
-package com.sipl.ticket.core.dto.request;
-
+package com.sipl.ticket.core.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,15 +9,19 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContactRequestDto {
+public class ContactResponseDto {
 
     private Long contactId;
     private String contactName;
     private String emailAddress;
     private String mobileNo;
-    // FK reference
+
+    // Foreign key info
     private Long departmentId;
-    private Boolean isActive;
     private String departmentName;
 
+    private Boolean isActive;
+
+    // Audit details (already used across your project)
+    private AuditDto auditDto;
 }

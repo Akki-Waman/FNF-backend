@@ -96,6 +96,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>contact</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>service</artifactId>
         </dependency>
 <!--        <dependency>-->
