@@ -98,6 +98,12 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>client</artifactId>
+        </dependency>
+
+
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
 <!--            <artifactId>redisCache</artifactId>-->
