@@ -23,9 +23,10 @@
         <module>contact</module>
         <module>client</module>
 		<module>product</module>
+        <module>brand</module>
 
 
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -211,6 +212,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>
