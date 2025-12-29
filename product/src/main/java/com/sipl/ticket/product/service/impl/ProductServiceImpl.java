@@ -5,8 +5,7 @@ import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
-import com.sipl.ticket.core.dao.repository.ProductRepository;
-import com.sipl.ticket.core.dao.repository.SettingRepository;
+import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.NewProductRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.CustomException;
@@ -40,6 +39,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductUnitService productUnitService;
     private final SettingRepository settingRepository;
     private final DocumentClientService documentClientService;
+    private final ProductCategoryRepository productCategoriesRepository;
+    private final ProductSubCategoryRepository productSubCategoryRepository;
+    private final BrandRepository brandsRepository;
 
     @Override
     @Transactional
