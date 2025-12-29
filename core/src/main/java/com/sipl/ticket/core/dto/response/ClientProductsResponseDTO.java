@@ -51,6 +51,12 @@ public class ClientProductsResponseDTO extends AuditDto{
 
     private String remark2;
 
+    private Boolean isWarranty = false;
+
+    private LocalDate warrantyPeriodStartDate;
+
+    private LocalDate warrantyPeriodEndDate;
+
     private Boolean isActive = true;
 
 }
