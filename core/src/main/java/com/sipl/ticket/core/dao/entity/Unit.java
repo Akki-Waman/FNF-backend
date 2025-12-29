@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Data
 @Table(name = "units")
 @Audited
-public class Units extends AuditEntity {
+public class Unit extends AuditEntity {
 
     private static final long serialVersionUID = -6172230680770128656L;
 
@@ -25,7 +25,7 @@ public class Units extends AuditEntity {
 
     private Boolean isActive;
 
-    public Units(Long unitId) {
+    public Unit(Long unitId) {
         this.unitId = unitId;
     }
 }
