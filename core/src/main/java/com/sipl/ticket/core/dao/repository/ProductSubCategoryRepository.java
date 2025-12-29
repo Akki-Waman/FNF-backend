@@ -10,18 +10,13 @@ import java.util.List;
 public interface ProductSubCategoryRepository
         extends JpaRepository<ProductSubCategories, Long> {
 
-    boolean existsByProductSubCategoryNameIgnoreCaseAndIsDeletedFalse(
-            String productSubCategoryName
+    boolean existsByProductSubCategoryNameIgnoreCase(String name);
+
+    boolean existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNot(
+            String name, Long productSubCategoryId
     );
 
-    boolean existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNotAndIsDeletedFalse(
-            String productSubCategoryName,
-            Long productSubCategoryId
-    );
-
-    List<ProductSubCategories> findByIsDeletedFalse();
-
-    List<ProductSubCategories> findByProductCategories_ProductCategoryIdAndIsDeletedFalse(
-            Long productCategoryId
-    );
+    // optional & clean
+    List<ProductSubCategories> findByIsActiveTrue();
 }
+

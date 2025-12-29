@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BrandRequestDto {
+public class BrandsRequestDto {
     private Long brandId;
 
     @NotBlank(message = "Brand name is required")

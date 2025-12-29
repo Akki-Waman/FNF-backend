@@ -7,14 +7,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductCategoryRepository extends JpaRepository<ProductCategories, Long> {
+public interface ProductCategoryRepository
+        extends JpaRepository<ProductCategories, Long> {
 
-    boolean existsByProductCategoryNameIgnoreCaseAndIsDeletedFalse(String productCategoryName);
+    boolean existsByProductCategoryNameIgnoreCase(String name);
 
-    boolean existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNotAndIsDeletedFalse(
-            String productCategoryName,
-            Long productCategoryId
+    boolean existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNot(
+            String name, Long productCategoryId
     );
 
-    List<ProductCategories> findByIsDeletedFalse();
+    // optional & clean
+    List<ProductCategories> findByIsActiveTrue();
 }
+
