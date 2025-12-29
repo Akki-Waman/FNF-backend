@@ -21,9 +21,10 @@
         <module>department</module>
         <module>service</module>
         <module>client</module>
+		<module>product</module>
 
 
-    </modules>
+	</modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -205,6 +206,11 @@
                 <artifactId>service</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>product</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>

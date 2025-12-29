@@ -102,6 +102,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>product</artifactId>
+        </dependency>
 
 
 <!--        <dependency>-->
