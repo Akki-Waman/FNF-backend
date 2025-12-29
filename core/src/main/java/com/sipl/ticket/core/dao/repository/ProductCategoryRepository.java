@@ -1,0 +1,20 @@
+package com.sipl.ticket.core.dao.repository;
+
+import com.sipl.ticket.core.dao.entity.ProductCategories;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ProductCategoryRepository extends JpaRepository<ProductCategories, Long> {
+
+    boolean existsByProductCategoryNameIgnoreCaseAndIsDeletedFalse(String productCategoryName);
+
+    boolean existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNotAndIsDeletedFalse(
+            String productCategoryName,
+            Long productCategoryId
+    );
+
+    List<ProductCategories> findByIsDeletedFalse();
+}
