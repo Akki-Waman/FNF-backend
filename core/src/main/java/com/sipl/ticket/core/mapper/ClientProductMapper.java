@@ -13,11 +13,23 @@ import java.util.List;
 @Mapper(componentModel = "spring",
         uses = {AuditUserMasterMapper.class})
 public interface ClientProductMapper{
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "zone", ignore = true)
+    @Mapping(target = "division", ignore = true)
+    @Mapping(target = "unit", ignore = true)
     ClientProducts toEntity(ClientProductsResponseDTO dto);
 
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "zone", ignore = true)
+    @Mapping(target = "division", ignore = true)
+    @Mapping(target = "unit", ignore = true)
     ClientProductsResponseDTO toDto(ClientProducts clientProducts);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "region", ignore = true)
+    @Mapping(target = "zone", ignore = true)
+    @Mapping(target = "division", ignore = true)
+    @Mapping(target = "unit", ignore = true)
     ClientProducts partialUpdate(
             ClientProductsResponseDTO dto,
             @MappingTarget ClientProducts clientProducts

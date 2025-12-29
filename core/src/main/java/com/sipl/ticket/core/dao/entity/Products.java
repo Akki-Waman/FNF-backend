@@ -56,7 +56,7 @@ public class Products extends AuditEntity {
     @JoinColumn(
             name = "default_unit_id",
             foreignKey = @ForeignKey(name = "fk_products_default_unit_id"))
-    private Unit unit;
+    private OperationalUnit unit;
 
     @ManyToOne
     @JoinColumn(

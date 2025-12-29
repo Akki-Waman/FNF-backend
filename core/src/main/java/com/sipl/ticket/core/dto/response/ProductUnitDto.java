@@ -14,7 +14,7 @@ public class ProductUnitDto extends AuditDto {
 
     private ProductDto product;
 
-    private UnitDto unit;
+    private OperatioalUnitDto unit;
 
     @JsonProperty("cFactor")
     private BigDecimal cFactor;

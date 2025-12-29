@@ -17,7 +17,7 @@ public class PackageDto extends AuditDto {
     private Double packageWeighment;
     private Double packageCapacity;
     private Boolean isActive;
-    private UnitDto unit;
+    private OperatioalUnitDto unit;
     private Long plantId;
     private String plantCode;
 }

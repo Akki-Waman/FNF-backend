@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UnitDto extends AuditDto {
+public class OperatioalUnitDto extends AuditDto {
     private Long unitId;
     private String unitName;
+    private DivisionResponseDTO division;
     private Boolean isActive;
 }

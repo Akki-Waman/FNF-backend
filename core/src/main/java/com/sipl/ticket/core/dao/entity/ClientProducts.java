@@ -28,17 +28,21 @@ public class ClientProducts extends AuditEntity {
     @Column(name = "group_name")
     private String groupName;
 
-    @Column(name = "region")
-    private String region;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
 
-    @Column(name = "zone")
-    private String zone;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "zone_id")
+    private Zone zone;
 
-    @Column(name = "division")
-    private String division;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "division_id")
+    private Division division;
 
-    @Column(name = "unit")
-    private String unit;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_id")
+    private OperationalUnit unit;
 
     @Column(name = "device_name")
     private String deviceName;

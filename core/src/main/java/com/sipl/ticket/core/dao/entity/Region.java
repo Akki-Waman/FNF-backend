@@ -8,24 +8,20 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "region")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-@Table(name = "units")
 @Audited
-public class Unit extends AuditEntity {
-
-    private static final long serialVersionUID = -6172230680770128656L;
-
+public class Region extends AuditEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long unitId;
+    @Column(name = "region_id")
+    private Long regionId;
 
-    private String unitName;
+    @Column(name = "region_name", length = 100, nullable = false, unique = true)
+    private String regionName;
 
-    private Boolean isActive;
-
-    public Unit(Long unitId) {
-        this.unitId = unitId;
-    }
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

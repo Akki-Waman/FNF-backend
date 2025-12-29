@@ -19,13 +19,13 @@ public class ClientProductsResponseDTO extends AuditDto{
 
     private String groupName;
 
-    private String region;
+    private RegionResponseDTO region;
 
-    private String zone;
+    private ZoneResponseDTO zone;
 
-    private String division;
+    private DivisionResponseDTO division;
 
-    private String unit;
+    private OperatioalUnitDto unit;
 
     private String deviceName;
 
