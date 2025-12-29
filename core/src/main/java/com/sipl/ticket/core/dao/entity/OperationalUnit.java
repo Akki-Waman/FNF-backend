@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name = "units")
+@Table(name = "operational_units")
 @Audited
 public class OperationalUnit extends AuditEntity {
 
@@ -28,7 +28,7 @@ public class OperationalUnit extends AuditEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "division_id")
-    private Division division;
+    private Divisions division;
 
     public OperationalUnit(Long unitId) {
         this.unitId = unitId;

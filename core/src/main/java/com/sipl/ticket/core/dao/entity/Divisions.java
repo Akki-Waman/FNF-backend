@@ -9,12 +9,12 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "division_master")
+@Table(name = "divisions")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Audited
-public class Division extends AuditEntity{
+public class Divisions extends AuditEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "division_id")
