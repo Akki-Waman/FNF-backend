@@ -20,11 +20,13 @@
         <module>android</module>
         <module>department</module>
         <module>service</module>
+        <module>contact</module>
         <module>client</module>
 		<module>product</module>
+        <module>brand</module>
 
 
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -196,6 +198,7 @@
                 <artifactId>android</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>department</artifactId>
@@ -203,7 +206,17 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
+                <artifactId>contact</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
                 <artifactId>service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>

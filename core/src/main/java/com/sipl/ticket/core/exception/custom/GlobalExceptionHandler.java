@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO<Object>> handleEntityNotFound(EntityNotFoundException ex) {
         ApiResponseDTO<Object> response = new ApiResponseDTO<>(
                 null,
-                 ex.getMessage(),
+                ex.getMessage(),
                 HttpStatus.NOT_FOUND,
                 true
         );
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO<Object>> handleGenericException(Exception ex) {
         ApiResponseDTO<Object> response = new ApiResponseDTO<>(
                 null,
-                 ex.getMessage(),
+                ex.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 true
         );
@@ -178,4 +178,3 @@ public class GlobalExceptionHandler {
     }
 
 }
-

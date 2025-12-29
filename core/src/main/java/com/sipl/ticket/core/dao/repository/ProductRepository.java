@@ -43,11 +43,11 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
   Page<Products> findTransactionsByProductNameAndDates(Long productId, Pageable pageable);
 
 
-  @Query("SELECT COUNT(pu) FROM ProductUnit pu WHERE pu.product.productId = :productId")
-  Long countProductUnitsByProductId(@Param("productId") Optional<Long> productId);
-
-  @Query("SELECT COUNT(pu) FROM ProductUnit pu WHERE pu.product.productId = :productId")
-  Long countProductUnitsByProductId(@Param("productId") Long productId);
+//  @Query("SELECT COUNT(pu) FROM ProductUnit pu WHERE pu.product.productId = :productId")
+//  Long countProductUnitsByProductId(@Param("productId") Optional<Long> productId);
+//
+//  @Query("SELECT COUNT(pu) FROM ProductUnit pu WHERE pu.product.productId = :productId")
+//  Long countProductUnitsByProductId(@Param("productId") Long productId);
 
   @Query(
       "SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Products p WHERE p.productCode = :productCode")
