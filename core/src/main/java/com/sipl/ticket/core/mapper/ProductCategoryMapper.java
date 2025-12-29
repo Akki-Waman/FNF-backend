@@ -8,23 +8,21 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(
-        unmappedTargetPolicy = ReportingPolicy.WARN,
-        componentModel = "spring"
-)
-public interface ProductCategoryMapper {
+@Mapper(componentModel = "spring", uses = AuditUserMasterMapper.class)
 
-    @Mapping(target = "productCategoryId", ignore = true)
-    ProductCategories toEntity(ProductCategoryRequestDto productCategoryRequestDto);
+public interface ProductCategoryMapper extends AuditEntityMapper {
 
-    ProductCategoryDto toResponseDto(ProductCategories productCategories);
+    @InheritConfiguration(name = "toEntity")
+    ProductCategories toEntity(ProductCategoryDto productCategoryDto);
 
-    @Mapping(target = "productCategoryId", ignore = true)
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    ProductCategories partialUpdate(
-            ProductCategoryRequestDto productCategoryRequestDto,
-            @MappingTarget ProductCategories productCategories
-    );
+    @InheritConfiguration(name = "toDto")
+    ProductCategoryDto toDto(ProductCategories productCategories);
+
+    List<ProductCategoryDto> mapProductCategoriesListToDtoList(
+            List<ProductCategories> productCategoriesList);
+
+    List<ProductCategoryDto> mapProductCategoriesDropListToDtoList(
+            List<ProductCategories> productCategories);
 
     List<ProductCategoryDto> toResponseDtoList(List<ProductCategories> productCategoriesList);
 }

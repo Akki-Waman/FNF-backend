@@ -9,11 +9,11 @@ import java.util.List;
 @Repository
 public interface BrandRepository extends JpaRepository<Brands, Long> {
 
-    boolean existsByBrandNameIgnoreCaseAndIsDeletedFalse(String brandName);
+    boolean existsByBrandNameIgnoreCase(String brandName);
 
-    boolean existsByBrandNameIgnoreCaseAndBrandIdNotAndIsDeletedFalse(
+    boolean existsByBrandNameIgnoreCaseAndBrandIdNot(
             String brandName, Long brandId
     );
 
-    List<Brands> findByIsDeletedFalse();
+    List<Brands> findByIsActiveTrue();
 }
