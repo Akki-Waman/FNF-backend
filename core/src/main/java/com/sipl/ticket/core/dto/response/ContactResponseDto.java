@@ -22,6 +22,6 @@ public class ContactResponseDto {
 
     private Boolean isActive;
 
-    // Audit details (already used across your project)
+    // Audit details
     private AuditDto auditDto;
 }

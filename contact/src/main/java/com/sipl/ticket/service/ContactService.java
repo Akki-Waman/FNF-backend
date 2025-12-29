@@ -27,4 +27,3 @@ public interface ContactService {
 
     ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts();
 }
-

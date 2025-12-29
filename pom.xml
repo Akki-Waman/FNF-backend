@@ -196,6 +196,7 @@
                 <artifactId>android</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>department</artifactId>

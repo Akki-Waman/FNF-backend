@@ -9,7 +9,10 @@ import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +22,7 @@ public class ContactControllerImpl implements ContactController {
     private final ContactService contactService;
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> saveContact(ContactRequestDto contactRequestDto) {
+    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> saveContact(@Valid @RequestBody ContactRequestDto contactRequestDto) {
         log.info("<<Start>> saveContact endpoint called <<Start>>");
         ResponseEntity<ApiResponseDTO<ContactResponseDto>> response =
                 ResponseEntity.ok(contactService.saveContact(contactRequestDto));
@@ -28,7 +31,7 @@ public class ContactControllerImpl implements ContactController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> updateContact(ContactRequestDto contactRequestDto) {
+    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> updateContact( @Valid @RequestBody ContactRequestDto contactRequestDto) {
         log.info("<<Start>> updateContact endpoint called <<Start>>");
         ResponseEntity<ApiResponseDTO<ContactResponseDto>> response =
                 ResponseEntity.ok(contactService.updateContact(contactRequestDto));

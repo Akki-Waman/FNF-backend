@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("api/v1/contact")
 @CrossOrigin("*")
@@ -16,12 +18,12 @@ public interface ContactController {
 
     @PostMapping("/save")
     ResponseEntity<ApiResponseDTO<ContactResponseDto>> saveContact(
-            @RequestBody ContactRequestDto contactRequestDto
+            @Valid @RequestBody ContactRequestDto contactRequestDto
     );
 
     @PostMapping("/update")
     ResponseEntity<ApiResponseDTO<ContactResponseDto>> updateContact(
-            @RequestBody ContactRequestDto contactRequestDto
+            @Valid @RequestBody ContactRequestDto contactRequestDto
     );
 
     @GetMapping("/get/{contactId}")

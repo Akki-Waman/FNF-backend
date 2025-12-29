@@ -7,34 +7,31 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(
-        componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.WARN
-)
+@Mapper(componentModel = "spring")
 public interface ContactMapper {
 
     /* ================= CREATE ================= */
 
     @Mapping(target = "contactId", ignore = true)
-    @Mapping(target = "department", ignore = true) // set in ServiceImpl
-    @Mapping(target = "isActive", ignore = true)   // set in ServiceImpl
+    @Mapping(target = "department", ignore = true)
     Contact toEntity(ContactRequestDto dto);
 
     /* ================= RESPONSE ================= */
 
+    @Mapping(target = "departmentId", source = "department.departmentId")
     @Mapping(target = "departmentName", source = "department.departmentName")
     ContactResponseDto toResponseDto(Contact contact);
 
-    /* ================= UPDATE (PARTIAL) ================= */
+    /* ================= UPDATE ================= */
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "contactId", ignore = true)
-    @Mapping(target = "department", ignore = true) // set in ServiceImpl
-    @Mapping(target = "isActive", ignore = true)
+    @Mapping(target = "department", ignore = true)
     Contact partialUpdate(
             ContactRequestDto dto,
             @MappingTarget Contact contact
     );
+
+    /* ================= LIST ================= */
 
     List<ContactResponseDto> toResponseDtoList(List<Contact> contacts);
 }
