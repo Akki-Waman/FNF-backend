@@ -12,17 +12,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EntityScan({"com.sipl.ticket.core.dao.entity"})
 
-@ComponentScan({"com.sipl.ticket.android",
-        "com.sipl.ticket.client",
-        "com.sipl.ticket.core",
-        "com.sipl.ticket.department",
-        "com.sipl.ticket.faq",
-        "com.sipl.ticket.faqCategory",
-        "com.sipl.ticket.master",
-        "com.sipl.ticket.product",
-        "com.sipl.ticket.redisCache",
-        "com.sipl.ticket.service"})
-//@ComponentScan(basePackages = { "com.sipl.ticket" })
+
+@ComponentScan(basePackages = { "com.sipl.ticket" })
 @EnableJpaRepositories({"com.sipl.ticket.core.dao.repository"})
 //@PropertySource("classpath:core.properties")
 /*@PropertySource("classpath:vehicle.properties")
