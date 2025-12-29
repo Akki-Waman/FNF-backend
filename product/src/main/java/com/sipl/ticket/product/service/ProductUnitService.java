@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dao.entity.ProductUnit;
 import com.sipl.ticket.core.dao.entity.Products;
 import com.sipl.ticket.core.dao.entity.Unit;
 import com.sipl.ticket.core.dao.repository.ProductUnitRepository;
+import com.sipl.ticket.core.dao.repository.UnitRepository;
 import com.sipl.ticket.core.dto.response.ProductUnitDto;
 import com.sipl.ticket.core.exception.custom.ProductUnitNotFoundException;
 import com.sipl.ticket.core.mapper.ProductUnitMapper;
@@ -23,6 +24,7 @@ public class ProductUnitService {
     private final CbmCalculator cbmCalculator;
     private final ProductUnitRepository productUnitRepository;
     private final ProductUnitMapper productUnitMapper;
+    private final UnitRepository unitRepository;
 
     public List<ProductUnitDto> saveProductUnits(
             List<ProductUnitDto> productUnitDtoList, Products product) throws Exception {

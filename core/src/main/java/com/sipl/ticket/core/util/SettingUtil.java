@@ -20,7 +20,7 @@ public class SettingUtil {
                 .orElseThrow(() -> new RuntimeException("Setting not found for screen type: " + screenType));
 
         String prefix = setting.getPrefix() != null ? setting.getPrefix() : screenType.substring(0, 2).toUpperCase() + "-";
-        long nextCode = setting.getMaxCode() != null ? setting.getMaxCode() + 1 : 1L;
+       long nextCode = setting.getLastNumber() != null ? setting.getLastNumber() + 1 : 1L;
 
         int prefixLength = prefix.length();
         int sequenceLength = 13 - prefixLength;
@@ -33,7 +33,7 @@ public class SettingUtil {
         String fullCode = prefix + formattedSequence;
 
         // Update sequence
-        setting.setMaxCode(nextCode);
+      //  setting.setMaxCode(nextCode);
         settingRepository.save(setting);
 
         return fullCode;

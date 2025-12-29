@@ -41,7 +41,7 @@ public class ClientProducts extends AuditEntity {
     private Divisions division;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id")
+    @JoinColumn(name = "op_unit_id")
     private OperationalUnit unit;
 
     @Column(name = "device_name")

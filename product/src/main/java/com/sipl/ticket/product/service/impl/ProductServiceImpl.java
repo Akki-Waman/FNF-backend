@@ -42,6 +42,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCategoryRepository productCategoriesRepository;
     private final ProductSubCategoryRepository productSubCategoryRepository;
     private final BrandRepository brandsRepository;
+    private final GstSlabRepository gstSlabRepository;
+    private final UnitRepository unitRepository;
 
     @Override
     @Transactional
@@ -142,22 +144,22 @@ public class ProductServiceImpl implements ProductService {
                     productUnitService.saveProductUnits(
                             productRequestDto.getProductUnitDtoList(), productSavedToDb);
             if (multipartFile != null && !multipartFile.isEmpty()) {
-                try {
-                    log.info(
-                            "Uploading document [{}] to DMS for product ID: {}",
-                            multipartFile.getOriginalFilename(),
-                            productSavedToDb.getProductId());
-                    Long dmsDocumentId = uploadDocToDms(multipartFile);
-                    productSavedToDb.setDmsDocId(dmsDocumentId);
-                    log.info("DMS upload successful. Document ID: {}", dmsDocumentId);
-                } catch (Exception e) {
-                    log.error(
-                            "Failed to upload product document [{}] to DMS: {}",
-                            multipartFile.getOriginalFilename(),
-                            e.getMessage());
-                    throw new CustomException(
-                            "Failed to upload product document to DMS: " + multipartFile.getOriginalFilename());
-                }
+//                try {
+//                    log.info(
+//                            "Uploading document [{}] to DMS for product ID: {}",
+//                            multipartFile.getOriginalFilename(),
+//                            productSavedToDb.getProductId());
+//                    Long dmsDocumentId = uploadDocToDms(multipartFile);
+//                    productSavedToDb.setDmsDocId(dmsDocumentId);
+//                    log.info("DMS upload successful. Document ID: {}", dmsDocumentId);
+//                } catch (Exception e) {
+//                    log.error(
+//                            "Failed to upload product document [{}] to DMS: {}",
+//                            multipartFile.getOriginalFilename(),
+//                            e.getMessage());
+//                    throw new CustomException(
+//                            "Failed to upload product document to DMS: " + multipartFile.getOriginalFilename());
+//                }
             }
             if (multipartFile != null) {
                 String moduleName = "products";
@@ -336,22 +338,22 @@ public class ProductServiceImpl implements ProductService {
                     brandsRepository.findByBrandId(productDto.getBrands().getBrandId());
             brandFromDb.ifPresent(productEntity::setBrands);
         }
-        if (productDto.getOrigins() != null) {
-            Optional<Origins> originFromDb =
-                    originsRepository.findByOriginsId(productDto.getOrigins().getOriginId());
-            originFromDb.ifPresent(productEntity::setOrigins);
-        }
+//        if (productDto.getOrigins() != null) {
+//            Optional<Origins> originFromDb =
+//                    originsRepository.findByOriginsId(productDto.getOrigins().getOriginId());
+//            originFromDb.ifPresent(productEntity::setOrigins);
+//        }
         if (productDto.getUnit() != null) {
             Optional<Unit> unitFromDB = unitRepository.findActiveById(productDto.getUnit().getUnitId());
             unitFromDB.ifPresent(productEntity::setUnit);
         }
-        if (productDto.getAccount() != null && productDto.getAccount().getAccountId() != null) {
-            accountRepository
-                    .findById(productDto.getAccount().getAccountId())
-                    .ifPresent(productEntity::setAccount);
-        } else {
-            productEntity.setAccount(null);
-        }
+//        if (productDto.getAccount() != null && productDto.getAccount().getAccountId() != null) {
+//            accountRepository
+//                    .findById(productDto.getAccount().getAccountId())
+//                    .ifPresent(productEntity::setAccount);
+//        } else {
+//            productEntity.setAccount(null);
+//        }
         if (productDto.getDefaultTaxHead() != null) {
             Optional<GstSlabMaster> gstFromDB =
                     gstSlabRepository.findActiveById(productDto.getDefaultTaxHead().getSlabId());
@@ -368,17 +370,17 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private Long uploadDocToDms(MultipartFile multipartFile) {
-        log.info("Uploading document to DMS: {}", multipartFile.getOriginalFilename());
-        DmsResponseDTO<?> response = documentClientService.upload(multipartFile);
-
-        if (response == null || response.getData() == null) {
-            log.error("DMS upload failed: null response or missing data");
-            throw new RuntimeException("Document upload failed. No valid response from DMS service.");
-        }
-
-        DocumentDTO documentDTO = objectMapper.convertValue(response.getData(), DocumentDTO.class);
-        log.info("Uploaded Document ID from DMS: {}", documentDTO.getDocumentId());
-        return documentDTO.getDocumentId();
-    }
+//    private Long uploadDocToDms(MultipartFile multipartFile) {
+//        log.info("Uploading document to DMS: {}", multipartFile.getOriginalFilename());
+//        DmsResponseDTO<?> response = documentClientService.upload(multipartFile);
+//
+//        if (response == null || response.getData() == null) {
+//            log.error("DMS upload failed: null response or missing data");
+//            throw new RuntimeException("Document upload failed. No valid response from DMS service.");
+//        }
+//
+//        DocumentDTO documentDTO = objectMapper.convertValue(response.getData(), DocumentDTO.class);
+//        log.info("Uploaded Document ID from DMS: {}", documentDTO.getDocumentId());
+//        return documentDTO.getDocumentId();
+//    }
 }

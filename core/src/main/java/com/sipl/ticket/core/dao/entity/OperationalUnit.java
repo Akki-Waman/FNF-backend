@@ -8,28 +8,25 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "operational_units")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-@Table(name = "operational_units")
 @Audited
 public class OperationalUnit extends AuditEntity {
 
-    private static final long serialVersionUID = -6172230680770128656L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long unitId;
+    @Column(name = "op_unit_id")
+    private Long operationalUnitId;
 
-    private String unitName;
-
-    private Boolean isActive;
+    @Column(name = "op_unit_name", length = 150, nullable = false)
+    private String operationalUnitName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "division_id")
+    @JoinColumn(name = "division_id", nullable = false)
     private Divisions division;
 
-    public OperationalUnit(Long unitId) {
-        this.unitId = unitId;
-    }
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

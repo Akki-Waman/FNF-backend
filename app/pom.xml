@@ -112,8 +112,9 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
-            <artifactId>brand</artifactId>
+            <artifactId>clientProducts</artifactId>
         </dependency>
+
 
 
 <!--        <dependency>-->
