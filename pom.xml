@@ -250,7 +250,11 @@
                 <artifactId>poi-ooxml</artifactId>
                 <version>5.2.3</version>
             </dependency>
-
+			<dependency>
+				<groupId>com.sipl.client</groupId>
+				<artifactId>dms</artifactId>
+				<version>1.0.2</version>
+			</dependency>
         </dependencies>
 
 	</dependencyManagement>

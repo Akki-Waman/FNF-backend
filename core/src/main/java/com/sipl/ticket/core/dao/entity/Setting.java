@@ -12,7 +12,6 @@ import javax.persistence.*;
 @Data
 @Table(name = "settings")
 public class Setting {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long settingId;
@@ -21,7 +20,12 @@ public class Setting {
 
     private String status;
 
-    private Long maxCode;
-
+    @Column(name = "prefix")
     private String prefix;
+
+    @Column(name = "is_manual")
+    private Boolean isManual;
+
+    @Column(name = "last_number")
+    private Long lastNumber;
 }
