@@ -3,7 +3,6 @@ package com.sipl.ticket.core.dao.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.bytebuddy.implementation.bytecode.Division;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
