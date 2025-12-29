@@ -23,9 +23,10 @@
         <module>contact</module>
         <module>client</module>
 		<module>product</module>
+        <module>clientProducts</module>
 
 
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -218,6 +219,11 @@
 				<artifactId>product</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>clientProducts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>

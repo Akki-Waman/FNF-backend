@@ -4,12 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class OperatioalUnitDto extends AuditDto {
-    private Long unitId;
-    private String unitName;
+public class OperationalUnitResponseDTO extends AuditDto{
+
+    private Long operationalUnitId;
+
+    private String operationalUnitName;
+
     private DivisionResponseDTO division;
-    private Boolean isActive;
+
+    private Boolean isActive = true;
 }
