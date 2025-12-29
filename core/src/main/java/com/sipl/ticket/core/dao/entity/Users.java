@@ -16,7 +16,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Table(name = "rbac_user_master")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Users{
+public class Users extends AuditEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,12 +50,6 @@ public class Users{
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Column(name = "raw_password")
     private String rawPassword;
-
-    private String createdBy;
-    private LocalDate createdDate = LocalDate.now();
-    private LocalTime createdTime = LocalTime.now();
-    private String modifiedBy;
-    private LocalDate modifiedDate;
-    private LocalTime modifiedTime;
 }

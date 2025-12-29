@@ -1,6 +1,5 @@
 package com.sipl.ticket.core.dao.entity;
 
-import io.lettuce.core.GeoArgs;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +32,7 @@ public class ProductUnit extends AuditEntity {
             name = "unit_id",
             nullable = false,
             foreignKey = @ForeignKey(name = "FK_product_units_unit_id"))
-    private GeoArgs.Unit unit;
+    private Unit unit;
 
     @Column(name = "c_factor", nullable = false)
     private Double cFactor;

@@ -17,8 +17,7 @@ public interface OriginsMapper {
     @Mapping(target = "originId", ignore = true)
     Origins toEntity(OriginsRequestDto dto);
 
-    @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userToString")
-    @Mapping(target = "modifiedBy", source = "modifiedBy", qualifiedByName = "userToString")
+
     OriginDto toDto(Origins origins);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
