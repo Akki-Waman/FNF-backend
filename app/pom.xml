@@ -84,6 +84,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>shift</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>faq</artifactId>
         </dependency>
         <dependency>
@@ -105,6 +109,10 @@
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>company</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>

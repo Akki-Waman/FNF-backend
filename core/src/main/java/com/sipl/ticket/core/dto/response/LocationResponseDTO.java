@@ -16,6 +16,6 @@ public class LocationResponseDTO extends AuditDto {
     private String  locationType;
     private BigDecimal locationCapacity;
     private Boolean isActive;
-    private Long plantId;
-    private String plantCode;
+//    private Long plantId;
+//    private String plantCode;
 }
