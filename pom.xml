@@ -23,9 +23,11 @@
         <module>contact</module>
         <module>client</module>
 		<module>product</module>
-        <module>ProductCategory</module>
+        <module>origins</module>
+		<module>ProductCategory</module>
         <module>ProductSubCategory</module>
         <module>company</module>
+
 
 
     </modules>
@@ -195,6 +197,11 @@
                 <artifactId>movement</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>origins</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>client</artifactId>

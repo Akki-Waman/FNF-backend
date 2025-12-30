@@ -110,6 +110,7 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>client</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>company</artifactId>
@@ -118,10 +119,14 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>product</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.sipl.ticket</groupId>-->
-<!--            <artifactId>clientProducts</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>origins</artifactId>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.sipl.ticket</groupId>-->
+        <!--            <artifactId>clientProducts</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>ProductCategory</artifactId>
@@ -132,10 +137,10 @@
         </dependency>
 
 
-<!--        <dependency>-->
-<!--            <groupId>com.sipl.ticket</groupId>-->
-<!--            <artifactId>redisCache</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.sipl.ticket</groupId>-->
+        <!--            <artifactId>redisCache</artifactId>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>com.sipl.ticket</groupId>
