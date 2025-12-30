@@ -1,26 +1,16 @@
 package com.sipl.ticket.core.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class UnitRequestDto {
 
-    private Long unitId;
-
-    @NotBlank(message = "Unit name is required")
-    @Size(max = 150)
+    @NotBlank(message = "Unit name is mandatory")
     private String unitName;
 
-    @NotNull(message = "Active status is mandatory")
+    @NotNull(message = "Active flag is mandatory")
     private Boolean isActive;
 }

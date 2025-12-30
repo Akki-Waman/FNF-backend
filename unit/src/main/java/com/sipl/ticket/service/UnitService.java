@@ -1,20 +1,19 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.UnitDto;
 
 import java.util.List;
 
 public interface UnitService {
 
-    ApiResponseDTO<UnitDto> saveUnit(UnitRequestDto unitRequestDto);
+    UnitDto getUnitById(Long unitId);
 
-    ApiResponseDTO<UnitDto> updateUnit(UnitRequestDto unitRequestDto);
+    List<UnitDto> getAllUnits();
 
-    ApiResponseDTO<UnitDto> getById(Long unitId);
+    UnitDto createUnit(UnitRequestDto requestDto);
 
-    ApiResponseDTO<List<UnitDto>> getAllUnits();
+    UnitDto updateUnit(Long unitId, UnitRequestDto requestDto);
 
-    ApiResponseDTO<String> deleteById(Long unitId);
+    void deleteUnit(Long unitId);
 }

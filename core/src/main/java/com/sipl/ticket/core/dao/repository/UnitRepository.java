@@ -10,7 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface UnitRepository extends JpaRepository<Unit, Long> {
+
     @Query("From Unit u where u.unitId = :unitId AND u.isActive = true")
     Optional<Unit> findActiveById(Long unitId);
 
+    @Query("From Unit u where u.isActive = true")
+    List<Unit> findAllActive();
 }
