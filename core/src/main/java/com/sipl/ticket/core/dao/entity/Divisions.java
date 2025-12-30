@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Table(name = "divisions")
 @Data
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Audited
 public class Divisions extends AuditEntity{
     @Id
