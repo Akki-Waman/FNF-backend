@@ -20,6 +20,7 @@
         <module>android</module>
         <module>department</module>
         <module>service</module>
+        <module>shift</module>
     </modules>
 
 	<properties>
@@ -142,6 +143,11 @@
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>shift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
