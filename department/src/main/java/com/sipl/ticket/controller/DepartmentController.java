@@ -2,10 +2,12 @@ package com.sipl.ticket.controller;
 
 
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +22,7 @@ public interface DepartmentController {
             @RequestBody DepartmentRequestDto departmentRequestDto
     );
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> updateDepartment(
             @RequestBody DepartmentRequestDto departmentRequestDto
     );
@@ -37,4 +39,14 @@ public interface DepartmentController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> getAllDepartments();
+
+    @ApiOperation(
+            value = "Search departments",
+            notes = "Search departments with pagination and filters",
+            response = DepartmentResponseDTO.class
+    )
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> searchDepartments(
+            @RequestBody DepartmentSearchRequestDto requestDto
+    );
 }

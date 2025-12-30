@@ -29,10 +29,13 @@
         <module>brand</module>
         <module>unit</module>
         <module>clientProducts</module>
+        <module>shift</module>
+        <module>company</module>
+        <module>location</module>
         <module>tags</module>
         <module>shift</module>
         <module>company</module>
-
+        <module>branch</module>
 
     </modules>
 
@@ -222,6 +225,12 @@
                 <artifactId>department</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>location</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>tags</artifactId>
@@ -265,6 +274,11 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>company</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>branch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
