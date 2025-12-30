@@ -25,6 +25,7 @@
 		<module>product</module>
         <module>ProductCategory</module>
         <module>ProductSubCategory</module>
+        <module>clientProducts</module>
 
 
     </modules>

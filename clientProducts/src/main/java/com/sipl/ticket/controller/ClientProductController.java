@@ -1,10 +1,13 @@
 package com.sipl.ticket.controller;
 
+
+
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
-import com.sipl.ticket.core.dto.request.ContactRequestDto;
+import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
-import com.sipl.ticket.core.dto.response.ContactResponseDto;
+import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
+import com.sipl.ticket.core.dto.response.PagedResponse;
 import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,4 +24,18 @@ public interface ClientProductController {
     ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> saveClientProducts(
             @Valid @RequestBody ClientProductsRequestDTO clientProductsRequestDTO
     );
+
+    @PutMapping("/update/{clientProductId}")
+    ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> updateClientProducts(
+            @PathVariable Long clientProductId,
+            @RequestBody ClientProductsRequestDTO clientProductsRequestDTO
+    );
+
+    @DeleteMapping("/{clientProductId}")
+    ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> deleteClientProducts(
+            @PathVariable Long clientProductId
+    );
+
+    @GetMapping(" ")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts();
 }
