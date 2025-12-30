@@ -1,6 +1,7 @@
 package com.sipl.ticket.company.controller;
 
 import com.sipl.ticket.core.dto.request.CompaniesRequestDto;
+import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -8,6 +9,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/api/v1/companies")
 @RestController
@@ -57,9 +60,20 @@ public interface CompanyController {
 
     @ApiOperation(
             value = "Get all companies",
-            notes = "Fetch all active companies with pagination support",
+            notes = "Fetch all active companies in descending order of companyId",
             response = CompanyDto.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<PagedResponse<CompanyDto>>> getAllCompanies();
+    ResponseEntity<ApiResponseDTO<CompanyDto>> getAllCompanies();
+
+    @ApiOperation(
+            value = "Search companies",
+            notes = "Search companies with pagination, sorting and filters",
+            response = CompanyDto.class
+    )
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<CompanyDto>>> searchCompanies(
+            @RequestBody CompanySearchRequestDto requestDto
+    );
+
 }

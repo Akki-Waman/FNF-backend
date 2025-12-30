@@ -3,6 +3,7 @@ package com.sipl.ticket.company.controller.impl;
 import com.sipl.ticket.company.controller.CompanyController;
 import com.sipl.ticket.company.service.CompanyService;
 import com.sipl.ticket.core.dto.request.CompaniesRequestDto;
+import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,14 +74,24 @@ public class CompanyControllerImpl implements CompanyController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<CompanyDto>>> getAllCompanies() {
+    public ResponseEntity<ApiResponseDTO<CompanyDto>> getAllCompanies() {
 
         log.info("<<Start>> getAllCompanies <<Start>>");
 
-        ApiResponseDTO<PagedResponse<CompanyDto>> response =
+        ApiResponseDTO<CompanyDto> response =
                 companiesService.getAllCompanies();
 
         log.info("<<End>> getAllCompanies <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<CompanyDto>>> searchCompanies(CompanySearchRequestDto requestDto) {
+        log.info("Searching companies with request: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<CompanyDto>> response =
+                companiesService.searchCompanies(requestDto);
+
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
