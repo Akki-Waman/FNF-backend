@@ -32,7 +32,7 @@ public class UnitServiceImpl implements UnitService {
 
         log.info("<<Start>> saveUnit <<Start>>");
 
-        Unit unit = unitMapper.toEntity(dto);
+        Unit unit = unitMapper.toEntity(unitDto);
         unit.setIsActive(true);
 
         Unit saved = unitRepository.save(unit);
@@ -57,7 +57,7 @@ public class UnitServiceImpl implements UnitService {
         Unit unit = unitRepository.findById(dto.getUnitId())
                 .orElseThrow(() -> new RuntimeException("Unit not found"));
 
-        unitMapper.partialUpdate(dto, unit);
+        unitMapper.partialUpdate(unitDto, unit);
 
         Unit updated = unitRepository.save(unit);
 
