@@ -24,6 +24,9 @@
         <module>client</module>
 		<module>product</module>
         <module>origins</module>
+		<module>ProductCategory</module>
+        <module>ProductSubCategory</module>
+
 
 
     </modules>
@@ -217,6 +220,16 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductCategory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductSubCategory</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>
