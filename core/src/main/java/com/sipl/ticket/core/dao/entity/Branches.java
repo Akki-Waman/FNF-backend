@@ -1,0 +1,45 @@
+package com.sipl.ticket.core.dao.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.envers.Audited;
+
+import javax.persistence.*;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Table(name = "branches")
+@Audited
+public class Branches extends AuditEntity{
+
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer branchId;
+
+    @Column(nullable = false)
+    private String branchName;
+
+    private Boolean isActive;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "address")
+    private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    @JsonIgnore
+    private Companies company;
+
+    private Integer countryId;
+
+    private Integer stateId;
+
+    private Integer cityId;
+}
