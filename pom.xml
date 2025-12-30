@@ -27,7 +27,10 @@
 		<module>ProductCategory</module>
         <module>ProductSubCategory</module>
         <module>clientProducts</module>
-
+        <module>tags</module>
+        <module>shift</module>
+        <module>brand</module>
+        <module>company</module>
 
 
     </modules>
@@ -220,6 +223,11 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
+                <artifactId>tags</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
                 <artifactId>contact</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -250,7 +258,7 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
-                <artifactId>brands</artifactId>
+                <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>
