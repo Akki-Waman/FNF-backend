@@ -1,0 +1,16 @@
+package com.sipl.ticket.core.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class OriginDto extends AuditDto {
+    private Long originId;
+
+    private String originName;
+
+    private Boolean isActive;
+}

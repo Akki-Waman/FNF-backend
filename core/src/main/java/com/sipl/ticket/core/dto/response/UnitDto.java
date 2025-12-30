@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class UnitDto extends AuditDto {
     private Long unitId;
     private String unitName;
+    private DivisionResponseDTO division;
     private Boolean isActive;
 }
