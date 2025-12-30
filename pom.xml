@@ -27,12 +27,14 @@
 		<module>ProductCategory</module>
         <module>ProductSubCategory</module>
         <module>clientProducts</module>
+        <module>shift</module>
+        <module>company</module>
+        <module>location</module>
         <module>tags</module>
         <module>shift</module>
         <module>brand</module>
         <module>company</module>
         <module>branch</module>
-
 
     </modules>
 
@@ -220,6 +222,12 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>department</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>location</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

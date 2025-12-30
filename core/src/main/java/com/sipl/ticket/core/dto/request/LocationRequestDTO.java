@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @Schema(description = "Location Request DTO")
 public class LocationRequestDTO {
 
+    private Long locationId;
+
     @NotBlank(message = "Location Name is required")
     @Size(max = 100, message = "Location Name must not exceed 100 characters")
     @Schema(description = "Location Name", example = "Warehouse A")
@@ -31,6 +33,6 @@ public class LocationRequestDTO {
 
     private Boolean isActive;
 
-    private Long plantId;
+    //private Long plantId;
 
 }

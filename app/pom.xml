@@ -131,8 +131,19 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>origins</artifactId>
         </dependency>
-        
-       <dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>shift</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>company</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>location</artifactId>
+        </dependency>
+        <dependency>
         <groupId>com.sipl.ticket</groupId>
         <artifactId>clientProducts</artifactId>
         </dependency>
