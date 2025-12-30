@@ -4,6 +4,7 @@ import com.sipl.ticket.company.service.CompanyService;
 import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.repository.CompanyRepository;
 import com.sipl.ticket.core.dto.request.CompaniesRequestDto;
+import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -12,10 +13,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -217,10 +223,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Cacheable("companies")
-    public ApiResponseDTO<PagedResponse<CompanyDto>> getAllCompanies() {
+    public ApiResponseDTO<CompanyDto> getAllCompanies() {
 
         try {
-            List<CompanyDto> list = repository.findAll()
+            List<CompanyDto> list = repository
+                    .findAll(Sort.by(Sort.Direction.DESC, "companyId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
                     .map(mapper::toDto)
@@ -236,12 +243,10 @@ public class CompanyServiceImpl implements CompanyService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            list, 0, list.size(), 1, list.size(), true
-                    ),
-                    "Companies fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Companies fetched successfully",
+                    false, LocalDateTime.now()
             );
 
         } catch (Exception e) {
@@ -254,4 +259,67 @@ public class CompanyServiceImpl implements CompanyService {
             );
         }
     }
+
+    @Override
+    public ApiResponseDTO<PagedResponse<CompanyDto>> searchCompanies(
+            CompanySearchRequestDto dto) {
+
+        try {
+            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+                    ? Sort.by(dto.getSortBy()).ascending()
+                    : Sort.by(dto.getSortBy()).descending();
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    sort
+            );
+            Page<Companies> pageResult =
+                    repository.searchByCompanyId(
+                            dto.getCompanyId(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No companies found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<CompanyDto> content = pageResult.getContent()
+                    .stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            PagedResponse<CompanyDto> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Companies fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchCompanies error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 }
