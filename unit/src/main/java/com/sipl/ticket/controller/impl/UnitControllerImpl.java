@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,26 +21,39 @@ public class UnitControllerImpl implements UnitController {
     private final UnitService unitService;
 
     @Override
-    public ResponseEntity<ApiResponseDTO<UnitDto>> saveUnit(@Valid UnitRequestDto dto) {
-        log.info("<<Start>> saveUnit");
-        return ResponseEntity.ok(unitService.saveUnit(dto));
+    public ResponseEntity<ApiResponseDTO<UnitDto>> saveUnit(
+            @Valid UnitRequestDto unitRequestDto) {
+
+        log.info("saveUnit API called");
+        return ResponseEntity.ok(unitService.saveUnit(unitRequestDto));
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<UnitDto>> updateUnit(@Valid UnitRequestDto dto) {
-        log.info("<<Start>> updateUnit");
-        return ResponseEntity.ok(unitService.updateUnit(dto));
+    public ResponseEntity<ApiResponseDTO<UnitDto>> updateUnit(
+            @Valid UnitRequestDto unitRequestDto) {
+
+        log.info("updateUnit API called");
+        return ResponseEntity.ok(unitService.updateUnit(unitRequestDto));
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<UnitDto>> getById(Long unitId) {
-        log.info("<<Start>> getById unitId={}", unitId);
+
+        log.info("getById API called");
         return ResponseEntity.ok(unitService.getById(unitId));
     }
 
     @Override
+    public ResponseEntity<ApiResponseDTO<List<UnitDto>>> getAllUnits() {
+
+        log.info("getAllUnits API called");
+        return ResponseEntity.ok(unitService.getAllUnits());
+    }
+
+    @Override
     public ResponseEntity<ApiResponseDTO<String>> deleteById(Long unitId) {
-        log.info("<<Start>> deleteById unitId={}", unitId);
+
+        log.info("deleteById API called");
         return ResponseEntity.ok(unitService.deleteById(unitId));
     }
 }
