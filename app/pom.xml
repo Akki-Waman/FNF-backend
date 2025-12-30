@@ -88,6 +88,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>branch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>faq</artifactId>
         </dependency>
         <dependency>
