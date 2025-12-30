@@ -31,7 +31,6 @@
         <module>clientProducts</module>
         <module>tags</module>
         <module>shift</module>
-        <module>brand</module>
         <module>company</module>
 
 
@@ -255,11 +254,6 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
-                <artifactId>unit</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
                 <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -268,11 +262,6 @@
 				<artifactId>product</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
-                <artifactId>brand</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>company</artifactId>
