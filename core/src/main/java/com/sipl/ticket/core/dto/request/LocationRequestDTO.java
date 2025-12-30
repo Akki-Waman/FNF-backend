@@ -24,10 +24,10 @@ public class LocationRequestDTO {
     private String locationType;
 
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Location Capacity must be greater than 0")
-    @Digits(integer = 15, fraction = 2, message = "Location Capacity must be a valid decimal number")
-    @Schema(description = "Location Capacity", example = "5000.00")
-    private BigDecimal locationCapacity;
+//    @DecimalMin(value = "0.0", inclusive = false, message = "Location Capacity must be greater than 0")
+//    @Digits(integer = 15, fraction = 2, message = "Location Capacity must be a valid decimal number")
+//    @Schema(description = "Location Capacity", example = "5000.00")
+//    private BigDecimal locationCapacity;
 
     private Boolean isActive;
 
