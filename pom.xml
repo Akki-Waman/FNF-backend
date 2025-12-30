@@ -24,11 +24,12 @@
         <module>client</module>
 		<module>product</module>
         <module>origins</module>
-		<module>ProductCategory</module>
-        <module>ProductSubCategory</module>
+		<module>productCategory</module>
+        <module>productSubCategory</module>
         <module>clientProducts</module>
-
-
+        <module>shift</module>
+        <module>company</module>
+        <module>brand</module>
 
     </modules>
 

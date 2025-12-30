@@ -1,4 +1,4 @@
-package com.sipl.ticket;
+package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;

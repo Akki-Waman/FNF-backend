@@ -22,10 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import javax.persistence.Cacheable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +43,9 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandsRepository;
     private final GstSlabRepository gstSlabRepository;
     private final UnitRepository unitRepository;
+    private final OriginsRepository originsRepository;
+    private final AccountRepository accountRepository;
+    private final ProductUnitRepository productUnitRepository;
 
     @Override
     @Transactional
@@ -85,8 +87,9 @@ public class ProductServiceImpl implements ProductService {
             validateProductUnits(
                     productRequestDto.getProductUnitDtoList(), productRequestDto.getProductDto().getUnit());
             normalizeBooleanFields(productRequestDto);
-
+            log.info("validateProductUnits");
             checkIfProductCodeExists(productRequestDto, productId);
+            log.info("checkIfProductCodeExists");
             Products productToBeSaved;
             if (productId == null) {
                 Optional<Products> existingProduct =
@@ -106,10 +109,12 @@ public class ProductServiceImpl implements ProductService {
                     );
 
                 }
-
+                log.info("productToBeSaved");
                 productToBeSaved = productMapper.toEntity(productRequestDto.getProductDto());
                 String generatedCode = generateProductCode(productRequestDto, productToBeSaved);
+                log.info("generatedCode");
                 productToBeSaved.setProductCode(generatedCode);
+                log.info("setProductCode");
 
             } else {
                 Products existingProductFromDb =
@@ -120,6 +125,8 @@ public class ProductServiceImpl implements ProductService {
                                                 new ProductNotFoundException(
                                                         "No Product found for the specified productId"));
 
+                log.info("existingProductFromDb");
+
                 productToBeSaved =
                         productMapper.updateEntity(existingProductFromDb, productRequestDto.getProductDto());
             }
@@ -129,6 +136,8 @@ public class ProductServiceImpl implements ProductService {
             } else {
                 productToBeSaved.setIsActive(productRequestDto.getProductDto().getIsActive());
             }
+            log.info("setNestedEntities");
+
             if (productRequestDto.getProductDto().getDefaultTaxHead() != null) {
                 Long gstSlabId = productRequestDto.getProductDto().getDefaultTaxHead().getSlabId();
                 GstSlabMaster gstSlabMaster =
@@ -136,13 +145,17 @@ public class ProductServiceImpl implements ProductService {
                                 .findById(gstSlabId)
                                 .orElseThrow(() -> new CustomException("GST slab is required"));
 
+                log.info("gstSlabMaster");
                 productToBeSaved.setDefaultTaxHead(gstSlabMaster);
             }
             productToBeSaved.setIsSync(false);
+            log.info("saved");
             Products productSavedToDb = productRepository.save(productToBeSaved);
             List<ProductUnitDto> savedProductUnitDtoList =
                     productUnitService.saveProductUnits(
                             productRequestDto.getProductUnitDtoList(), productSavedToDb);
+            log.info("savedProductUnitDtoList");
+
             if (multipartFile != null && !multipartFile.isEmpty()) {
 //                try {
 //                    log.info(
@@ -170,9 +183,11 @@ public class ProductServiceImpl implements ProductService {
                                 productSavedToDb.getProductName(),
                                 moduleName);
                 productSavedToDb.setFileName(savedFileName);
+                log.info("productSavedToDb");
                 productRepository.save(productSavedToDb);
             }
             ProductDto savedProductDto = productMapper.toDto(productSavedToDb);
+            log.info("savedProductDto");
             if (savedProductDto.getProductCategory() != null
                     && productSavedToDb.getProductCategory() != null) {
                 savedProductDto
@@ -184,6 +199,7 @@ public class ProductServiceImpl implements ProductService {
             }
             CombinedProductResponseDto combinedProductResponseDto =
                     new CombinedProductResponseDto(savedProductDto, savedProductUnitDtoList);
+            log.info("combinedProductResponseDto");
 
             String successMessage =
                     (productId != null)
@@ -329,34 +345,34 @@ public class ProductServiceImpl implements ProductService {
         if (productDto.getProductSubCategory() != null) {
 
             Optional<ProductSubCategories> productSubCategoryFromDb =
-                    productSubCategoryRepository.findByProductSubCategoryId(
+                    productSubCategoryRepository.findById(
                             productDto.getProductSubCategory().getProductSubCategoryId());
             productSubCategoryFromDb.ifPresent(productEntity::setProductSubCategory);
         }
         if (productDto.getBrands() != null) {
             Optional<Brands> brandFromDb =
-                    brandsRepository.findByBrandId(productDto.getBrands().getBrandId());
+                    brandsRepository.findById(productDto.getBrands().getBrandId());
             brandFromDb.ifPresent(productEntity::setBrands);
         }
-//        if (productDto.getOrigins() != null) {
-//            Optional<Origins> originFromDb =
-//                    originsRepository.findByOriginsId(productDto.getOrigins().getOriginId());
-//            originFromDb.ifPresent(productEntity::setOrigins);
-//        }
+        if (productDto.getOrigins() != null) {
+            Optional<Origins> originFromDb =
+                    originsRepository.findById(productDto.getOrigins().getOriginId());
+            originFromDb.ifPresent(productEntity::setOrigins);
+        }
         if (productDto.getUnit() != null) {
-            Optional<Unit> unitFromDB = unitRepository.findActiveById(productDto.getUnit().getUnitId());
+            Optional<Unit> unitFromDB = unitRepository.findActiveByUnitId(productDto.getUnit().getUnitId());
             unitFromDB.ifPresent(productEntity::setUnit);
         }
-//        if (productDto.getAccount() != null && productDto.getAccount().getAccountId() != null) {
-//            accountRepository
-//                    .findById(productDto.getAccount().getAccountId())
-//                    .ifPresent(productEntity::setAccount);
-//        } else {
-//            productEntity.setAccount(null);
-//        }
+        if (productDto.getAccount() != null && productDto.getAccount().getAccountId() != null) {
+            accountRepository
+                    .findById(productDto.getAccount().getAccountId())
+                    .ifPresent(productEntity::setAccount);
+        } else {
+            productEntity.setAccount(null);
+        }
         if (productDto.getDefaultTaxHead() != null) {
             Optional<GstSlabMaster> gstFromDB =
-                    gstSlabRepository.findActiveById(productDto.getDefaultTaxHead().getSlabId());
+                    gstSlabRepository.findActiveGstById(productDto.getDefaultTaxHead().getSlabId());
             gstFromDB.ifPresent(productEntity::setDefaultTaxHead);
         }
         if (productDto.getProductCategory() != null) {
@@ -364,7 +380,7 @@ public class ProductServiceImpl implements ProductService {
                 throw new IllegalArgumentException("Product category is missing.");
             }
             Optional<ProductCategories> productCategoryFromDb =
-                    productCategoriesRepository.findByProductCategoryId(
+                    productCategoriesRepository.findById(
                             productDto.getProductCategory().getProductCategoryId());
             productCategoryFromDb.ifPresent(productEntity::setProductCategory);
         }
@@ -383,4 +399,145 @@ public class ProductServiceImpl implements ProductService {
 //        log.info("Uploaded Document ID from DMS: {}", documentDTO.getDocumentId());
 //        return documentDTO.getDocumentId();
 //    }
+
+
+
+    @Override
+    public ApiResponseDTO<ProductDto> deleteProduct(Long productId) {
+        try {
+
+            List<ProductUnit> productUnit = productUnitRepository.findAllByProductId(productId);
+
+            if (!productUnit.isEmpty()) {
+                productUnitRepository.deleteByProductId(productId);
+            }
+
+            Optional<Products> products = productRepository.findByProductId(productId);
+            if (!products.isPresent()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        null,
+                        null,
+                        "Product not found",
+                        HttpStatus.NOT_FOUND,
+                        true,
+                        null,
+                        null
+                );
+            }
+            Products productsToSave = products.get();
+            productsToSave.setIsActive(false);
+            Products product = productRepository.save(productsToSave);
+            ProductDto productToBeSent = productMapper.toDto(product);
+            return new ApiResponseDTO<>(
+                    productToBeSent,
+                    null,
+                    null,
+                    "Product deleted successfully.",
+                    HttpStatus.OK,
+                    true,
+                    null,
+                    null
+            );
+        } catch (Exception e) {
+            log.error("Exception occured at deleteProduct. ", e);
+        }
+        return new ApiResponseDTO<>(
+                null,
+                null,
+                null,
+                "INTERNAL_SERVER_ERROR",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                true,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public ApiResponseDTO<ProductDto> getByProduct(Long productId) {
+        try {
+            Optional<Products> products = productRepository.findByProductId(productId);
+            if (!products.isPresent()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        null,
+                        null,
+                        "Product not found",
+                        HttpStatus.NOT_FOUND,
+                        true,
+                        null,
+                        null
+                );
+            }
+            Products productsToSave = products.get();
+            ProductDto productToBeSent = productMapper.toDto(productsToSave);
+
+            return new ApiResponseDTO<>(
+                    productToBeSent,
+                    null,
+                    null,
+                    "Product found successfully.",
+                    HttpStatus.FOUND,
+                    true,
+                    null,
+                    null
+            );
+        } catch (Exception e) {
+            log.error("Exception occured at getByProduct. ", e);
+        }
+        return new ApiResponseDTO<>(
+                null,
+                null,
+                null,
+                "INTERNAL_SERVER_ERROR",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                true,
+                null,
+                null
+        );
+    }
+
+    @Override
+    public ApiResponseDTO<ProductDto> getAllProduct() {
+        try {
+            List<Products> productList = productRepository.findByIsActiveTrue();
+
+            if (productList.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No products found",
+                        HttpStatus.NO_CONTENT,
+                        false
+                );
+            }
+
+            List<ProductDto> productDtoList = productList.stream()
+                    .map(productMapper::toDto)
+                    .collect(Collectors.toList());
+
+            return new ApiResponseDTO<>(
+                    null,
+                    productDtoList,
+                    null,
+                    "Products fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Exception occurred at getAllProduct", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+
+
 }
