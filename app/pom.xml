@@ -88,6 +88,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>branch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>faq</artifactId>
         </dependency>
         <dependency>
@@ -101,6 +105,10 @@
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>contact</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>tags</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
@@ -121,10 +129,25 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>brand</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>origins</artifactId>
         </dependency>
-        
-       <dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>shift</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>company</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>location</artifactId>
+        </dependency>
+        <dependency>
         <groupId>com.sipl.ticket</groupId>
         <artifactId>clientProducts</artifactId>
         </dependency>

@@ -27,7 +27,6 @@ public class LocationExcelGenerator {
                         dto.getLocationId(),
                         dto.getLocationName(),
                         dto.getLocationType() != null ? dto.getLocationType() : "",
-                        dto.getLocationCapacity() != null ? dto.getLocationCapacity() : "",
                         dto.getIsActive() != null && dto.getIsActive() ? "Active" : "Inactive"
                 );
             }

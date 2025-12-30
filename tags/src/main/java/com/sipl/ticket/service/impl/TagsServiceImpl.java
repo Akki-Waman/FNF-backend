@@ -1,14 +1,14 @@
 package com.sipl.ticket.service.impl;
 
-import com.sipl.ticket.core.dao.entity.Brands;
-import com.sipl.ticket.core.dao.repository.BrandRepository;
-import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
-import com.sipl.ticket.core.dto.request.BrandsRequestDto;
+import com.sipl.ticket.core.dao.entity.Tags;
+import com.sipl.ticket.core.dao.repository.TagsRepository;
+import com.sipl.ticket.core.dto.request.TagsRequestDto;
+import com.sipl.ticket.core.dto.request.TagsSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.mapper.BrandsMapper;
-import com.sipl.ticket.service.BrandsService;
+import com.sipl.ticket.core.dto.response.TagResponseDto;
+import com.sipl.ticket.core.mapper.TagsMapper;
+import com.sipl.ticket.service.TagsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,44 +29,42 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class BrandsServiceImpl implements BrandsService {
+public class TagsServiceImpl implements TagsService {
 
-    private final BrandRepository repository;
-    private final BrandsMapper mapper;
+    private final TagsRepository repository;
+    private final TagsMapper mapper;
 
     @Override
-    @CacheEvict(value = "brands", allEntries = true)
-    public ApiResponseDTO<BrandDto> saveBrand(BrandsRequestDto dto) {
-
-        log.info("Saving brand with name: {}", dto.getBrandName());
+    @CacheEvict(value = "tags", allEntries = true)
+    public ApiResponseDTO<TagResponseDto> saveTag(TagsRequestDto dto) {
 
         try {
-            String name = dto.getBrandName().trim();
+            String name = dto.getTagName().trim();
 
-            if (repository.existsByBrandNameIgnoreCase(name)) {
+            if (repository.existsByTagNameIgnoreCase(name)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand '" + name + "' already exists.",
+                        "Tag '" + name + "' already exists",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
-            Brands brand = new Brands();
-            brand.setBrandName(name);
-            brand.setIsActive(true);
+            Tags tag = new Tags();
+            tag.setTagName(name);
+            tag.setIsActive(true);
 
-            Brands savedBrand = repository.save(brand);
+            Tags saved = repository.save(tag);
 
             return new ApiResponseDTO<>(
-                    mapper.toDto(savedBrand),
-                    "Brand created successfully",
+                    mapper.toDto(saved),
+                    "Tag created successfully",
                     HttpStatus.CREATED,
                     false
             );
 
         } catch (Exception e) {
-            log.error("Error occurred while saving brand", e);
+            log.error("saveTag error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -76,68 +75,67 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    @CacheEvict(value = "brands", allEntries = true)
-    public ApiResponseDTO<BrandDto> updateBrand(BrandsRequestDto dto) {
-
-        log.info("Updating brand, id={}, name={}", dto.getBrandId(), dto.getBrandName());
+    @CacheEvict(value = "tags", allEntries = true)
+    public ApiResponseDTO<TagResponseDto> updateTag(TagsRequestDto dto) {
 
         try {
-            if (dto == null || dto.getBrandId() == null ||
-                    dto.getBrandName() == null || dto.getBrandName().trim().isEmpty()) {
+            if (dto.getTagId() == null ||
+                    dto.getTagName() == null ||
+                    dto.getTagName().trim().isEmpty()) {
 
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand ID and name are required",
+                        "Tag ID and name are required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            Brands brand = repository.findById(dto.getBrandId()).orElse(null);
+            Tags tag = repository.findById(dto.getTagId()).orElse(null);
 
-            if (brand == null) {
+            if (tag == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand not found",
+                        "Tag not found",
                         HttpStatus.NOT_FOUND,
                         true
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            if (Boolean.FALSE.equals(tag.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive brand cannot be updated",
+                        "Inactive tag cannot be updated",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getBrandName().trim();
+            String name = dto.getTagName().trim();
 
-            if (repository.existsByBrandNameIgnoreCaseAndBrandIdNot(
-                    name, dto.getBrandId())) {
+            if (repository.existsByTagNameIgnoreCaseAndTagIdNot(
+                    name, dto.getTagId())) {
 
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand with the name '" + name + "' already exists.",
+                        "Tag '" + name + "' already exists",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
-            brand.setBrandName(name);
-            Brands updatedBrand = repository.save(brand);
+            tag.setTagName(name);
+            Tags updated = repository.save(tag);
 
             return new ApiResponseDTO<>(
-                    mapper.toDto(updatedBrand),
-                    "Brand updated successfully",
+                    mapper.toDto(updated),
+                    "Tag updated successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("updateBrand unexpected error", e);
+            log.error("updateTag error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -148,28 +146,26 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    public ApiResponseDTO<BrandDto> getById(Long id) {
-
-        log.info("Fetching brand by id={}", id);
+    public ApiResponseDTO<TagResponseDto> getById(Long id) {
 
         try {
             return repository.findById(id)
-                    .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
-                    .map(b -> new ApiResponseDTO<>(
-                            mapper.toDto(b),
-                            "Brand found",
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .map(t -> new ApiResponseDTO<>(
+                            mapper.toDto(t),
+                            "Tag found",
                             HttpStatus.OK,
                             false
                     ))
                     .orElseGet(() -> new ApiResponseDTO<>(
                             null,
-                            "Brand not found",
+                            "Tag not found",
                             HttpStatus.NOT_FOUND,
                             true
                     ));
 
         } catch (Exception e) {
-            log.error("getById unexpected error, id={}", id, e);
+            log.error("getTagById error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -180,44 +176,42 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    @CacheEvict(value = "brands", allEntries = true)
+    @CacheEvict(value = "tags", allEntries = true)
     public ApiResponseDTO<String> deleteById(Long id) {
 
-        log.info("Deactivating brand, id={}", id);
-
         try {
-            Brands brand = repository.findById(id).orElse(null);
+            Tags tag = repository.findById(id).orElse(null);
 
-            if (brand == null) {
+            if (tag == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand not found",
+                        "Tag not found",
                         HttpStatus.NOT_FOUND,
                         true
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            if (Boolean.FALSE.equals(tag.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand is already inactive",
+                        "Tag already inactive",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            brand.setIsActive(false);
-            repository.save(brand);
+            tag.setIsActive(false);
+            repository.save(tag);
 
             return new ApiResponseDTO<>(
                     null,
-                    "Brand deleted successfully",
+                    "Tag deleted successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("deleteById unexpected error, id={}", id, e);
+            log.error("deleteTag error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -228,36 +222,36 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    @Cacheable("brands")
-    public ApiResponseDTO<PagedResponse<BrandDto>> getAllBrands() {
-
-        log.info("Fetching all active brands");
+    @Cacheable("tags")
+    public ApiResponseDTO<TagResponseDto> getAllTags() {
 
         try {
-            List<BrandDto> response = repository.findAll()
+            List<TagResponseDto> list = repository
+                    .findAll(Sort.by(Sort.Direction.DESC, "tagId"))
                     .stream()
-                    .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
-                        "No brands found",
+                        "No tags found",
                         HttpStatus.NOT_FOUND,
                         true
                 );
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Brands fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Tags fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllBrands unexpected error", e);
+            log.error("getAllTags error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -268,8 +262,8 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    public ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(
-            BrandSearchRequestDto dto) {
+    public ApiResponseDTO<PagedResponse<TagResponseDto>> searchTags(
+            TagsSearchRequestDto dto) {
 
         try {
             Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
@@ -282,27 +276,27 @@ public class BrandsServiceImpl implements BrandsService {
                     sort
             );
 
-            Page<Brands> pageResult =
-                    repository.searchByBrandId(
-                            dto.getBrandId(),
+            Page<Tags> pageResult =
+                    repository.searchByTagId(
+                            dto.getTagId(),
                             pageable
                     );
 
             if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
-                        "No brands found",
+                        "No tags found",
                         HttpStatus.NOT_FOUND,
                         true
                 );
             }
 
-            List<BrandDto> content = pageResult.getContent()
+            List<TagResponseDto> content = pageResult.getContent()
                     .stream()
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            PagedResponse<BrandDto> pagedResponse =
+            PagedResponse<TagResponseDto> pagedResponse =
                     new PagedResponse<>(
                             content,
                             pageResult.getNumber(),
@@ -314,13 +308,13 @@ public class BrandsServiceImpl implements BrandsService {
 
             return new ApiResponseDTO<>(
                     pagedResponse,
-                    "Brands fetched successfully",
+                    "Tags fetched successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("searchBrands error", e);
+            log.error("searchTags error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -329,5 +323,4 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
-
 }
