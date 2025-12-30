@@ -25,6 +25,7 @@
 		<module>product</module>
         <module>ProductCategory</module>
         <module>ProductSubCategory</module>
+        <module>company</module>
 
 
     </modules>
@@ -240,6 +241,11 @@
                 <artifactId>brands</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>company</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>
