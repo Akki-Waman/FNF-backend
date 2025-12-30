@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.BrandsController;
+import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
 import com.sipl.ticket.core.dto.request.BrandsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BrandDto;
@@ -83,4 +84,17 @@ public class BrandsControllerImpl implements BrandsController {
         log.info("<<End>>getAllBrands endpoint called<<End>>");
         return response;
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> searchBrands(
+            BrandSearchRequestDto requestDto) {
+
+        log.info("Searching brands with request: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<BrandDto>> response =
+                brandsService.searchBrands(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 }

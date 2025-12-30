@@ -3,6 +3,7 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.Department;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -13,11 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -35,12 +41,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         log.info("<<Start>>saveDepartment endpoint called<<Start>>");
 
         try {
-            if (dto == null || dto.getDepartmentName() == null || dto.getDepartmentName().trim().isEmpty()) {
-                return new ApiResponseDTO<>(null,
-                        "Department name is required",
-                        HttpStatus.BAD_REQUEST,
-                        true);
-            }
 
             String departmentName = dto.getDepartmentName().trim();
 
@@ -83,13 +83,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         log.info("<<Start>>updateDepartment endpoint called<<Start>>");
 
         try {
-            if (dto == null || dto.getDepartmentId() == null ||
-                    dto.getDepartmentName() == null || dto.getDepartmentName().trim().isEmpty()) {
-                return new ApiResponseDTO<>(null,
-                        "Department ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true);
-            }
 
             Department department = repository.findById(dto.getDepartmentId())
                     .filter(d -> !Boolean.TRUE.equals(d.getIsDeleted()))
@@ -249,5 +242,53 @@ public class DepartmentServiceImpl implements DepartmentService {
         } finally {
             log.info("<<End>>getAllDepartments endpoint called<<End>>");
         }
+    }
+    @Override
+    public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
+            DepartmentSearchRequestDto dto) {
+
+        Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+                ? Sort.by(dto.getSortBy()).ascending()
+                : Sort.by(dto.getSortBy()).descending();
+
+        Pageable pageable =
+                PageRequest.of(dto.getPage(), dto.getSize(), sort);
+
+        Page<Department> pageResult =
+                repository.searchByDepartmentId(
+                        dto.getDepartmentId(),
+                        pageable
+                );
+
+        if (pageResult.isEmpty()) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No departments found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        List<DepartmentResponseDTO> content = pageResult.getContent()
+                .stream()
+                .map(mapper::toResponseDto)
+                .collect(Collectors.toList());
+
+        PagedResponse<DepartmentResponseDTO> pagedResponse =
+                new PagedResponse<>(
+                        content,
+                        pageResult.getNumber(),
+                        pageResult.getTotalElements(),
+                        pageResult.getTotalPages(),
+                        pageResult.getSize(),
+                        pageResult.isLast()
+                );
+
+        return new ApiResponseDTO<>(
+                pagedResponse,
+                "Departments fetched successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 }

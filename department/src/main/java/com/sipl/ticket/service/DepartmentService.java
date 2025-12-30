@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -26,4 +27,8 @@ public interface DepartmentService {
     );
 
     public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> getAllDepartments();
+
+    ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
+            DepartmentSearchRequestDto requestDto
+    );
 }

@@ -1,5 +1,6 @@
 package com.sipl.ticket.service;
 
+import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
 import com.sipl.ticket.core.dto.request.BrandsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BrandDto;
@@ -26,4 +27,9 @@ public interface BrandsService {
     );
 
     ApiResponseDTO<PagedResponse<BrandDto>> getAllBrands();
+
+    ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(
+            BrandSearchRequestDto requestDto
+    );
+
 }

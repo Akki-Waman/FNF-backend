@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.DepartmentController;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -9,7 +10,10 @@ import com.sipl.ticket.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +24,7 @@ public class DepartmentControllerImpl implements DepartmentController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> saveDepartment(
-            DepartmentRequestDto departmentRequestDto) {
+          @Valid @RequestBody DepartmentRequestDto departmentRequestDto) {
 
         log.info("<<Start>>saveDepartment endpoint called<<Start>>");
 
@@ -33,7 +37,7 @@ public class DepartmentControllerImpl implements DepartmentController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> updateDepartment(
-            DepartmentRequestDto departmentRequestDto) {
+         @Valid @RequestBody   DepartmentRequestDto departmentRequestDto) {
 
         log.info("<<Start>>updateDepartment endpoint called<<Start>>");
 
@@ -80,5 +84,17 @@ public class DepartmentControllerImpl implements DepartmentController {
 
         log.info("<<End>>getAllDepartments endpoint called<<End>>");
         return response;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> searchDepartments(
+            @Valid DepartmentSearchRequestDto requestDto) {
+
+        log.info("Searching departments: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> response =
+                departmentService.searchDepartments(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
