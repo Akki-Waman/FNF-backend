@@ -41,7 +41,7 @@ public class ClientProducts extends AuditEntity {
     private Divisions division;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_id")
+    @JoinColumn(name = "op_unit_id")
     private OperationalUnit unit;
 
     @Column(name = "device_name")
@@ -79,6 +79,15 @@ public class ClientProducts extends AuditEntity {
 
     @Column(name = "remark_2", columnDefinition = "TEXT")
     private String remark2;
+
+    @Column(name = "is_warranty")
+    private Boolean isWarranty = false;
+
+    @Column(name = "warranty_start_date")
+    private LocalDate warrantyPeriodStartDate;
+
+    @Column(name = "warranty_end_date")
+    private LocalDate warrantyPeriodEndDate;
 
     @Column(name = "is_active")
     private Boolean isActive = true;

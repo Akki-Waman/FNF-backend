@@ -23,6 +23,8 @@
         <module>contact</module>
         <module>client</module>
 		<module>product</module>
+        <module>ProductCategory</module>
+        <module>ProductSubCategory</module>
         <module>brand</module>
         <module>unit</module>
 
@@ -209,11 +211,6 @@
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>contact</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
-                <artifactId>unit</artifactId>
-                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>

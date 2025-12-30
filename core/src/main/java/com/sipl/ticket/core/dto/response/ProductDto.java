@@ -41,7 +41,7 @@ public class ProductDto extends AuditDto {
 
     private Double grossWeight;
 
-    private OperatioalUnitDto unit;
+    private UnitDto unit;
 
     private Boolean withBatchTracking;
 

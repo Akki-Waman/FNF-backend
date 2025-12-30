@@ -1,9 +1,7 @@
 package com.sipl.ticket.core.dto.response;
 
-import com.sipl.ticket.core.dao.entity.Products;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalDate;
 
 @Getter
@@ -25,7 +23,7 @@ public class ClientProductsResponseDTO extends AuditDto{
 
     private DivisionResponseDTO division;
 
-    private OperatioalUnitDto unit;
+    private OperationalUnitResponseDTO unit;
 
     private String deviceName;
 
@@ -50,6 +48,12 @@ public class ClientProductsResponseDTO extends AuditDto{
     private String remark1;
 
     private String remark2;
+
+    private Boolean isWarranty = false;
+
+    private LocalDate warrantyPeriodStartDate;
+
+    private LocalDate warrantyPeriodEndDate;
 
     private Boolean isActive = true;
 
