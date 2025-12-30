@@ -1,10 +1,12 @@
 package com.sipl.ticket.controller;
 
+import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
 import com.sipl.ticket.core.dto.request.BrandsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,4 +38,15 @@ public interface BrandsController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> getAllBrands();
+
+    @ApiOperation(
+            value = "Search brands",
+            notes = "Search brands with pagination, sorting and filters",
+            response = BrandDto.class
+    )
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> searchBrands(
+            @RequestBody BrandSearchRequestDto requestDto
+    );
+
 }
