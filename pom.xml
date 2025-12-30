@@ -23,10 +23,16 @@
         <module>contact</module>
         <module>client</module>
 		<module>product</module>
-        <module>ProductCategory</module>
+        <module>origins</module>
+		<module>ProductCategory</module>
         <module>ProductSubCategory</module>
         <module>brand</module>
         <module>unit</module>
+        <module>clientProducts</module>
+        <module>tags</module>
+        <module>shift</module>
+        <module>brand</module>
+        <module>company</module>
 
 
     </modules>
@@ -151,6 +157,11 @@
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>shift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
@@ -193,6 +204,11 @@
             </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
+				<artifactId>origins</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
 				<artifactId>client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -205,6 +221,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>department</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>tags</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -245,6 +266,16 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>product</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>brand</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>company</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
