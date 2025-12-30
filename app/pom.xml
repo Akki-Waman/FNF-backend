@@ -108,12 +108,16 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
-            <artifactId>product</artifactId>
+            <artifactId>origins</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
-            <artifactId>clientProducts</artifactId>
+            <artifactId>product</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.sipl.ticket</groupId>-->
+<!--            <artifactId>clientProducts</artifactId>-->
+<!--        </dependency>-->
 
 
 
