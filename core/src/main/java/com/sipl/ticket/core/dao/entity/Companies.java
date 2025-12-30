@@ -20,4 +20,6 @@ public class Companies extends AuditEntity{
 
     @Column(nullable = false, unique = true)
     private String companyName;
+
+    private Boolean isActive;
 }
