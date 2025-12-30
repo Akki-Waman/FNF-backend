@@ -33,8 +33,6 @@
         <module>company</module>
         <module>location</module>
         <module>tags</module>
-        <module>shift</module>
-        <module>company</module>
         <module>branch</module>
 
     </modules>
@@ -164,7 +162,11 @@
                 <artifactId>shift</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>clientProducts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>user</artifactId>
