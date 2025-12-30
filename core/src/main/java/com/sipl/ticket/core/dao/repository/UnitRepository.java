@@ -11,9 +11,9 @@ import java.util.Optional;
 @Repository
 public interface UnitRepository extends JpaRepository<Unit, Long> {
 
-    /* ================= FETCH ================= */
-
     List<Unit> findByIsActiveTrue();
+
+
     @Query("From Unit u where u.unitId = :unitId AND u.isActive = true")
     Optional<Unit> findActiveById(Long unitId);
 }

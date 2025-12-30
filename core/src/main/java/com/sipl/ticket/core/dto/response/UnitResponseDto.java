@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UnitResponseDto {
+public class UnitResponseDto extends AuditDto {
 
     private Long unitId;
     private String unitName;

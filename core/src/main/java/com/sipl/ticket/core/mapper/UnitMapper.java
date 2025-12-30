@@ -1,12 +1,10 @@
 package com.sipl.ticket.core.mapper;
 
 import com.sipl.ticket.core.dao.entity.Unit;
+import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
-import com.sipl.ticket.core.dto.response.AuditDto;
-import com.sipl.ticket.core.dto.response.UnitResponseDto;
+import com.sipl.ticket.core.dto.response.UnitDto;
 import org.mapstruct.*;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface UnitMapper {
@@ -22,11 +20,9 @@ public interface UnitMapper {
 
     /* ================= RESPONSE ================= */
 
-    @Mapping(
-            target = "auditDto",
-            expression = "java(mapAudit(unit))"
-    )
-    UnitResponseDto toResponseDto(Unit unit);
+    @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userToName")
+    @Mapping(target = "modifiedBy", source = "modifiedBy", qualifiedByName = "userToName")
+    UnitDto toDto(Unit unit);
 
     /* ================= UPDATE ================= */
 
@@ -34,27 +30,12 @@ public interface UnitMapper {
     @Mapping(target = "unitId", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdTime", ignore = true)
-    void partialUpdate(
-            UnitRequestDto dto,
-            @MappingTarget Unit unit
-    );
+    void partialUpdate(UnitRequestDto dto, @MappingTarget Unit unit);
 
-    /* ================= LIST ================= */
+    /* ================= USER → STRING ================= */
 
-    List<UnitResponseDto> toResponseDtoList(List<Unit> units);
-
-    /* ================= AUDIT MAPPING ================= */
-
-    default AuditDto mapAudit(Unit unit) {
-        if (unit == null) {
-            return null;
-        }
-        return new AuditDto(
-                unit.getCreatedBy() != null ? unit.getCreatedBy().getUsername() : null,
-                unit.getModifiedBy() != null ? unit.getModifiedBy().getUsername() : null,
-                unit.getCreatedTime(),
-                unit.getModifiedTime()
-        );
+    @Named("userToName")
+    default String mapUser(Users user) {
+        return user == null ? null : user.getUserName();
     }
-
 }

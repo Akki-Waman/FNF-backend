@@ -219,6 +219,26 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductCategory</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductSubCategory</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>unit</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>unit</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
                 <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
