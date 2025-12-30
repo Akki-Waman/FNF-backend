@@ -150,6 +150,11 @@
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>shift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
