@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/brands")
 @CrossOrigin("*")
@@ -48,5 +50,8 @@ public interface BrandsController {
     ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> searchBrands(
             @RequestBody BrandSearchRequestDto requestDto
     );
+
+    @GetMapping("/downloadBrandsExcel")
+    ResponseEntity<Void> exportBrandsCsv(HttpServletResponse response);
 
 }

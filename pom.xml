@@ -27,13 +27,11 @@
 		<module>ProductCategory</module>
         <module>ProductSubCategory</module>
         <module>clientProducts</module>
-        <module>shift</module>
         <module>company</module>
         <module>location</module>
         <module>tags</module>
         <module>shift</module>
         <module>brand</module>
-        <module>company</module>
         <module>branch</module>
 
     </modules>

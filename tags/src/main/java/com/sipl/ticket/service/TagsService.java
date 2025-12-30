@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface TagsService {
 
@@ -31,4 +33,7 @@ public interface TagsService {
     ApiResponseDTO<PagedResponse<TagResponseDto>> searchTags(
             TagsSearchRequestDto requestDto
     );
+
+    void exportTagsCsv(HttpServletResponse response);
+
 }

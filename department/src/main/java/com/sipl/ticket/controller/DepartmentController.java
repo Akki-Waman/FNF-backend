@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/departments")
 @CrossOrigin("*")
@@ -49,4 +51,7 @@ public interface DepartmentController {
     ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> searchDepartments(
             @RequestBody DepartmentSearchRequestDto requestDto
     );
+    @GetMapping("/downloadDepartmentExcel")
+    ResponseEntity<Void> exportDepartmentsCsv(HttpServletResponse response);
+
 }

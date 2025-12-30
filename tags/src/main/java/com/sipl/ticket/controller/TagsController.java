@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RequestMapping("/api/v1/tags")
 @RestController
 @CrossOrigin(origins = "*")
@@ -73,4 +75,7 @@ public interface TagsController {
     ResponseEntity<ApiResponseDTO<PagedResponse<TagResponseDto>>> searchTags(
             @RequestBody TagsSearchRequestDto requestDto
     );
+    @GetMapping("/downloadTagsExcel")
+    ResponseEntity<Void> exportTagsCsv(HttpServletResponse response);
+
 }

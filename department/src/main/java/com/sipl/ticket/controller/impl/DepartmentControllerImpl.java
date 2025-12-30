@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -96,5 +97,16 @@ public class DepartmentControllerImpl implements DepartmentController {
                 departmentService.searchDepartments(requestDto);
 
         return ResponseEntity.status(response.getStatus()).body(response);
+    }
+    @Override
+    public ResponseEntity<Void> exportDepartmentsCsv(HttpServletResponse response) {
+
+        log.info("<<Start>> exportDepartmentsCsv endpoint called <<Start>>");
+
+        departmentService.exportDepartmentsCsv(response);
+
+        log.info("<<End>> exportDepartmentsCsv endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 }
