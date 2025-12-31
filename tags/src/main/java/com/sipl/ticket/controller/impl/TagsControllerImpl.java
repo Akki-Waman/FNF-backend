@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -99,4 +100,17 @@ public class TagsControllerImpl implements TagsController {
         log.info("<<End>> searchTags endpoint called <<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportTagsCsv(HttpServletResponse response) {
+
+        log.info("<<Start>> exportTagsCsv endpoint called <<Start>>");
+
+        tagsService.exportTagsCsv(response);
+
+        log.info("<<End>> exportTagsCsv endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

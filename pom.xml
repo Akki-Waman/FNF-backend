@@ -27,7 +27,6 @@
 		<module>productCategory</module>
         <module>productSubCategory</module>
         <module>clientProducts</module>
-        <module>shift</module>
         <module>company</module>
         <module>location</module>
         <module>tags</module>

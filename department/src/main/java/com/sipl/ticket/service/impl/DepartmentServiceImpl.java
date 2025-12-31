@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.DepartmentExcelGenerator;
 import com.sipl.ticket.core.mapper.DepartmentMapper;
 import com.sipl.ticket.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -291,4 +293,27 @@ public class DepartmentServiceImpl implements DepartmentService {
                 false
         );
     }
+    @Override
+    public void exportDepartmentsCsv(HttpServletResponse response) {
+
+        log.info("Exporting active departments to CSV");
+
+        try {
+            List<DepartmentResponseDTO> departments = repository.findAll()
+                    .stream()
+                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
+                    .map(mapper::toResponseDto)
+                    .collect(Collectors.toList()); // Java 8 safe
+
+            DepartmentExcelGenerator.generateCsv(departments, response);
+
+            log.info("Departments CSV export completed successfully, totalRecords={}",
+                    departments.size());
+
+        } catch (Exception e) {
+            log.error("exportDepartmentsCsv unexpected error", e);
+            throw new RuntimeException("Failed to export departments CSV", e);
+        }
+    }
+
 }
