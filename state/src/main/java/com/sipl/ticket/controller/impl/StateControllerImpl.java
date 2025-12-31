@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -73,14 +74,16 @@ public class StateControllerImpl implements StateController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> getAll() {
+    public ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll() {
 
-        log.info("<<Start>> get-all States endpoint called <<Start>>");
+        log.info("<<Start>> get States endpoint called <<Start>>");
 
-        ApiResponseDTO<PagedResponse<StateResponseDto>> response =
+        ApiResponseDTO<List<StateResponseDto>> response =
                 stateService.getAllStates();
 
-        log.info("<<End>> get-all States endpoint called <<End>>");
+        log.info("<<End>> get States endpoint called <<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+
 }

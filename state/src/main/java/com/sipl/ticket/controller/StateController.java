@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/states")
 @CrossOrigin("*")
@@ -34,7 +36,7 @@ public interface StateController {
             @PathVariable Long stateId
     );
 
-    @GetMapping("/get-all")
-    ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> getAll();
-}
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll(); // PagedResponse removed
 
+}

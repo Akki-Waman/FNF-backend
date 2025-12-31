@@ -256,7 +256,7 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @Cacheable("states")
-    public ApiResponseDTO<PagedResponse<StateResponseDto>> getAllStates() {
+    public ApiResponseDTO<List<StateResponseDto>> getAllStates() {
 
         log.info("Fetching all active states");
 
@@ -277,14 +277,7 @@ public class StateServiceImpl implements StateService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            list,
-                            0,
-                            list.size(),
-                            1,
-                            list.size(),
-                            true
-                    ),
+                    list,
                     "States fetched successfully",
                     HttpStatus.OK,
                     false
@@ -300,4 +293,6 @@ public class StateServiceImpl implements StateService {
             );
         }
     }
+
 }
+

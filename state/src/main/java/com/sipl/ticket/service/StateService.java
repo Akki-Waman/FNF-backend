@@ -2,8 +2,9 @@ package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.StateRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
+
+import java.util.List;
 
 public interface StateService {
 
@@ -23,6 +24,5 @@ public interface StateService {
             Long stateId
     );
 
-    ApiResponseDTO<PagedResponse<StateResponseDto>> getAllStates();
+    ApiResponseDTO<List<StateResponseDto>> getAllStates(); // PagedResponse removed
 }
-
