@@ -48,7 +48,7 @@ public class CountryControllerImpl implements CountryController {
         return ResponseEntity.ok(countryService.getCountryById(countryId));
     }
 
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<List<CountryResponseDto>> getAllCountries() {
 
         log.info("REST request to get all countries");
