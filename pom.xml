@@ -36,6 +36,7 @@
         <module>branch</module>
         <module>city</module>
         <module>state</module>
+        <module>country</module>
 
     </modules>
 
