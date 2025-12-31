@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/origins")
 @CrossOrigin("*")
@@ -34,7 +36,10 @@ public interface OriginsController {
             @PathVariable Long originId
     );
 
-    @GetMapping("/getAll")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> getAll();
+
+    @GetMapping("/export")
+    void downloadExcel(HttpServletResponse response);
 }
 

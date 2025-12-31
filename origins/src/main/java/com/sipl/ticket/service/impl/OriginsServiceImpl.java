@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dto.request.OriginsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.OriginsExcelGenerator;
 import com.sipl.ticket.core.mapper.OriginsMapper;
 import com.sipl.ticket.service.OriginsService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,16 +35,31 @@ public class OriginsServiceImpl implements OriginsService {
     @CacheEvict(value = "origins", allEntries = true)
     public ApiResponseDTO<OriginDto> saveOrigin(OriginsRequestDto dto) {
 
-        log.info("Saving origin with name: {}", dto.getOriginName());
+        log.info("Request received to save Origin");
+
+        if (dto == null || dto.getOriginName() == null) {
+            log.warn("Invalid request: Origin request or origin name is null");
+            return new ApiResponseDTO<>(
+                    null,
+                    "Origin name is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        log.debug("Raw origin name received: '{}'", dto.getOriginName());
 
         try {
             String name = dto.getOriginName().trim();
+            log.debug("Trimmed origin name: '{}'", name);
 
+            log.debug("Checking if origin already exists for name: '{}'", name);
             boolean exists = repository.searchOrigins(name, true)
                     .stream()
                     .anyMatch(o -> o.getOriginName().equalsIgnoreCase(name));
 
             if (exists) {
+                log.warn("Origin already exists with name: '{}'", name);
                 return new ApiResponseDTO<>(
                         null,
                         "Origin '" + name + "' already exists.",
@@ -54,7 +72,11 @@ public class OriginsServiceImpl implements OriginsService {
             origin.setOriginName(name);
             origin.setIsActive(true);
 
+            log.info("Saving new origin with name: '{}'", name);
             Origins saved = repository.save(origin);
+
+            log.info("Origin saved successfully with ID: {} and name: '{}'",
+                    saved.getOriginId(), saved.getOriginName());
 
             return new ApiResponseDTO<>(
                     mapper.toDto(saved),
@@ -64,7 +86,7 @@ public class OriginsServiceImpl implements OriginsService {
             );
 
         } catch (Exception e) {
-            log.error("Error occurred while saving origin", e);
+            log.error("Error occurred while saving origin. Request data: {}", dto, e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -270,5 +292,33 @@ public class OriginsServiceImpl implements OriginsService {
             );
         }
     }
-}
 
+    @Override
+    @Transactional(readOnly = true)
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> download Origins CSV service called <<Start>>");
+
+        try {
+            List<OriginDto> dtoList = repository.findAll()
+                    .stream()
+                    .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
+                    .map(o -> {
+                        OriginDto dto = new OriginDto();
+                        dto.setOriginId(o.getOriginId());
+                        dto.setOriginName(o.getOriginName());
+                        dto.setIsActive(o.getIsActive());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            OriginsExcelGenerator.generateCsv(dtoList, response);
+
+        } catch (IOException e) {
+            log.error("Error while downloading Origins CSV", e);
+            throw new RuntimeException("Failed to download Origins CSV");
+        }
+
+        log.info("<<End>> download Origins CSV service called <<End>>");
+    }
+}
