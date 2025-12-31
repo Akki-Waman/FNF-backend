@@ -344,7 +344,7 @@ public class BrandsServiceImpl implements BrandsService {
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            BrandExcelGenerator.generateCsv(brands, response);
+            BrandExcelGenerator.generateExcel(brands, response);
 
             log.info("Brands CSV export completed successfully, totalRecords={}",
                     brands.size());

@@ -344,7 +344,7 @@ public class TagsServiceImpl implements TagsService {
                     })
                     .collect(Collectors.toList()); // Java 8 safe
 
-            TagExcelGenerator.generateCsv(tags, response);
+            TagExcelGenerator.generateExcel(tags, response);
 
             log.info("Tags CSV export completed successfully, totalRecords={}",
                     tags.size());

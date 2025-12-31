@@ -15,6 +15,4 @@ public class UnitResponseDto extends AuditDto {
     private String unitName;
     private Boolean isActive;
 
-    // Audit details
-    private AuditDto auditDto;
 }
