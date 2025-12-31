@@ -6,6 +6,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ProductCategoryService {
 
@@ -26,4 +28,7 @@ public interface ProductCategoryService {
     );
 
     ApiResponseDTO<PagedResponse<ProductCategoryDto>> getAllProductCategories();
+
+    void exportProductCategoriesExcel(HttpServletResponse response);
+
 }

@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/product-categories")
 @CrossOrigin("*")
@@ -36,4 +38,8 @@ public interface ProductCategoryController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<ProductCategoryDto>>> getAllProductCategories();
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportProductCategoriesExcel(HttpServletResponse response);
+
 }

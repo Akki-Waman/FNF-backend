@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/services")
 @CrossOrigin("*")
@@ -36,4 +38,7 @@ public interface ServiceController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> getAllServices();
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportServicesExcel(HttpServletResponse response);
 }

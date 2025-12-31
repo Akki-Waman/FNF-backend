@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -76,4 +77,17 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.getAllProductCategories()
         );
     }
+
+    @Override
+    public ResponseEntity<Void> exportProductCategoriesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportProductCategoriesExcel endpoint called <<Start>>");
+
+        productCategoryService.exportProductCategoriesExcel(response);
+
+        log.info("<<End>> exportProductCategoriesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

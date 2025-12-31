@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -97,5 +98,16 @@ public class ClientControllerImpl implements ClientController {
 
         log.info("<<End>> getAllClients endpoint called <<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
+    }
+    @Override
+    public ResponseEntity<Void> exportClientsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportClientsExcel endpoint called <<Start>>");
+
+        clientService.exportClientsExcel(response);
+
+        log.info("<<End>> exportClientsExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 }

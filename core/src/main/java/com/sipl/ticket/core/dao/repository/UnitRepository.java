@@ -17,4 +17,11 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
 
     @Query("From Unit u where u.isActive = true")
     List<Unit> findAllActive();
+
+    boolean existsByUnitNameIgnoreCase(String unitName);
+
+    boolean existsByUnitNameIgnoreCaseAndUnitIdNot(
+            String unitName,
+            Long unitId
+    );
 }

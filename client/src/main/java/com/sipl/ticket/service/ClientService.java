@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SearchClientRequestDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ClientService {
 
@@ -37,4 +39,7 @@ public interface ClientService {
 
 
     ApiResponseDTO<PagedResponse<ClientResponseDto>> getAllClients();
+
+    void exportClientsExcel(HttpServletResponse response);
+
 }

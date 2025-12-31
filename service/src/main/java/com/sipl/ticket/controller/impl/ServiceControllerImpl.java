@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -82,5 +83,16 @@ public class ServiceControllerImpl implements ServiceController {
 
         log.info("<<End>>getAllServices endpoint called<<End>>");
         return response;
+    }
+    @Override
+    public ResponseEntity<Void> exportServicesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportServicesExcel endpoint called <<Start>>");
+
+        serviceService.exportServicesExcel(response);
+
+        log.info("<<End>> exportServicesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 }

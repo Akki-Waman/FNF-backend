@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -82,4 +83,17 @@ public class UnitControllerImpl implements UnitController {
         log.info("<<End>> deleteUnit <<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportUnitsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportUnitsExcel endpoint called <<Start>>");
+
+        unitService.exportUnitsExcel(response);
+
+        log.info("<<End>> exportUnitsExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }
