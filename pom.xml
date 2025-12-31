@@ -12,6 +12,7 @@
 	<modules>
 
 		<module>app</module>
+		<module>ticket</module>
 		<module>core</module>
 		<module>master</module>
 		<module>faq</module>
@@ -35,11 +36,11 @@
         <module>tags</module>
         <module>branch</module>
         <module>city</module>
-        <module>state</module>
-        <module>country</module>
-        <module>ticket</module>
+		<module>country</module>
+		<module>state</module>
 
-    </modules>
+
+	</modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -171,16 +172,18 @@
                 <artifactId>city</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
-                <artifactId>country</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
-                <artifactId>state</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>ticket</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>state</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>clientProducts</artifactId>
@@ -233,6 +236,11 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>country</artifactId>
 				<version>${project.version}</version>
 			</dependency>
             <dependency>
@@ -302,11 +310,6 @@
 				<artifactId>branch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-            <dependency>
-                <groupId>com.sipl.ticket</groupId>
-                <artifactId>ticket</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>

@@ -1,11 +1,16 @@
 package com.sipl.ticket.core.dao.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 
+@Getter
+@Setter
+@Entity
 @Table(name = "states")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -15,16 +20,20 @@ public class State extends AuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "state_id")
     private Long stateId;
 
+    @Column(name = "state_name", nullable = false, length = 100)
     private String stateName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "country_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "FK_states_country_id"))
+            foreignKey = @ForeignKey(name = "FK_states_country_id")
+    )
     private Country country;
 
+    @Column(name = "is_active")
     private Boolean isActive;
 }
