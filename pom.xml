@@ -37,6 +37,7 @@
         <module>city</module>
         <module>state</module>
         <module>country</module>
+        <module>ticket</module>
 
     </modules>
 
@@ -301,6 +302,11 @@
 				<artifactId>branch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>

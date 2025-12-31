@@ -4,10 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED;
 
 @Entity
 @Data
@@ -30,6 +33,7 @@ public class Ticket extends AuditEntity{
 
     @ManyToOne
     @JoinColumn(name = "contact_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Contact contact;
 
     @Column(name = "complaint_name", length = 150)
@@ -43,14 +47,17 @@ public class Ticket extends AuditEntity{
 
     @ManyToOne
     @JoinColumn(name = "location_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Locations location;
 
     @ManyToOne
     @JoinColumn(name = "department_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Department department;
 
     @ManyToOne
     @JoinColumn(name = "client_product_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ClientProducts clientProducts;
 
     @Column(name = "priority", nullable = false)
@@ -58,10 +65,12 @@ public class Ticket extends AuditEntity{
 
     @ManyToOne
     @JoinColumn(name = "service_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ServiceEntity service;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "assigned_to")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Users assignedTo;
 
     @Column(name = "status", nullable = false)
@@ -69,6 +78,7 @@ public class Ticket extends AuditEntity{
 
     @ManyToOne
     @JoinColumn(name = "branch_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Branches branch;
 
     /* ---------------- Relationships ---------------- */

@@ -174,7 +174,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>ProductSubCategory</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticket</artifactId>
+        </dependency>
 
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
