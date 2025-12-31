@@ -360,7 +360,7 @@ public class ProductServiceImpl implements ProductService {
             originFromDb.ifPresent(productEntity::setOrigins);
         }
         if (productDto.getUnit() != null) {
-            Optional<Unit> unitFromDB = unitRepository.findActiveByUnitId(productDto.getUnit().getUnitId());
+            Optional<Unit> unitFromDB = unitRepository.findActiveById(productDto.getUnit().getUnitId());
             unitFromDB.ifPresent(productEntity::setUnit);
         }
         if (productDto.getAccount() != null && productDto.getAccount().getAccountId() != null) {
