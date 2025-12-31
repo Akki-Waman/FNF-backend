@@ -22,10 +22,10 @@ public class ShiftControllerImpl implements ShiftController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> saveShift(
-            @Valid ShiftRequestDto dto) {
+            @Valid ShiftRequestDto shiftRequestDto) {
 
         log.info("<<Start>>saveShift endpoint called<<Start>>");
-        ApiResponseDTO<ShiftResponseDTO> response = shiftService.saveShift(dto);
+        ApiResponseDTO<ShiftResponseDTO> response = shiftService.saveShift(shiftRequestDto);
         log.info("<<End>>saveShift endpoint called<<End>>");
 
         return ResponseEntity.status(response.getStatus()).body(response);
@@ -33,11 +33,11 @@ public class ShiftControllerImpl implements ShiftController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> updateShift(
-            ShiftRequestDto dto) {
+            ShiftRequestDto shiftRequestDto) {
 
         log.info("<<Start>>updateShift endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> response =
-                ResponseEntity.ok(shiftService.updateShift(dto));
+                ResponseEntity.ok(shiftService.updateShift(shiftRequestDto));
         log.info("<<End>>updateShift endpoint called<<End>>");
 
         return response;
@@ -78,3 +78,4 @@ public class ShiftControllerImpl implements ShiftController {
         return response;
     }
 }
+
