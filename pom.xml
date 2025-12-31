@@ -12,6 +12,7 @@
 	<modules>
 
 		<module>app</module>
+		<module>ticket</module>
 		<module>core</module>
 		<module>master</module>
 		<module>faq</module>
