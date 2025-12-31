@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -20,27 +22,24 @@ public class ShiftControllerImpl implements ShiftController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> saveShift(
-            ShiftRequestDto shiftRequestDto) {
+            @Valid ShiftRequestDto dto) {
 
         log.info("<<Start>>saveShift endpoint called<<Start>>");
-
-        ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> response =
-                ResponseEntity.ok(shiftService.saveShift(shiftRequestDto));
-
+        ApiResponseDTO<ShiftResponseDTO> response = shiftService.saveShift(dto);
         log.info("<<End>>saveShift endpoint called<<End>>");
-        return response;
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> updateShift(
-            ShiftRequestDto shiftRequestDto) {
+            ShiftRequestDto dto) {
 
         log.info("<<Start>>updateShift endpoint called<<Start>>");
-
         ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> response =
-                ResponseEntity.ok(shiftService.updateShift(shiftRequestDto));
-
+                ResponseEntity.ok(shiftService.updateShift(dto));
         log.info("<<End>>updateShift endpoint called<<End>>");
+
         return response;
     }
 
@@ -48,12 +47,11 @@ public class ShiftControllerImpl implements ShiftController {
     public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getById(
             Long shiftId) {
 
-        log.info("<<Start>>getById endpoint called<<Start>>");
-
+        log.info("<<Start>>getShiftById endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> response =
                 ResponseEntity.ok(shiftService.getById(shiftId));
+        log.info("<<End>>getShiftById endpoint called<<End>>");
 
-        log.info("<<End>>getById endpoint called<<End>>");
         return response;
     }
 
@@ -61,12 +59,11 @@ public class ShiftControllerImpl implements ShiftController {
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long shiftId) {
 
-        log.info("<<Start>>deleteById endpoint called<<Start>>");
-
+        log.info("<<Start>>deleteShift endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<String>> response =
                 ResponseEntity.ok(shiftService.deleteById(shiftId));
+        log.info("<<End>>deleteShift endpoint called<<End>>");
 
-        log.info("<<End>>deleteById endpoint called<<End>>");
         return response;
     }
 
@@ -74,12 +71,10 @@ public class ShiftControllerImpl implements ShiftController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> getAllShifts() {
 
         log.info("<<Start>>getAllShifts endpoint called<<Start>>");
-
         ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> response =
                 ResponseEntity.ok(shiftService.getAllShifts());
-
         log.info("<<End>>getAllShifts endpoint called<<End>>");
+
         return response;
     }
 }
-
