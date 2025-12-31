@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dto.request.OriginsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.OriginsExcelGenerator;
 import com.sipl.ticket.core.mapper.OriginsMapper;
 import com.sipl.ticket.service.OriginsService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -270,5 +273,33 @@ public class OriginsServiceImpl implements OriginsService {
             );
         }
     }
-}
 
+    @Override
+    @Transactional(readOnly = true)
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> download Origins CSV service called <<Start>>");
+
+        try {
+            List<OriginDto> dtoList = repository.findAll()
+                    .stream()
+                    .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
+                    .map(o -> {
+                        OriginDto dto = new OriginDto();
+                        dto.setOriginId(o.getOriginId());
+                        dto.setOriginName(o.getOriginName());
+                        dto.setIsActive(o.getIsActive());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            OriginsExcelGenerator.generateCsv(dtoList, response);
+
+        } catch (IOException e) {
+            log.error("Error while downloading Origins CSV", e);
+            throw new RuntimeException("Failed to download Origins CSV");
+        }
+
+        log.info("<<End>> download Origins CSV service called <<End>>");
+    }
+}

@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -83,4 +84,15 @@ public class OriginsControllerImpl implements OriginsController {
         log.info("<<End>> getAll Origins endpoint called <<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @Override
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> download Origins CSV endpoint called <<Start>>");
+
+        originsService.downloadExcel(response);
+
+        log.info("<<End>> download Origins CSV endpoint called <<End>>");
+    }
 }
+

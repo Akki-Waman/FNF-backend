@@ -5,6 +5,8 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 
+import javax.servlet.http.HttpServletResponse;
+
 public interface OriginsService {
 
     ApiResponseDTO<OriginDto> saveOrigin(
@@ -24,4 +26,8 @@ public interface OriginsService {
     );
 
     ApiResponseDTO<PagedResponse<OriginDto>> getAllOrigins();
+
+
+    void downloadExcel(HttpServletResponse response);
 }
+
