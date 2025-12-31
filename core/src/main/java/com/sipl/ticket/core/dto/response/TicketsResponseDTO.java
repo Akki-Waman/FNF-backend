@@ -21,10 +21,10 @@ public class TicketsResponseDTO extends AuditDto {
     private LocationResponseDTO location;
     private DepartmentResponseDTO department;
     private ClientProductsResponseDTO clientProducts;
-    private String priority = "Medium";
+    private Integer priority;
     private ServiceResponseDTO service;
     private UsersResponseDTO assignedTo;
-    private String status = "Open";
+    private Integer status;
     private BranchDto branch;
     private List<Long> tagIds;
     private List<String> ccEmails;

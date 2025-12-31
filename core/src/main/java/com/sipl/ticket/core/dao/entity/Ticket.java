@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "tickets")
 @Audited
-public class Tickets extends AuditEntity{
+public class Ticket extends AuditEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,8 +53,8 @@ public class Tickets extends AuditEntity{
     @JoinColumn(name = "client_product_id")
     private ClientProducts clientProducts;
 
-    @Column(name = "priority", nullable = false, length = 20)
-    private String priority = "Medium";
+    @Column(name = "priority", nullable = false)
+    private Integer priority;
 
     @ManyToOne
     @JoinColumn(name = "service_id")
@@ -64,8 +64,8 @@ public class Tickets extends AuditEntity{
     @JoinColumn(name = "assigned_to")
     private Users assignedTo;
 
-    @Column(name = "status", nullable = false, length = 30)
-    private String status = "Open";
+    @Column(name = "status", nullable = false)
+    private Integer status;
 
     @ManyToOne
     @JoinColumn(name = "branch_id")

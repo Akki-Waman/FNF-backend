@@ -22,7 +22,7 @@ public class TicketTag {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ticket_id")
-    private Tickets tickets;
+    private Ticket tickets;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "tag_id")

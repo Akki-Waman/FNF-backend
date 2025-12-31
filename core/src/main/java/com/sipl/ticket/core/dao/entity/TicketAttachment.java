@@ -10,7 +10,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ticket_attachment")
+@Table(name = "ticket_attachments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +24,7 @@ public class TicketAttachment {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ticket_id")
-    private Tickets ticket;
+    private Ticket ticket;
 
     @Column(name = "file_name", nullable = false)
     private String fileName;

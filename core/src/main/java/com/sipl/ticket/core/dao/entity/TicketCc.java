@@ -22,7 +22,7 @@ public class TicketCc {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ticket_id")
-    private Tickets ticket;
+    private Ticket ticket;
 
     @Column(name = "cc", nullable = false)
     private String cc;
