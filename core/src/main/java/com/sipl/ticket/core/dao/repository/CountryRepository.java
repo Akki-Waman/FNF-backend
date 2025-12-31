@@ -7,5 +7,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CountryRepository extends JpaRepository<Country, Long> {
 
-    boolean existsByCountryNameIgnoreCase(String countryName);
+
+    boolean existsByCountryNameIgnoreCaseAndCountryIdNot(String name, Long countryId);
+
+    boolean existsByCountryNameIgnoreCase(String name);
 }

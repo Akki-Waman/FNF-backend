@@ -1,19 +1,31 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface CountryService {
 
-    CountryResponseDto createCountry(CountryRequestDto requestDto);
+    ApiResponseDTO<CountryResponseDto> createCountry(
+            CountryRequestDto requestDto
+    );
 
-    CountryResponseDto updateCountry(Long countryId, CountryRequestDto requestDto);
+    ApiResponseDTO<CountryResponseDto> updateCountry(
+            Long countryId,
+            CountryRequestDto requestDto
+    );
 
-    CountryResponseDto getCountryById(Long countryId);
+    ApiResponseDTO<CountryResponseDto> getCountryById(
+            Long countryId
+    );
 
-    List<CountryResponseDto> getAllCountries();
+    ApiResponseDTO<List<CountryResponseDto>> getAllCountries();
 
-    void deleteCountry(Long countryId);
+    ApiResponseDTO<String> deleteCountry(
+            Long countryId
+    );
 }
