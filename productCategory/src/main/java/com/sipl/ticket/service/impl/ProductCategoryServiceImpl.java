@@ -1,4 +1,4 @@
-package com.sipl.ticket.service;
+package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.core.dao.entity.ProductCategories;
 import com.sipl.ticket.core.dao.repository.ProductCategoryRepository;

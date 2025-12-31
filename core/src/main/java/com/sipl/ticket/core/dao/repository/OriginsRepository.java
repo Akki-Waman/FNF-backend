@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OriginsRepository extends JpaRepository<Origins, Long> {
@@ -20,4 +21,6 @@ public interface OriginsRepository extends JpaRepository<Origins, Long> {
             @Param("isActive") Boolean isActive
     );
 
+    @Query("From Origins o WHERE o.originId = :originId")
+    Optional<Origins> findByOriginsId(@Param("originId") Long originId);
 }

@@ -55,7 +55,7 @@ public class ProductUnitService {
                 currentProductUnitTobeSaved = productUnitMapper.toProductUnit(currentProductUnitDto);
             }
             Optional<Unit> optionalUnit =
-                    unitRepository.findActiveById(productUnitDtoList.get(i).getUnit().getUnitId());
+                    unitRepository.findActiveByUnitId(productUnitDtoList.get(i).getUnit().getUnitId());
             optionalUnit.ifPresent(currentProductUnitTobeSaved::setUnit);
             currentProductUnitTobeSaved.setProduct(product);
             productUnitListToBeSaved.add(currentProductUnitTobeSaved);

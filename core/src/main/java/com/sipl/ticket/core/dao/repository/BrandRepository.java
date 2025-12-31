@@ -22,7 +22,8 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
 
     List<Brands> findByIsActiveTrue();
 
-    Optional<Brands> findByBrandId(Long brandId);
+    @Query("From Brands b where b.brandId = :brandId")
+    Optional<Brands> findByBrandId(@Param("brandId") Long brandId);
 
     @Query("SELECT b " +
             "FROM Brands b " +
