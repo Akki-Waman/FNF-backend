@@ -2,21 +2,19 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.UnitController;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import com.sipl.ticket.service.UnitService;
-import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/units")
-@CrossOrigin("*")
-@Api(tags = "Unit APIs")
 @RequiredArgsConstructor
 @Slf4j
 public class UnitControllerImpl implements UnitController {
@@ -24,43 +22,64 @@ public class UnitControllerImpl implements UnitController {
     private final UnitService unitService;
 
     @Override
-    @GetMapping("/{unitId}")
-    public ResponseEntity<UnitDto> getUnit(@PathVariable Long unitId) {
-        log.info("REST request to fetch Unit {}", unitId);
-        return ResponseEntity.ok(unitService.getUnitById(unitId));
+    public ResponseEntity<ApiResponseDTO<UnitDto>> getUnit(Long unitId) {
+
+        log.info("<<Start>> getUnit <<Start>>");
+
+        ApiResponseDTO<UnitDto> response =
+                unitService.getUnitById(unitId);
+
+        log.info("<<End>> getUnit <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    @GetMapping
-    public ResponseEntity<List<UnitDto>> getAllUnits() {
-        log.info("REST request to fetch all Units");
-        return ResponseEntity.ok(unitService.getAllUnits());
+    public ResponseEntity<ApiResponseDTO<List<UnitDto>>> getAllUnits() {
+
+        log.info("<<Start>> getAllUnits <<Start>>");
+
+        ApiResponseDTO<List<UnitDto>> response =
+                unitService.getAllUnits();
+
+        log.info("<<End>> getAllUnits <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    @PostMapping
-    public ResponseEntity<UnitDto> createUnit(
-            @Valid @RequestBody UnitRequestDto requestDto
-    ) {
-        log.info("REST request to create Unit");
-        return ResponseEntity.ok(unitService.createUnit(requestDto));
+    public ResponseEntity<ApiResponseDTO<UnitDto>> createUnit(
+            @Valid @RequestBody UnitRequestDto requestDto) {
+
+        log.info("<<Start>> createUnit <<Start>>");
+
+        ApiResponseDTO<UnitDto> response =
+                unitService.createUnit(requestDto);
+
+        log.info("<<End>> createUnit <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    @PutMapping("/{unitId}")
-    public ResponseEntity<UnitDto> updateUnit(
-            @PathVariable Long unitId,
-            @Valid @RequestBody UnitRequestDto requestDto
-    ) {
-        log.info("REST request to update Unit {}", unitId);
-        return ResponseEntity.ok(unitService.updateUnit(unitId, requestDto));
+    public ResponseEntity<ApiResponseDTO<UnitDto>> updateUnit(
+            Long unitId, @Valid @RequestBody UnitRequestDto requestDto) {
+
+        log.info("<<Start>> updateUnit <<Start>>");
+
+        ApiResponseDTO<UnitDto> response =
+                unitService.updateUnit(unitId, requestDto);
+
+        log.info("<<End>> updateUnit <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    @DeleteMapping("/{unitId}")
-    public ResponseEntity<Void> deleteUnit(@PathVariable Long unitId) {
-        log.info("REST request to delete Unit {}", unitId);
-        unitService.deleteUnit(unitId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponseDTO<String>> deleteUnit(Long unitId) {
+
+        log.info("<<Start>> deleteUnit <<Start>>");
+
+        ApiResponseDTO<String> response =
+                unitService.deleteUnit(unitId);
+
+        log.info("<<End>> deleteUnit <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

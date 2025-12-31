@@ -34,6 +34,8 @@
         <module>location</module>
         <module>tags</module>
         <module>branch</module>
+        <module>city</module>
+        <module>state</module>
 
     </modules>
 
@@ -164,6 +166,16 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
+                <artifactId>city</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>state</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
                 <artifactId>clientProducts</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -251,17 +263,17 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>ProductCategory</artifactId>
-                <version>1.0.0</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>ProductSubCategory</artifactId>
-                <version>1.0.0</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>unit</artifactId>
-                <version>1.0.0</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
