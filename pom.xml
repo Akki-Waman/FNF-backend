@@ -26,8 +26,6 @@
         <module>origins</module>
 		<module>productCategory</module>
         <module>productSubCategory</module>
-		<module>ProductCategory</module>
-        <module>ProductSubCategory</module>
         <module>brand</module>
         <module>unit</module>
         <module>clientProducts</module>
@@ -35,7 +33,6 @@
         <module>company</module>
         <module>location</module>
         <module>tags</module>
-        <module>brand</module>
         <module>branch</module>
 
     </modules>
