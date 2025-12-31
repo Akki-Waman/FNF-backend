@@ -296,7 +296,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void exportDepartmentsCsv(HttpServletResponse response) {
 
-        log.info("<<Start>> exportDepartmentsCsv service <<Start>>");
+        log.info("Exporting active departments to CSV");
 
         try {
             List<DepartmentResponseDTO> departments = repository.findAll()
@@ -307,12 +307,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
             DepartmentExcelGenerator.generateCsv(departments, response);
 
-            log.info("<<End>> exportDepartmentsCsv service, totalRecords={} <<End>>",
+            log.info("Departments CSV export completed successfully, totalRecords={}",
                     departments.size());
 
         } catch (Exception e) {
             log.error("exportDepartmentsCsv unexpected error", e);
-            throw new RuntimeException("Failed to export departments CSV");
+            throw new RuntimeException("Failed to export departments CSV", e);
         }
     }
+
 }

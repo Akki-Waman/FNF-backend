@@ -51,7 +51,7 @@ public interface BrandsController {
             @RequestBody BrandSearchRequestDto requestDto
     );
 
-    @GetMapping("/downloadBrandsExcel")
+    @GetMapping("/export")
     ResponseEntity<Void> exportBrandsCsv(HttpServletResponse response);
 
 }

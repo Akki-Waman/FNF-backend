@@ -75,7 +75,7 @@ public interface TagsController {
     ResponseEntity<ApiResponseDTO<PagedResponse<TagResponseDto>>> searchTags(
             @RequestBody TagsSearchRequestDto requestDto
     );
-    @GetMapping("/downloadTagsExcel")
+    @GetMapping("/export")
     ResponseEntity<Void> exportTagsCsv(HttpServletResponse response);
 
 }

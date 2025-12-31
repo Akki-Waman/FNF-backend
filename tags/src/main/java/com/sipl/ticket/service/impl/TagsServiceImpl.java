@@ -329,7 +329,7 @@ public class TagsServiceImpl implements TagsService {
     @Override
     public void exportTagsCsv(HttpServletResponse response) {
 
-        log.info("<<Start>> exportTagsCsv service <<Start>>");
+        log.info("Exporting active tags to CSV");
 
         try {
             List<TagResponseDto> tags = repository.findAll()
@@ -346,13 +346,14 @@ public class TagsServiceImpl implements TagsService {
 
             TagExcelGenerator.generateCsv(tags, response);
 
-            log.info("<<End>> exportTagsCsv service, totalRecords={} <<End>>",
+            log.info("Tags CSV export completed successfully, totalRecords={}",
                     tags.size());
 
         } catch (Exception e) {
             log.error("exportTagsCsv unexpected error", e);
-            throw new RuntimeException("Failed to export tags CSV");
+            throw new RuntimeException("Failed to export tags CSV", e);
         }
     }
+
 
 }

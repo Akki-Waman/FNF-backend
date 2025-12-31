@@ -335,7 +335,7 @@ public class BrandsServiceImpl implements BrandsService {
     @Transactional(readOnly = true)
     public void exportBrandsCsv(HttpServletResponse response) {
 
-        log.info("<<Start>> exportBrandsCsv service <<Start>>");
+        log.info("Exporting active brands to CSV");
 
         try {
             List<BrandDto> brands = repository.findAll()
@@ -346,14 +346,15 @@ public class BrandsServiceImpl implements BrandsService {
 
             BrandExcelGenerator.generateCsv(brands, response);
 
-            log.info("<<End>> exportBrandsCsv service, totalRecords={} <<End>>",
+            log.info("Brands CSV export completed successfully, totalRecords={}",
                     brands.size());
 
         } catch (Exception e) {
             log.error("exportBrandsCsv unexpected error", e);
-            throw new RuntimeException("Failed to export brands CSV");
+            throw new RuntimeException("Failed to export brands CSV", e);
         }
     }
+
 
 
 }

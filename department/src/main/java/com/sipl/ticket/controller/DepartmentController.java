@@ -51,7 +51,7 @@ public interface DepartmentController {
     ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> searchDepartments(
             @RequestBody DepartmentSearchRequestDto requestDto
     );
-    @GetMapping("/downloadDepartmentExcel")
+    @GetMapping("/export")
     ResponseEntity<Void> exportDepartmentsCsv(HttpServletResponse response);
 
 }
