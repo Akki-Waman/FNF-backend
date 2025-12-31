@@ -1,13 +1,216 @@
 package com.sipl.ticket.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sipl.ticket.core.dao.entity.*;
+import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
+import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.TicketFileUploadUtil;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
+
+    private final TicketRepository ticketRepository;
+    private final TicketMapper ticketMapper;
+    private final ObjectMapper objectMapper;
+    private final TagsRepository tagsRepository;
+    private final TicketTagMapper ticketTagMapper;
+    private final TicketTagRepository ticketTagRepository;
+    private final TicketCcRepository ticketCcRepository;
+    private final TicketAttachmentRepository ticketAttachmentRepository;
+    private final TicketCcMapper ticketCcMapper;
+    private final TicketAttachmentMapper ticketAttachmentMapper;
+    private final TicketFileUploadUtil fileUploadUtil;
+    private final UserMapper userMapper;
+    private final UsersRepository userRepository;
+    private final LocationRepository locationRepository;
+    private final ContactRepository contactsRepository;
+    private final DepartmentRepository departmentRepository;
+    private final ClientProductsRepository clientProductsRepository;
+    private final ServiceRepository serviceRepository;
+    private final BranchRepository branchesRepository;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponseDTO<CombinedTicketResponseDto> addTickets(
+            Long ticketId,
+            String ticketRequestDto,
+            List<MultipartFile> multipartFiles) {
+        log.info("<<START>> addTickets service");
+        try {
+            NewTicketsRequestDTO requestDto =
+                    objectMapper.readValue(ticketRequestDto, NewTicketsRequestDTO.class);
+            TicketsResponseDTO ticketDto = requestDto.getTicketsResponseDTO();
+            Users assignedUser = validateAndGetAssignedUser(ticketDto);
+            Ticket savedTicket = saveTicket(ticketDto, assignedUser);
+            List<TicketTag> ticketTags =
+                    saveTicketTags(requestDto.getTicketTagResponseDTOS(), savedTicket);
+            List<TicketCc> ticketCcs =
+                    saveTicketCcs(requestDto.getTicketCcResponseDTOS(), savedTicket);
+            List<TicketAttachment> attachments =
+                    saveTicketAttachments(multipartFiles, savedTicket, assignedUser);
+            Ticket fullTicket = ticketRepository.findByIdWithAllDetails(savedTicket.getTicketId())
+                    .orElseThrow(() -> new RuntimeException("Ticket not found after save"));
+            CombinedTicketResponseDto responseDto = buildResponse(
+                    fullTicket, ticketTags, ticketCcs, attachments
+            );
+            log.info("<<END>> addTickets service SUCCESS");
+            return new ApiResponseDTO<>(
+                    responseDto, null, null,
+                    "Ticket created successfully",
+                    HttpStatus.CREATED, false, null, null
+            );
+        } catch (Exception e) {
+            log.error("Exception in addTickets service:", e);
+            return new ApiResponseDTO<>(
+                    null, null, null,
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true, null, null
+            );
+        }
+    }
+
+    @Transactional
+    private Ticket saveTicket(TicketsResponseDTO dto, Users assignedUser) {
+        Ticket ticket = ticketMapper.toEntity(dto);
+        ticket.setAssignedTo(assignedUser);
+        ticket.setLocation(getLocation(dto));
+        ticket.setContact(getContact(dto));
+        ticket.setDepartment(getDepartment(dto));
+        ticket.setService(getService(dto));
+        ticket.setClientProducts(getClientProduct(dto));
+        ticket.setBranch(getBranch(dto));
+        Ticket savedTicket = ticketRepository.save(ticket);
+        log.info("Ticket saved with ID: {}", savedTicket.getTicketId());
+        return savedTicket;
+    }
+
+    @Transactional
+    private List<TicketTag> saveTicketTags(
+            List<TicketTagResponseDTO> tagDtos,
+            Ticket ticket) {
+        if (tagDtos == null || tagDtos.isEmpty()) return Collections.emptyList();
+        List<TicketTag> tags = tagDtos.stream()
+                .filter(dto -> dto.getTags() != null && dto.getTags().getTagId() != null)
+                .map(dto -> {
+                    Tags tag = tagsRepository.findById(dto.getTags().getTagId())
+                            .orElseThrow(() ->
+                                    new RuntimeException("Tag not found with id " + dto.getTags().getTagId()));
+                    return ticketTagMapper.toEntity(dto, ticket, tag);
+                })
+                .collect(Collectors.toList());
+        return ticketTagRepository.saveAll(tags);
+    }
+
+    @Transactional
+    private List<TicketCc> saveTicketCcs(
+            List<TicketCcResponseDTO> ccDtos,
+            Ticket ticket) {
+        if (ccDtos == null || ccDtos.isEmpty()) return Collections.emptyList();
+        List<TicketCc> ccs = ccDtos.stream()
+                .filter(dto -> dto.getCc() != null && !dto.getCc().isBlank())
+                .map(dto -> ticketCcMapper.toEntity(dto, ticket))
+                .collect(Collectors.toList());
+        return ticketCcRepository.saveAll(ccs);
+    }
+
+    @Transactional
+    private List<TicketAttachment> saveTicketAttachments(
+            List<MultipartFile> files,
+            Ticket ticket,
+            Users uploadedBy) throws IOException {
+        if (files == null || files.isEmpty()) return Collections.emptyList();
+        List<TicketAttachment> attachments = new ArrayList<>();
+        String moduleName = "tickets";
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+            String path = fileUploadUtil.saveFile(
+                    file,
+                    ticket.getTicketId(),
+                    ticket.getSubject(),
+                    moduleName
+            );
+            TicketAttachmentResponseDTO dto = new TicketAttachmentResponseDTO();
+            dto.setFileName(file.getOriginalFilename());
+            dto.setFilePath(path);
+            dto.setFileSizeKB((int) (file.getSize() / 1024));
+            dto.setContentType(file.getContentType());
+            TicketAttachment attachment =
+                    ticketAttachmentMapper.toEntity(dto, ticket, uploadedBy);
+            attachment.setUploadedOn(LocalDateTime.now());
+            attachments.add(attachment);
+        }
+        return ticketAttachmentRepository.saveAll(attachments);
+    }
+
+    private Users validateAndGetAssignedUser(TicketsResponseDTO dto) {
+        if (dto.getAssignedTo() == null || dto.getAssignedTo().getId() == null) {
+            throw new RuntimeException("AssignedTo user is required");
+        }
+        return userRepository.findById(dto.getAssignedTo().getId())
+                .orElseThrow(() ->
+                        new RuntimeException("AssignedTo user not found"));
+    }
+
+    private Locations getLocation(TicketsResponseDTO dto) {
+        return locationRepository.findById(dto.getLocation().getLocationId())
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+    }
+
+    private Contact getContact(TicketsResponseDTO dto) {
+        return contactsRepository.findById(dto.getContact().getContactId())
+                .orElseThrow(() -> new RuntimeException("Contact not found"));
+    }
+
+    private Department getDepartment(TicketsResponseDTO dto) {
+        return departmentRepository.findById(dto.getDepartment().getDepartmentId())
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+    }
+
+    private ServiceEntity getService(TicketsResponseDTO dto) {
+        return serviceRepository.findById(dto.getService().getServiceId())
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+    }
+
+    private ClientProducts getClientProduct(TicketsResponseDTO dto) {
+        return clientProductsRepository.findById(dto.getClientProducts().getClientProductId())
+                .orElseThrow(() -> new RuntimeException("Client Product not found"));
+    }
+
+    private Branches getBranch(TicketsResponseDTO dto) {
+        return branchesRepository.findById(dto.getBranch().getBranchId())
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+    }
+
+    private CombinedTicketResponseDto buildResponse(
+            Ticket ticket,
+            List<TicketTag> tags,
+            List<TicketCc> ccs,
+            List<TicketAttachment> attachments) {
+        return new CombinedTicketResponseDto(
+                ticketMapper.toDto(ticket),
+                ticketTagMapper.mapTagsListToDtoList(tags),
+                ticketCcMapper.mapTagsListToDtoList(ccs),
+                ticketAttachmentMapper.mapTagsListToDtoList(attachments)
+        );
+    }
+
 }
