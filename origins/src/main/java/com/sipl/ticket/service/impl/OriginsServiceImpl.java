@@ -35,16 +35,31 @@ public class OriginsServiceImpl implements OriginsService {
     @CacheEvict(value = "origins", allEntries = true)
     public ApiResponseDTO<OriginDto> saveOrigin(OriginsRequestDto dto) {
 
-        log.info("Saving origin with name: {}", dto.getOriginName());
+        log.info("Request received to save Origin");
+
+        if (dto == null || dto.getOriginName() == null) {
+            log.warn("Invalid request: Origin request or origin name is null");
+            return new ApiResponseDTO<>(
+                    null,
+                    "Origin name is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        log.debug("Raw origin name received: '{}'", dto.getOriginName());
 
         try {
             String name = dto.getOriginName().trim();
+            log.debug("Trimmed origin name: '{}'", name);
 
+            log.debug("Checking if origin already exists for name: '{}'", name);
             boolean exists = repository.searchOrigins(name, true)
                     .stream()
                     .anyMatch(o -> o.getOriginName().equalsIgnoreCase(name));
 
             if (exists) {
+                log.warn("Origin already exists with name: '{}'", name);
                 return new ApiResponseDTO<>(
                         null,
                         "Origin '" + name + "' already exists.",
@@ -57,7 +72,11 @@ public class OriginsServiceImpl implements OriginsService {
             origin.setOriginName(name);
             origin.setIsActive(true);
 
+            log.info("Saving new origin with name: '{}'", name);
             Origins saved = repository.save(origin);
+
+            log.info("Origin saved successfully with ID: {} and name: '{}'",
+                    saved.getOriginId(), saved.getOriginName());
 
             return new ApiResponseDTO<>(
                     mapper.toDto(saved),
@@ -67,7 +86,7 @@ public class OriginsServiceImpl implements OriginsService {
             );
 
         } catch (Exception e) {
-            log.error("Error occurred while saving origin", e);
+            log.error("Error occurred while saving origin. Request data: {}", dto, e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

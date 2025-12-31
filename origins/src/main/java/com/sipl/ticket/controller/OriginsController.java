@@ -36,10 +36,10 @@ public interface OriginsController {
             @PathVariable Long originId
     );
 
-    @GetMapping("/getAll")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> getAll();
 
-    @GetMapping("/download-excel")
+    @GetMapping("/export")
     void downloadExcel(HttpServletResponse response);
 }
 
