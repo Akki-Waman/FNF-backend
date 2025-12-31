@@ -10,6 +10,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/clients")
 @CrossOrigin("*")
@@ -45,5 +47,8 @@ public interface ClientController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<ClientResponseDto>>> getAllClients();
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportClientsExcel(HttpServletResponse response);
 }
 

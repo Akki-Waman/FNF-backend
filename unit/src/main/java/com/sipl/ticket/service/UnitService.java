@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
@@ -28,4 +29,7 @@ public interface UnitService {
     ApiResponseDTO<String> deleteUnit(
             Long unitId
     );
+
+    void exportUnitsExcel(HttpServletResponse response);
+
 }

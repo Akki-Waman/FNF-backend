@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.request.ProductSubCategoryRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
+import com.sipl.ticket.core.helper.ProductSubCategoryExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductSubCategoryMapper;
 import com.sipl.ticket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -293,6 +295,36 @@ public class ProductSubCategoryServiceImpl
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
+            );
+        }
+    }
+    @Override
+    public void exportProductSubCategoriesExcel(
+            HttpServletResponse response) {
+
+        log.info("Exporting active product sub categories to Excel");
+
+        try {
+            List<ProductSubCategoryDto> subCategories =
+                    repository.findAll()
+                            .stream()
+                            .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
+
+            ProductSubCategoryExcelGenerator
+                    .generateExcel(subCategories, response);
+
+            log.info(
+                    "Product Sub Category Excel export completed successfully, totalRecords={}",
+                    subCategories.size()
+            );
+
+        } catch (Exception e) {
+            log.error(
+                    "exportProductSubCategoriesExcel unexpected error", e);
+            throw new RuntimeException(
+                    "Failed to export product sub categories Excel", e
             );
         }
     }

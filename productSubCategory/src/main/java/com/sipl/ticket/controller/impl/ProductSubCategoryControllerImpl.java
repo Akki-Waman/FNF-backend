@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -63,5 +64,20 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     getAllProductSubCategories() {
 
         return ResponseEntity.ok(productSubCategoryService.getAllProductSubCategories());
+    }
+    @Override
+    public ResponseEntity<Void> exportProductSubCategoriesExcel(
+            HttpServletResponse response) {
+
+        log.info(
+                "<<Start>> exportProductSubCategoriesExcel endpoint called <<Start>>");
+
+        productSubCategoryService
+                .exportProductSubCategoriesExcel(response);
+
+        log.info(
+                "<<End>> exportProductSubCategoriesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 }

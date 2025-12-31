@@ -6,6 +6,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ProductSubCategoryService {
 
@@ -22,4 +24,7 @@ public interface ProductSubCategoryService {
     ApiResponseDTO<String> deleteById(Long productSubCategoryId);
 
     ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> getAllProductSubCategories();
+
+    void exportProductSubCategoriesExcel(HttpServletResponse response);
+
 }

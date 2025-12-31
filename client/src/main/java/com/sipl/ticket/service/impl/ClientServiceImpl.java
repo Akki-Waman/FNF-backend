@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SearchClientRequestDto;
+import com.sipl.ticket.core.helper.ClientExcelGenerator;
 import com.sipl.ticket.core.mapper.ClientMapper;
 import com.sipl.ticket.service.ClientService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -260,6 +263,30 @@ public class ClientServiceImpl implements ClientService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
+        }
+    }
+    @Override
+    public void exportClientsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active clients to Excel");
+
+        try {
+            List<ClientResponseDto> clients = repository.findAll()
+                    .stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            ClientExcelGenerator.generateExcel(clients, response);
+
+            log.info(
+                    "Clients Excel export completed successfully, totalRecords={}",
+                    clients.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportClientsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export clients Excel", e);
         }
     }
 }

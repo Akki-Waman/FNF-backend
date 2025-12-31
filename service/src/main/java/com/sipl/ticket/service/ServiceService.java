@@ -6,6 +6,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ServiceService {
 
@@ -26,4 +28,7 @@ public interface ServiceService {
     );
 
     ApiResponseDTO<PagedResponse<ServiceResponseDTO>> getAllServices();
+
+    void exportServicesExcel(HttpServletResponse response);
+
 }

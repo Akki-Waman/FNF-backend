@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
+import com.sipl.ticket.core.helper.ProductCategoryExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductCategoryMapper;
 import com.sipl.ticket.service.ProductCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -276,4 +278,35 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             );
         }
     }
+    @Override
+    public void exportProductCategoriesExcel(HttpServletResponse response) {
+
+        log.info("Exporting active product categories to Excel");
+
+        try {
+            List<ProductCategoryDto> categories = repository.findAll()
+                    .stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .map(c -> new ProductCategoryDto(
+                            c.getProductCategoryId(),
+                            c.getProductCategoryName(),
+                            c.getIsActive()
+                    ))
+                    .collect(Collectors.toList());
+
+            ProductCategoryExcelGenerator.generateExcel(categories, response);
+
+            log.info(
+                    "Product Category Excel export completed successfully, totalRecords={}",
+                    categories.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportProductCategoriesExcel unexpected error", e);
+            throw new RuntimeException(
+                    "Failed to export product categories Excel", e
+            );
+        }
+    }
+
 }

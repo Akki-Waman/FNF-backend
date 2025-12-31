@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.ServiceRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
+import com.sipl.ticket.core.helper.ServiceExcelGenerator;
 import com.sipl.ticket.core.mapper.ServiceMapper;
 import com.sipl.ticket.service.ServiceService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -261,6 +264,33 @@ public class ServiceServiceImpl implements ServiceService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
+        }
+    }
+    @Override
+    public void exportServicesExcel(HttpServletResponse response) {
+
+        log.info("Exporting active services to Excel");
+
+        try {
+            List<ServiceResponseDTO> services = repository.findAll()
+                    .stream()
+                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .map(s -> new ServiceResponseDTO(
+                            s.getServiceId(),
+                            s.getServiceName(),s.getIsActive(),s.getIsDeleted()
+                    ))
+                    .collect(Collectors.toList());
+
+            ServiceExcelGenerator.generateExcel(services, response);
+
+            log.info(
+                    "Services Excel export completed successfully, totalRecords={}",
+                    services.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportServicesExcel unexpected error", e);
+            throw new RuntimeException("Failed to export services Excel", e);
         }
     }
 }
