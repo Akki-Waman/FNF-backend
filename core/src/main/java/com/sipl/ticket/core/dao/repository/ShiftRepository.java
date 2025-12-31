@@ -24,5 +24,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
             @Param("endTime") java.time.LocalTime endTime,
             Pageable pageable
     );
+
+    boolean existsByShiftNameIgnoreCaseAndIsActiveTrue(String name);
 }
 

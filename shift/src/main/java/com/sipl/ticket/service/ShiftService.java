@@ -27,4 +27,3 @@ public interface ShiftService {
 
     ApiResponseDTO<PagedResponse<ShiftResponseDTO>> getAllShifts();
 }
-

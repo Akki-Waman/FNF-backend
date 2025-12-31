@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/shift")
+@RequestMapping("api/v1/shifts")
 @CrossOrigin("*")
 @Api(tags = "Shift APIs")
 public interface ShiftController {
@@ -34,6 +34,6 @@ public interface ShiftController {
             @PathVariable Long shiftId
     );
 
-    @GetMapping("/getAll")
+    @GetMapping("/get-all")
     ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> getAllShifts();
 }

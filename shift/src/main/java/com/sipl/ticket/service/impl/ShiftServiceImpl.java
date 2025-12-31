@@ -10,8 +10,6 @@ import com.sipl.ticket.core.mapper.ShiftMapper;
 import com.sipl.ticket.service.ShiftService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,42 +26,50 @@ public class ShiftServiceImpl implements ShiftService {
     private final ShiftMapper mapper;
 
     @Override
-    @CacheEvict(value = "shifts", allEntries = true)
     public ApiResponseDTO<ShiftResponseDTO> saveShift(ShiftRequestDto dto) {
 
-        log.info("<<Start>>saveShift endpoint called<<Start>>");
+        log.info("Saving shift with name: {}", dto.getShiftName());
 
         try {
-            if (dto == null ||
-                    dto.getShiftName() == null || dto.getShiftName().trim().isEmpty() ||
-                    dto.getStartTime() == null ||
-                    dto.getEndTime() == null) {
-
+            if (dto == null || dto.getShiftName() == null || dto.getShiftName().trim().isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Shift name, start time and end time are required",
+                        "Shift name is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String shiftName = dto.getShiftName().trim();
+            String name = dto.getShiftName().trim();
+
+            // ✅ DUPLICATE CHECK (same as Service)
+            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrue(name)) {
+                log.warn("Shift already exists with name: {}", name);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Shift '" + name + "' already exists.",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
 
             Shift shift = mapper.toEntity(dto);
-            shift.setShiftName(shiftName);
+            shift.setShiftName(name);
             shift.setIsActive(true);
 
             Shift saved = repository.save(shift);
 
+            log.info("Shift created successfully with id: {}", saved.getShiftId());
+
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(saved),
-                    "Shift " + shiftName + " created successfully",
-                    HttpStatus.OK,
+                    "Shift created successfully",
+                    HttpStatus.CREATED,
                     false
             );
 
         } catch (Exception e) {
-            log.error("saveShift error", e);
+            log.error("Error occurred while saving shift", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -74,23 +80,11 @@ public class ShiftServiceImpl implements ShiftService {
     }
 
     @Override
-    @CacheEvict(value = "shifts", allEntries = true)
     public ApiResponseDTO<ShiftResponseDTO> updateShift(ShiftRequestDto dto) {
 
-        log.info("<<Start>>updateShift endpoint called<<Start>>");
+        log.info("Updating shift id={}", dto.getShiftId());
 
         try {
-            if (dto == null || dto.getShiftId() == null ||
-                    dto.getShiftName() == null || dto.getShiftName().trim().isEmpty()) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Shift ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             Shift shift = repository.findById(dto.getShiftId()).orElse(null);
 
             if (shift == null) {
@@ -103,19 +97,17 @@ public class ShiftServiceImpl implements ShiftService {
             }
 
             mapper.partialUpdate(dto, shift);
-            shift.setShiftName(dto.getShiftName().trim());
-
             Shift updated = repository.save(shift);
 
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(updated),
-                    "Shift " + updated.getShiftName() + " updated successfully",
+                    "Shift updated successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("updateShift unexpected error", e);
+            log.error("Error while updating shift", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -126,12 +118,13 @@ public class ShiftServiceImpl implements ShiftService {
     }
 
     @Override
-    public ApiResponseDTO<ShiftResponseDTO> getById(Long id) {
+    public ApiResponseDTO<ShiftResponseDTO> getById(Long shiftId) {
 
-        log.info("<<Start>>getById endpoint called<<Start>>");
+        log.info("Fetching shift id={}", shiftId);
 
         try {
-            return repository.findById(id)
+            return repository.findById(shiftId)
+                    .filter(Shift::getIsActive)
                     .map(s -> new ApiResponseDTO<>(
                             mapper.toResponseDto(s),
                             "Shift found",
@@ -144,8 +137,9 @@ public class ShiftServiceImpl implements ShiftService {
                             HttpStatus.NOT_FOUND,
                             true
                     ));
+
         } catch (Exception e) {
-            log.error("getById unexpected error", e);
+            log.error("Error while fetching shift", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -156,28 +150,18 @@ public class ShiftServiceImpl implements ShiftService {
     }
 
     @Override
-    @CacheEvict(value = "shifts", allEntries = true)
-    public ApiResponseDTO<String> deleteById(Long id) {
+    public ApiResponseDTO<String> deleteById(Long shiftId) {
 
-        log.info("<<Start>>deleteById endpoint called<<Start>>");
+        log.info("Deleting shift id={}", shiftId);
 
         try {
-            Shift shift = repository.findById(id).orElse(null);
+            Shift shift = repository.findById(shiftId).orElse(null);
 
             if (shift == null) {
                 return new ApiResponseDTO<>(
                         null,
                         "Shift not found",
                         HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(shift.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Shift already deactivated",
-                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -193,7 +177,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
 
         } catch (Exception e) {
-            log.error("Error while deleting shift, id={}", id, e);
+            log.error("Error while deleting shift", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -204,10 +188,9 @@ public class ShiftServiceImpl implements ShiftService {
     }
 
     @Override
-    @Cacheable("shifts")
     public ApiResponseDTO<PagedResponse<ShiftResponseDTO>> getAllShifts() {
 
-        log.info("<<Start>>getAllShifts endpoint called<<Start>>");
+        log.info("Fetching all shifts");
 
         try {
             List<Shift> list = repository.findAll();
@@ -224,21 +207,14 @@ public class ShiftServiceImpl implements ShiftService {
             List<ShiftResponseDTO> response = mapper.toResponseDtoList(list);
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            response,
-                            0,
-                            response.size(),
-                            1,
-                            response.size(),
-                            true
-                    ),
+                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
                     "Shifts fetched successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("getAllShifts unexpected error", e);
+            log.error("Error while fetching shifts", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
