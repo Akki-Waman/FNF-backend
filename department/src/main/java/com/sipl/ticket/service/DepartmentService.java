@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface DepartmentService {
 
@@ -31,4 +33,7 @@ public interface DepartmentService {
     ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
             DepartmentSearchRequestDto requestDto
     );
+
+    void exportDepartmentsCsv(HttpServletResponse response);
+
 }

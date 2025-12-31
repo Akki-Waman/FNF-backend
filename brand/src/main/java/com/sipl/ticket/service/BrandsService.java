@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface BrandsService {
 
@@ -31,5 +33,7 @@ public interface BrandsService {
     ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(
             BrandSearchRequestDto requestDto
     );
+
+    void exportBrandsCsv(HttpServletResponse response);
 
 }
