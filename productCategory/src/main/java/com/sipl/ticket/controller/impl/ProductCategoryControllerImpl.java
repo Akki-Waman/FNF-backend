@@ -1,6 +1,6 @@
-package com.sipl.ticket.impl;
+package com.sipl.ticket.controller.impl;
 
-import com.sipl.ticket.ProductCategoryController;
+import com.sipl.ticket.controller.ProductCategoryController;
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;

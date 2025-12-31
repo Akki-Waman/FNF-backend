@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.TagsSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
+import com.sipl.ticket.core.helper.TagExcelGenerator;
 import com.sipl.ticket.core.mapper.TagsMapper;
 import com.sipl.ticket.service.TagsService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -323,4 +325,35 @@ public class TagsServiceImpl implements TagsService {
             );
         }
     }
+
+    @Override
+    public void exportTagsCsv(HttpServletResponse response) {
+
+        log.info("Exporting active tags to CSV");
+
+        try {
+            List<TagResponseDto> tags = repository.findAll()
+                    .stream()
+                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .map(t -> {
+                        TagResponseDto dto = new TagResponseDto();
+                        dto.setTagId(t.getTagId());
+                        dto.setTagName(t.getTagName());
+                        dto.setIsActive(t.getIsActive());
+                        return dto;
+                    })
+                    .collect(Collectors.toList()); // Java 8 safe
+
+            TagExcelGenerator.generateCsv(tags, response);
+
+            log.info("Tags CSV export completed successfully, totalRecords={}",
+                    tags.size());
+
+        } catch (Exception e) {
+            log.error("exportTagsCsv unexpected error", e);
+            throw new RuntimeException("Failed to export tags CSV", e);
+        }
+    }
+
+
 }

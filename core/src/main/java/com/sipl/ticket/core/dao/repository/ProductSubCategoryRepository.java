@@ -1,7 +1,9 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.ProductSubCategories;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +22,6 @@ public interface ProductSubCategoryRepository
     // optional & clean
     List<ProductSubCategories> findByIsActiveTrue();
 
-    Optional<ProductSubCategories> findByProductSubCategoryId(Long productSubCategoryId);
+
 }
 

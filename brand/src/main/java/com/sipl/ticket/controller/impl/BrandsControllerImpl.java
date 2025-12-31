@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -95,6 +96,17 @@ public class BrandsControllerImpl implements BrandsController {
                 brandsService.searchBrands(requestDto);
 
         return ResponseEntity.status(response.getStatus()).body(response);
+    }
+    @Override
+    public ResponseEntity<Void> exportBrandsCsv(HttpServletResponse response) {
+
+        log.info("<<Start>> exportBrandsCsv endpoint called <<Start>>");
+
+        brandsService.exportBrandsCsv(response);
+
+        log.info("<<End>> exportBrandsCsv endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 
 }
