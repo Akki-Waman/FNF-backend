@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -27,8 +28,8 @@ public class UsersResponseDTO{
     private Boolean isActive;
     private String createdBy;
     private LocalDate createdDate;
-    private LocalTime createdTime;
+    private LocalDateTime createdTime;
     private String modifiedBy;
     private LocalDate modifiedDate;
-    private LocalTime modifiedTime;
+    private LocalDateTime modifiedTime;
 }

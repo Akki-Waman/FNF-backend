@@ -11,7 +11,7 @@ public class TicketTagResponseDTO {
 
     private Long ticketTagId;
 
-    private TicketsResponseDTO tickets;
+    private TicketsResponseDTO ticket;
 
     private TagResponseDto tags;
 }
