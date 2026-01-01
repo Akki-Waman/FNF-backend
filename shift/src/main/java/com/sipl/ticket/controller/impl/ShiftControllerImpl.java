@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ShiftController;
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
+import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
@@ -77,5 +78,18 @@ public class ShiftControllerImpl implements ShiftController {
 
         return response;
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> searchShifts(
+            ShiftSearchRequestDto requestDto) {
+
+        log.info("Searching shifts with request: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<ShiftResponseDTO>> response =
+                shiftService.searchShifts(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 }
 

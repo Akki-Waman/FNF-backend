@@ -27,5 +27,10 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
 
     boolean existsByShiftNameIgnoreCaseAndIsActiveTrue(String shiftname);
+
+    Page<Shift> findByShiftId(
+            Long shiftId,
+            Pageable pageable
+    );
 }
 
