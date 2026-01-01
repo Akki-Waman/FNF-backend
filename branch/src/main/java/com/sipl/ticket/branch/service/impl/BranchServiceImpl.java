@@ -2,7 +2,12 @@ package com.sipl.ticket.branch.service.impl;
 
 import com.sipl.ticket.branch.service.BranchService;
 import com.sipl.ticket.core.dao.entity.Branches;
+import com.sipl.ticket.core.dao.entity.City;
+import com.sipl.ticket.core.dao.entity.Country;
+import com.sipl.ticket.core.dao.entity.State;
 import com.sipl.ticket.core.dao.repository.BranchRepository;
+import com.sipl.ticket.core.dao.repository.CountryRepository;
+import com.sipl.ticket.core.dao.repository.StateRepository;
 import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
@@ -29,6 +34,8 @@ public class BranchServiceImpl implements BranchService {
 
     private final BranchRepository repository;
     private final BranchMapper mapper;
+    private final CountryRepository countryRepository;
+    private final StateRepository stateRepository;
 
     @Override
     public ApiResponseDTO<BranchDto> saveBranch(BranchDto dto) {
@@ -42,8 +49,16 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
+        ApiResponseDTO<BranchDto> validationError =
+                validateCityStateCountry(dto.getCountry().getCountryId(), dto.getState().getStateId(), dto.getCity().getCityId());
+
+        if (validationError != null) {
+            return validationError;
+        }
+
         Branches branch = mapper.toEntity(dto);
         branch.setIsActive(true);
+        branch.setIsClient(false);
 
         Branches saved = repository.save(branch);
 
@@ -54,6 +69,35 @@ public class BranchServiceImpl implements BranchService {
                 false
         );
     }
+
+    private ApiResponseDTO<BranchDto> validateCityStateCountry(
+            Long countryId,
+            Long stateId,
+            Long cityId) {
+
+        Country country = countryRepository.findById(countryId).orElse(null);
+        if (country == null || Boolean.FALSE.equals(country.getIsActive())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Invalid country",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        State state = stateRepository.findById(stateId).orElse(null);
+        if (state == null || Boolean.FALSE.equals(state.getIsActive())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Invalid state",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+        return null;
+    }
+
+
 
     @Override
     public ApiResponseDTO<BranchDto> updateBranch(BranchDto dto) {

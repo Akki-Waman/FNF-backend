@@ -1,5 +1,8 @@
 package com.sipl.ticket.core.dto.response;
 
+import com.sipl.ticket.core.dao.entity.City;
+import com.sipl.ticket.core.dao.entity.Country;
+import com.sipl.ticket.core.dao.entity.State;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +23,11 @@ public class BranchDto extends AuditDto{
 
     private CompanyDto company;
 
-    private Integer countryId;
+    private CountryResponseDto country;
 
-    private Integer stateId;
+    private StateResponseDto state;
 
-    private Integer cityId;
+    private CityResponseDto city;
+
+    private Boolean isClient;
 }
