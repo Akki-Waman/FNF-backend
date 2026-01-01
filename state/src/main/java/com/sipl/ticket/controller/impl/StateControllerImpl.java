@@ -3,6 +3,7 @@ package com.sipl.ticket.controller.impl;
 import com.sipl.ticket.controller.StateController;
 import com.sipl.ticket.service.StateService;
 import com.sipl.ticket.core.dto.request.StateRequestDto;
+import com.sipl.ticket.core.dto.request.StateSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
@@ -31,7 +32,7 @@ public class StateControllerImpl implements StateController {
                 stateService.saveState(dto);
 
         log.info("<<End>> save State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class StateControllerImpl implements StateController {
                 stateService.updateState(dto);
 
         log.info("<<End>> update State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class StateControllerImpl implements StateController {
                 stateService.getById(stateId);
 
         log.info("<<End>> get State by id endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class StateControllerImpl implements StateController {
                 stateService.deleteById(stateId);
 
         log.info("<<End>> delete State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -82,8 +83,19 @@ public class StateControllerImpl implements StateController {
                 stateService.getAllStates();
 
         log.info("<<End>> get States endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> search(
+            @RequestBody StateSearchRequestDto dto) {
 
+        log.info("<<Start>> search State endpoint called <<Start>>");
+
+        ApiResponseDTO<PagedResponse<StateResponseDto>> response =
+                stateService.searchStates(dto);
+
+        log.info("<<End>> search State endpoint called <<End>>");
+        return ResponseEntity.ok(response);
+    }
 }
