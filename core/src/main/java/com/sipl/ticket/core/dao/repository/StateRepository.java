@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface StateRepository extends JpaRepository<State, Long> {
 
-
     boolean existsByStateNameIgnoreCase(String stateName);
 
     boolean existsByStateNameIgnoreCaseAndStateIdNot(
@@ -22,24 +21,19 @@ public interface StateRepository extends JpaRepository<State, Long> {
             Long stateId
     );
 
-
     List<State> findByIsActiveTrue();
-
 
     @Query("FROM State s WHERE s.stateId = :stateId")
     Optional<State> findByStateId(@Param("stateId") Long stateId);
-
 
     @Query(
             "SELECT s " +
                     "FROM State s " +
                     "WHERE s.isActive = true " +
-                    "AND (:stateId IS NULL OR s.stateId = :stateId) " +
-                    "AND (:countryId IS NULL OR s.country.countryId = :countryId)"
+                    "AND (:stateId IS NULL OR s.stateId = :stateId)"
     )
     Page<State> searchStates(
             @Param("stateId") Long stateId,
-            @Param("countryId") Long countryId,
             Pageable pageable
     );
 }

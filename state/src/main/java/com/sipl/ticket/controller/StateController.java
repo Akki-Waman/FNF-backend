@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.StateRequestDto;
+import com.sipl.ticket.core.dto.request.StateSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
@@ -37,6 +38,11 @@ public interface StateController {
     );
 
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll(); // PagedResponse removed
+    ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll();
 
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> search(
+            @RequestBody StateSearchRequestDto dto
+    );
 }
