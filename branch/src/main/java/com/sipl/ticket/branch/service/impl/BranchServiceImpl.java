@@ -1,13 +1,9 @@
 package com.sipl.ticket.branch.service.impl;
 
 import com.sipl.ticket.branch.service.BranchService;
-import com.sipl.ticket.core.dao.entity.Branches;
-import com.sipl.ticket.core.dao.entity.City;
-import com.sipl.ticket.core.dao.entity.Country;
-import com.sipl.ticket.core.dao.entity.State;
-import com.sipl.ticket.core.dao.repository.BranchRepository;
-import com.sipl.ticket.core.dao.repository.CountryRepository;
-import com.sipl.ticket.core.dao.repository.StateRepository;
+import com.sipl.ticket.core.dao.entity.*;
+import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.BranchRequestDto;
 import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
@@ -20,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,71 +33,94 @@ public class BranchServiceImpl implements BranchService {
     private final BranchMapper mapper;
     private final CountryRepository countryRepository;
     private final StateRepository stateRepository;
+    private final CityRepository cityRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
-    public ApiResponseDTO<BranchDto> saveBranch(BranchDto dto) {
+    public ApiResponseDTO<BranchDto> saveBranch(BranchRequestDto dto) {
+        try {
 
-        if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
+            if (repository.existsByEmailIgnoreCase(dto.getEmail())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Branch with email already exists",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
+            Branches branch = mapper.toEntity(dto);
+
+            ApiResponseDTO<BranchDto> validationError =
+                    validateAndSetRelations(branch, dto);
+
+            if (validationError != null) {
+                return validationError;
+            }
+
+            branch.setIsActive(true);
+            branch.setIsClient(false);
+
+            Branches saved = repository.save(branch);
+
+            return new ApiResponseDTO<>(
+                    mapper.toDto(saved),
+                    "Branch created successfully",
+                    HttpStatus.CREATED,
+                    false
+            );
+
+        } catch (Exception e) {
             return new ApiResponseDTO<>(
                     null,
-                    "Branch with email already exists",
-                    HttpStatus.CONFLICT,
+                    "Something went wrong while creating branch",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
         }
-
-        ApiResponseDTO<BranchDto> validationError =
-                validateCityStateCountry(dto.getCountry().getCountryId(), dto.getState().getStateId(), dto.getCity().getCityId());
-
-        if (validationError != null) {
-            return validationError;
-        }
-
-        Branches branch = mapper.toEntity(dto);
-        branch.setIsActive(true);
-        branch.setIsClient(false);
-
-        Branches saved = repository.save(branch);
-
-        return new ApiResponseDTO<>(
-                mapper.toDto(saved),
-                "Branch created successfully",
-                HttpStatus.CREATED,
-                false
-        );
     }
 
-    private ApiResponseDTO<BranchDto> validateCityStateCountry(
-            Long countryId,
-            Long stateId,
-            Long cityId) {
+    private ApiResponseDTO<BranchDto> validateAndSetRelations(
+            Branches branch,
+            BranchRequestDto dto) {
 
-        Country country = countryRepository.findById(countryId).orElse(null);
+        Country country = countryRepository.findById(dto.getCountryId()).orElse(null);
         if (country == null || Boolean.FALSE.equals(country.getIsActive())) {
             return new ApiResponseDTO<>(
-                    null,
-                    "Invalid country",
-                    HttpStatus.BAD_REQUEST,
-                    true
+                    null, "Invalid country", HttpStatus.BAD_REQUEST, true
             );
         }
 
-        State state = stateRepository.findById(stateId).orElse(null);
+        State state = stateRepository.findById(dto.getStateId()).orElse(null);
         if (state == null || Boolean.FALSE.equals(state.getIsActive())) {
             return new ApiResponseDTO<>(
-                    null,
-                    "Invalid state",
-                    HttpStatus.BAD_REQUEST,
-                    true
+                    null, "Invalid state", HttpStatus.BAD_REQUEST, true
             );
         }
+
+        City city = cityRepository.findById(dto.getCityId()).orElse(null);
+        if (city == null || Boolean.FALSE.equals(city.getIsActive())) {
+            return new ApiResponseDTO<>(
+                    null, "Invalid city", HttpStatus.BAD_REQUEST, true
+            );
+        }
+
+        Companies company = companyRepository.findById(dto.getCompanyId()).orElse(null);
+        if (company == null) {
+            return new ApiResponseDTO<>(
+                    null, "Invalid company", HttpStatus.BAD_REQUEST, true
+            );
+        }
+
+        branch.setCountry(country);
+        branch.setState(state);
+        branch.setCity(city);
+        branch.setCompany(company);
+
         return null;
     }
 
-
-
     @Override
-    public ApiResponseDTO<BranchDto> updateBranch(BranchDto dto) {
+    public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
         Branches branch = repository.findById(dto.getBranchId()).orElse(null);
 
@@ -124,13 +144,18 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
-        Branches updated = mapper.toEntity(dto);
-        updated.setIsActive(branch.getIsActive());
+        mapper.partialUpdate(dto, branch);
 
-        repository.save(updated);
+        ApiResponseDTO<BranchDto> validationError =
+                validateAndSetRelations(branch, dto);
+
+        if (validationError != null) {
+            return validationError;
+        }
+        Branches saved = repository.save(branch);
 
         return new ApiResponseDTO<>(
-                mapper.toDto(updated),
+                mapper.toDto(saved),
                 "Branch updated successfully",
                 HttpStatus.OK,
                 false
@@ -230,4 +255,45 @@ public class BranchServiceImpl implements BranchService {
                 false
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponseDTO<BranchDto> getAllBranches() {
+
+        try {
+            List<BranchDto> list = repository
+                    .findAll(Sort.by(Sort.Direction.DESC, "branchId"))
+                    .stream()
+                    .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            if (list.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No branches found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            return new ApiResponseDTO<>(
+                    list,
+                    HttpStatus.OK,
+                    "Branches fetched successfully",
+                    false,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("getAllBranches error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 }
