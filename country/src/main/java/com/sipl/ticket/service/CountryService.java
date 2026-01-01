@@ -28,4 +28,9 @@ public interface CountryService {
     ApiResponseDTO<String> deleteCountry(
             Long countryId
     );
+    /* -------- SEARCH -------- */
+    ApiResponseDTO<List<CountryResponseDto>> searchCountries(
+            String name,
+            Boolean isForeign
+    );
 }

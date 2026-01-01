@@ -40,20 +40,20 @@ public class CountryServiceImpl implements CountryService {
             if (repository.existsByCountryNameIgnoreCase(name)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Country '" + name + "' already exists.",
+                        "Country '" + name + "' already exists",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
-            Country country = new Country();
+            Country country = mapper.toEntity(dto);   // ✅ FIX
             country.setCountryName(name);
             country.setIsActive(true);
 
-            Country savedCountry = repository.save(country);
+            Country saved = repository.save(country);
 
             return new ApiResponseDTO<>(
-                    mapper.toDto(savedCountry),
+                    mapper.toDto(saved),
                     "Country created successfully",
                     HttpStatus.CREATED,
                     false
@@ -76,16 +76,14 @@ public class CountryServiceImpl implements CountryService {
             Long countryId,
             CountryRequestDto dto) {
 
-        log.info("Updating country, id={}, name={}",
-                countryId, dto.getCountryName());
+        log.info("START :: updateCountry | countryId={}, payload={}", countryId, dto);
 
         try {
-            if (dto == null || dto.getCountryName() == null ||
-                    dto.getCountryName().trim().isEmpty()) {
-
+            if (countryId == null) {
+                log.info("END :: updateCountry | countryId is null");
                 return new ApiResponseDTO<>(
                         null,
-                        "Country name is required",
+                        "Country id is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -94,6 +92,7 @@ public class CountryServiceImpl implements CountryService {
             Country country = repository.findById(countryId).orElse(null);
 
             if (country == null) {
+                log.info("END :: updateCountry | Country not found");
                 return new ApiResponseDTO<>(
                         null,
                         "Country not found",
@@ -102,30 +101,42 @@ public class CountryServiceImpl implements CountryService {
                 );
             }
 
-            if (Boolean.FALSE.equals(country.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive country cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
+            /* -------- Update Country Name -------- */
+            if (dto.getCountryName() != null && !dto.getCountryName().trim().isEmpty()) {
+
+                String name = dto.getCountryName().trim();
+
+                if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(name, countryId)) {
+                    log.info("END :: updateCountry | Duplicate country name={}", name);
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Country '" + name + "' already exists",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                country.setCountryName(name);
             }
 
-            String name = dto.getCountryName().trim();
-
-            if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(
-                    name, countryId)) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Country '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
-                );
+            /* -------- Update isActive -------- */
+            if (dto.getIsActive() != null) {
+                country.setIsActive(dto.getIsActive());
             }
 
-            country.setCountryName(name);
+            /* -------- Update isForeign -------- */
+            if (dto.getIsForeign() != null) {
+                country.setIsForeign(dto.getIsForeign());
+            }
+
+            /* -------- Update taxType -------- */
+            if (dto.getTaxType() != null && !dto.getTaxType().trim().isEmpty()) {
+                country.setTaxType(dto.getTaxType().trim());
+            }
+
             Country updatedCountry = repository.save(country);
+
+            log.info("END :: updateCountry | Updated successfully | countryId={}", countryId);
 
             return new ApiResponseDTO<>(
                     mapper.toDto(updatedCountry),
@@ -135,7 +146,8 @@ public class CountryServiceImpl implements CountryService {
             );
 
         } catch (Exception e) {
-            log.error("updateCountry unexpected error", e);
+            log.error("ERROR :: updateCountry | countryId={}", countryId, e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -144,6 +156,7 @@ public class CountryServiceImpl implements CountryService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<CountryResponseDto> getCountryById(
@@ -266,4 +279,68 @@ public class CountryServiceImpl implements CountryService {
             );
         }
     }
+    @Override
+    public ApiResponseDTO<List<CountryResponseDto>> searchCountries(
+            String name,
+            Boolean isForeign) {
+
+        log.info("START :: searchCountries | name={}, isForeign={}", name, isForeign);
+
+        try {
+            List<Country> result;
+
+            if (name != null && !name.trim().isEmpty()) {
+                log.debug("Searching by country name");
+                result = repository.findByCountryNameContainingIgnoreCaseAndIsActive(
+                        name.trim(), true);
+
+            } else if (isForeign != null) {
+                log.debug("Searching by isForeign flag");
+                result = repository.findByIsForeignAndIsActive(isForeign, true);
+
+            } else {
+                log.debug("Fetching all active countries");
+                result = repository.findAll()
+                        .stream()
+                        .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                        .collect(Collectors.toList());
+            }
+
+            if (result.isEmpty()) {
+                log.info("END :: searchCountries | No countries found");
+                return new ApiResponseDTO<>(
+                        null,
+                        "No countries found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<CountryResponseDto> response = result.stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            log.info("END :: searchCountries | Records found={}", response.size());
+
+            return new ApiResponseDTO<>(
+                    response,
+                    "Countries fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("ERROR :: searchCountries | name={}, isForeign={}",
+                    name, isForeign, e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+
 }

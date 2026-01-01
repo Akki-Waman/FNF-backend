@@ -41,4 +41,10 @@ public interface CountryController {
     ResponseEntity<ApiResponseDTO<String>> deleteCountry(
             @PathVariable Long countryId
     );
+    @GetMapping("/search")
+    ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> searchCountries(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean isForeign
+    );
+
 }

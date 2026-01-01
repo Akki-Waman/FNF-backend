@@ -85,4 +85,18 @@ public class CountryControllerImpl implements CountryController {
         log.info("<<End>>deleteCountry endpoint called<<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    @Override
+    public ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> searchCountries(
+            String name,
+            Boolean isForeign) {
+
+        log.info("<<Start>> searchCountries");
+
+        ApiResponseDTO<List<CountryResponseDto>> response =
+                countryService.searchCountries(name, isForeign);
+
+        log.info("<<End>> searchCountries");
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 }
