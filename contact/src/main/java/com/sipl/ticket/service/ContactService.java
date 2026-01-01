@@ -26,4 +26,14 @@ public interface ContactService {
     );
 
     ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts();
+
+    /* ================= SEARCH ================= */
+
+   /* ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
+            String contactName,
+            String emailAddress,
+            String mobileNo,
+            Long departmentId,
+            Boolean isActive
+    ); */
 }

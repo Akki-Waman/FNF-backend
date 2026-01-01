@@ -275,4 +275,65 @@ public class ContactServiceImpl implements ContactService {
             );
         }
     }
+    /* ================= SEARCH ================= */
+
+   /* @Override
+    public ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
+            String contactName,
+            String emailAddress,
+            String mobileNo,
+            Long departmentId,
+            Boolean isActive
+    ) {
+
+        log.info("<<Start>> searchContacts called <<Start>>");
+
+        try {
+            List<Contact> contacts = contactRepository.searchContacts(
+                    contactName,
+                    emailAddress,
+                    mobileNo,
+                    departmentId,
+                    isActive
+            );
+
+            if (contacts.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No contacts found matching search criteria",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<ContactResponseDto> response =
+                    contactMapper.toResponseDtoList(contacts);
+
+            return new ApiResponseDTO<>(
+                    new PagedResponse<>(
+                            response,
+                            0,
+                            response.size(),
+                            1,
+                            response.size(),
+                            true
+                    ),
+                    "Contacts searched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchContacts error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        } finally {
+            log.info("<<End>> searchContacts called <<End>>");
+        }
+    }*/
+
 }

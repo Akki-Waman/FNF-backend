@@ -65,4 +65,30 @@ public class ContactControllerImpl implements ContactController {
         log.info("<<End>> getAllContacts endpoint called <<End>>");
         return response;
     }
+
+   /* @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
+            String contactName,
+            String emailAddress,
+            String mobileNo,
+            Long departmentId,
+            Boolean isActive
+    ) {
+        log.info("<<Start>> searchContacts endpoint called <<Start>>");
+
+        ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> response =
+                ResponseEntity.ok(
+                        contactService.searchContacts(
+                                contactName,
+                                emailAddress,
+                                mobileNo,
+                                departmentId,
+                                isActive
+                        )
+                );
+
+        log.info("<<End>> searchContacts endpoint called <<End>>");
+        return response;
+    } */
+
 }
