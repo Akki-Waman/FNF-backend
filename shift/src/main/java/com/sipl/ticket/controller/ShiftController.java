@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
+import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
@@ -34,6 +35,12 @@ public interface ShiftController {
             @PathVariable Long shiftId
     );
 
-    @GetMapping("/get-all")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> getAllShifts();
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> searchShifts(
+            @RequestBody ShiftSearchRequestDto requestDto
+    );
+
 }

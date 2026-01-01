@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
+import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
@@ -26,4 +27,9 @@ public interface ShiftService {
     );
 
     ApiResponseDTO<PagedResponse<ShiftResponseDTO>> getAllShifts();
+
+    ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(
+            ShiftSearchRequestDto requestDto
+    );
+
 }

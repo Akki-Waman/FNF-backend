@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
+import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -34,6 +35,12 @@ public interface LocationController {
             @PathVariable Long locationId
     );
 
-    @GetMapping("/getAll")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations();
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> searchLocations(
+            @RequestBody LocationSearchRequestDTO requestDto
+    );
+
 }

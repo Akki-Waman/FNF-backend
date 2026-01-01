@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
+import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -31,4 +32,9 @@ public interface LocationService {
 
     /* ===================== GET ALL ===================== */
     ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations();
+
+    ApiResponseDTO<PagedResponse<LocationResponseDTO>> searchLocations(
+            LocationSearchRequestDTO requestDto
+    );
+
 }
