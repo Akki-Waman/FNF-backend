@@ -5,6 +5,9 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,10 +44,12 @@ public interface CountryController {
     ResponseEntity<ApiResponseDTO<String>> deleteCountry(
             @PathVariable Long countryId
     );
-    @GetMapping("/search")
-    ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> searchCountries(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean isForeign
-    );
 
+    @GetMapping("/search")
+    ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean isForeign,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    );
 }

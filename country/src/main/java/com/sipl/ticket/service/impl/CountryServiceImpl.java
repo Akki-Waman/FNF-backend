@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -279,35 +281,36 @@ public class CountryServiceImpl implements CountryService {
             );
         }
     }
-    @Override
-    public ApiResponseDTO<List<CountryResponseDto>> searchCountries(
-            String name,
-            Boolean isForeign) {
+    /*---------Search countries with pagination-----*/
 
-        log.info("START :: searchCountries | name={}, isForeign={}", name, isForeign);
+    @Override
+    public ApiResponseDTO<Page<CountryResponseDto>> searchCountries(
+            String name,
+            Boolean isForeign,
+            Pageable pageable) {
+
+        log.info("START :: searchCountries | name={}, isForeign={}, page={}, size={}",
+                name, isForeign, pageable.getPageNumber(), pageable.getPageSize());
 
         try {
-            List<Country> result;
+            Page<Country> pageResult;
 
             if (name != null && !name.trim().isEmpty()) {
-                log.debug("Searching by country name");
-                result = repository.findByCountryNameContainingIgnoreCaseAndIsActive(
-                        name.trim(), true);
+                pageResult = repository
+                        .findByCountryNameContainingIgnoreCaseAndIsActive(
+                                name.trim(), true, pageable);
 
             } else if (isForeign != null) {
-                log.debug("Searching by isForeign flag");
-                result = repository.findByIsForeignAndIsActive(isForeign, true);
+                pageResult = repository
+                        .findByIsForeignAndIsActive(
+                                isForeign, true, pageable);
 
             } else {
-                log.debug("Fetching all active countries");
-                result = repository.findAll()
-                        .stream()
-                        .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
-                        .collect(Collectors.toList());
+                pageResult = repository.findByIsActive(true, pageable);
             }
 
-            if (result.isEmpty()) {
-                log.info("END :: searchCountries | No countries found");
+            if (pageResult.isEmpty()) {
+                log.info("END :: searchCountries | No records found");
                 return new ApiResponseDTO<>(
                         null,
                         "No countries found",
@@ -316,23 +319,21 @@ public class CountryServiceImpl implements CountryService {
                 );
             }
 
-            List<CountryResponseDto> response = result.stream()
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            Page<CountryResponseDto> responsePage =
+                    pageResult.map(mapper::toDto);
 
-            log.info("END :: searchCountries | Records found={}", response.size());
+            log.info("END :: searchCountries | totalElements={}, totalPages={}",
+                    responsePage.getTotalElements(), responsePage.getTotalPages());
 
             return new ApiResponseDTO<>(
-                    response,
+                    responsePage,
                     "Countries fetched successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("ERROR :: searchCountries | name={}, isForeign={}",
-                    name, isForeign, e);
-
+            log.error("ERROR :: searchCountries", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -341,6 +342,8 @@ public class CountryServiceImpl implements CountryService {
             );
         }
     }
+
+
 
 
 }
