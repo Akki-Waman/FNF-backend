@@ -294,9 +294,7 @@ public class LocationServiceImpl implements LocationService {
 
             Page<Locations> pageResult;
 
-            // ✅ IMPORTANT FIX HERE
             if (dto.getLocationId() != null) {
-                // locationId दिला असेल तर
                 pageResult = repository.findByLocationId(
                         dto.getLocationId(),
                         pageable
