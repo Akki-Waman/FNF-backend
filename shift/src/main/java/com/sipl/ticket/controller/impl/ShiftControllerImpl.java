@@ -83,13 +83,18 @@ public class ShiftControllerImpl implements ShiftController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> searchShifts(
             ShiftSearchRequestDto requestDto) {
 
-        log.info("Searching shifts with request: {}", requestDto);
+        log.info("<<Start>>searchShifts endpoint called<<Start>>");
 
-        ApiResponseDTO<PagedResponse<ShiftResponseDTO>> response =
-                shiftService.searchShifts(requestDto);
+        ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> response =
+                ResponseEntity.ok(
+                        shiftService.searchShifts(requestDto)
+                );
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        log.info("<<End>>searchShifts endpoint called<<End>>");
+
+        return response;
     }
+
 
 }
 

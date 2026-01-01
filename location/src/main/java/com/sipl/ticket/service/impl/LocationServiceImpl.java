@@ -292,17 +292,11 @@ public class LocationServiceImpl implements LocationService {
                     sort
             );
 
-            Page<Locations> pageResult;
-
-            if (dto.getLocationId() != null) {
-                pageResult = repository.findByLocationId(
-                        dto.getLocationId(),
-                        pageable
-                );
-            } else {
-                // locationId नसेल तर ALL locations
-                pageResult = repository.findAll(pageable);
-            }
+            Page<Locations> pageResult =
+                    repository.searchLocations(
+                            dto.getLocationId(),
+                            pageable
+                    );
 
             if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -345,6 +339,7 @@ public class LocationServiceImpl implements LocationService {
             );
         }
     }
+
 
 
 }

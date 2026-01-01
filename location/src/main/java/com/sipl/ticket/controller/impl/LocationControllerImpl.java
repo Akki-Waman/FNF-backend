@@ -97,12 +97,17 @@ public class LocationControllerImpl implements LocationController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> searchLocations(
             LocationSearchRequestDTO requestDto) {
 
-        log.info("Searching locations with request: {}", requestDto);
+        log.info("<<Start>>searchLocations endpoint called<<Start>>");
 
-        ApiResponseDTO<PagedResponse<LocationResponseDTO>> response =
-                locationService.searchLocations(requestDto);
+        ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> response =
+                ResponseEntity.ok(
+                        locationService.searchLocations(requestDto)
+                );
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        log.info("<<End>>searchLocations endpoint called<<End>>");
+
+        return response;
     }
+
 
 }
