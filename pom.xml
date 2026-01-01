@@ -12,7 +12,6 @@
 	<modules>
 
 		<module>app</module>
-		<module>ticket</module>
 		<module>core</module>
 		<module>master</module>
 		<module>faq</module>
@@ -35,10 +34,9 @@
         <module>location</module>
         <module>tags</module>
         <module>branch</module>
-        <module>city</module>
-		<module>country</module>
-		<module>state</module>
-
+        <module>state</module>
+        <module>country</module>
+		<module>city</module>
 
 	</modules>
 
@@ -169,21 +167,9 @@
             </dependency>
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
-                <artifactId>city</artifactId>
+                <artifactId>state</artifactId>
                 <version>${project.version}</version>
             </dependency>
-			<dependency>
-				<groupId>com.sipl.ticket</groupId>
-				<artifactId>ticket</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sipl.ticket</groupId>
-				<artifactId>state</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
-
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>clientProducts</artifactId>
@@ -240,10 +226,28 @@
 			</dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
+				<artifactId>city</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>ticket</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>state</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
 				<artifactId>country</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-            <dependency>
+
+			<dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>android</artifactId>
                 <version>${project.version}</version>
