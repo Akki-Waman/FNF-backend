@@ -32,7 +32,7 @@ public class StateControllerImpl implements StateController {
                 stateService.saveState(dto);
 
         log.info("<<End>> save State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class StateControllerImpl implements StateController {
                 stateService.updateState(dto);
 
         log.info("<<End>> update State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class StateControllerImpl implements StateController {
                 stateService.getById(stateId);
 
         log.info("<<End>> get State by id endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class StateControllerImpl implements StateController {
                 stateService.deleteById(stateId);
 
         log.info("<<End>> delete State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -83,9 +83,8 @@ public class StateControllerImpl implements StateController {
                 stateService.getAllStates();
 
         log.info("<<End>> get States endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
-
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> search(
@@ -97,6 +96,6 @@ public class StateControllerImpl implements StateController {
                 stateService.searchStates(dto);
 
         log.info("<<End>> search State endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 }

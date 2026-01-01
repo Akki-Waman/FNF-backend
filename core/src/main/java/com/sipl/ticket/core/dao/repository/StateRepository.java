@@ -23,14 +23,12 @@ public interface StateRepository extends JpaRepository<State, Long> {
 
     List<State> findByIsActiveTrue();
 
-    @Query("FROM State s WHERE s.stateId = :stateId")
-    Optional<State> findByStateId(@Param("stateId") Long stateId);
-
     @Query(
             "SELECT s " +
                     "FROM State s " +
                     "WHERE s.isActive = true " +
-                    "AND (:stateId IS NULL OR s.stateId = :stateId)"
+                    "AND (:stateId IS NULL OR s.stateId = :stateId) " +
+                    "ORDER BY s.stateId DESC"
     )
     Page<State> searchStates(
             @Param("stateId") Long stateId,

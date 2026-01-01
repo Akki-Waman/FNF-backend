@@ -172,7 +172,6 @@ public class StateServiceImpl implements StateService {
         }
     }
 
-    // 🔥 NEW SEARCH METHOD ADD
     @Override
     public ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(StateSearchRequestDto dto) {
         log.info("<<Start>> search State service called <<Start>>");
