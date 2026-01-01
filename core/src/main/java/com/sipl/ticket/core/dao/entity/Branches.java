@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Data
 @Table(name = "branches")
 @Audited
-public class Branches extends AuditEntity{
+public class Branches extends AuditEntity {
 
 
     @Id
@@ -37,9 +37,20 @@ public class Branches extends AuditEntity{
     @JsonIgnore
     private Companies company;
 
-    private Integer countryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id", nullable = false)
+    @JsonIgnore
+    private Country country;
 
-    private Integer stateId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id", nullable = false)
+    @JsonIgnore
+    private State state;
 
-    private Integer cityId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id", nullable = false)
+    @JsonIgnore
+    private City city;
+
+    private Boolean isClient;
 }
