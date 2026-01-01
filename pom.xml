@@ -229,7 +229,25 @@
 				<artifactId>city</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-            <dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>ticket</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>state</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>country</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>android</artifactId>
                 <version>${project.version}</version>
