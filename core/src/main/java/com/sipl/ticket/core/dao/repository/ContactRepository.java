@@ -31,7 +31,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
     /* ================= SEARCH ================= */
 
-   /* @Query("SELECT c FROM Contact c"+
+    /*@Query("SELECT c FROM Contact c"+
         "WHERE (:contactName IS NULL OR LOWER(c.contactName) LIKE LOWER(CONCAT('%', :contactName, '%')))"+
           "AND (:emailAddress IS NULL OR LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :emailAddress, '%')))"+
           "AND (:mobileNo IS NULL OR c.mobileNo LIKE CONCAT('%', :mobileNo, '%'))"+
