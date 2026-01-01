@@ -35,7 +35,7 @@ public interface LocationController {
             @PathVariable Long locationId
     );
 
-    @GetMapping("/getAll")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations();
 
     @PostMapping("/search")

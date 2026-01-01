@@ -35,7 +35,7 @@ public interface ShiftController {
             @PathVariable Long shiftId
     );
 
-    @GetMapping("/get-all")
+    @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> getAllShifts();
 
     @PostMapping("/search")
