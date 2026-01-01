@@ -3,10 +3,12 @@ package com.sipl.ticket.core.util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -20,53 +22,55 @@ public class TicketFileUploadUtil {
     private static final String DATE_FORMAT_PATTERN = "yyyy_MM_dd_HHmmss";
 
     public String saveFile(
-            MultipartFile file,
+            byte[] fileBytes,
+            String originalFileName,
             Long uniqueId,
-            String baseFileName,
-            String moduleName) throws IOException {
+            String moduleName,
+            String name
+    ) throws IOException {
 
-        validateInputs(file, uniqueId, baseFileName);
+        validateInputs(fileBytes, uniqueId, originalFileName);
 
-        // 1️⃣ Ensure base path exists
-        File baseDir = new File(filePath);
-        if (!baseDir.exists() && !baseDir.mkdirs()) {
-            throw new IOException("Failed to create base upload directory: " + filePath);
-        }
+        // 1️⃣ Ensure base/module/id directory exists
+        String folderPath = createUserFolder(uniqueId, moduleName);
 
-        // 2️⃣ Sanitize filename (VERY IMPORTANT)
+        // 2️⃣ Sanitize filename
+        String baseFileName = extractBaseName(originalFileName);
         String safeBaseFileName = baseFileName
                 .replaceAll("[^a-zA-Z0-9-_]", "_")
                 .replaceAll("_+", "_");
 
-        // 3️⃣ Extract extension safely
-        String originalFileName = file.getOriginalFilename();
-        String extension = "";
+        // 3️⃣ Extract extension
+        String extension = extractExtension(originalFileName);
 
-        if (originalFileName != null && originalFileName.contains(".")) {
-            extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        }
+        // 4️⃣ Generate unique filename
+        String destFileName =
+                generateUniqueFilename(safeBaseFileName, extension, folderPath);
 
-        log.info("Uploading file: {}, size: {}", originalFileName, file.getSize());
+        // 5️⃣ Write file using bytes (ONLY ONCE)
+        Path destination = Paths.get(folderPath, destFileName);
+        Files.write(destination, fileBytes);
 
-        // 4️⃣ Create module/ID folder
-        String folderPath = createUserFolder(uniqueId, moduleName);
+        log.info("File saved successfully at {}", destination.toAbsolutePath());
 
-        // 5️⃣ Generate unique filename
-        String destFileName = generateUniqueFilename(safeBaseFileName, extension, folderPath);
-
-        // 6️⃣ Save file
-        File destFile = new File(folderPath, destFileName);
-        file.transferTo(destFile);
-
-        log.info("File saved successfully at {}", destFile.getAbsolutePath());
-
-        // 7️⃣ Return relative path
-        return moduleName + "/" + uniqueId + "/" + destFileName;
+        // ✅ 6️⃣ Return ABSOLUTE path (for DMS upload)
+        return destination.toAbsolutePath().toString();
     }
 
-    private void validateInputs(MultipartFile file, Long uniqueId, String fileName) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be null or empty.");
+
+    private String extractBaseName(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex > 0) ? fileName.substring(0, dotIndex) : fileName;
+    }
+
+    private String extractExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex > 0) ? fileName.substring(dotIndex) : "";
+    }
+
+    private void validateInputs(byte[] fileBytes, Long uniqueId, String fileName) {
+        if (fileBytes == null || fileBytes.length == 0) {
+            throw new IllegalArgumentException("File bytes cannot be null or empty.");
         }
         if (uniqueId == null) {
             throw new IllegalArgumentException("Unique ID cannot be null.");
@@ -75,6 +79,7 @@ public class TicketFileUploadUtil {
             throw new IllegalArgumentException("File name cannot be null or empty.");
         }
     }
+
 
     private String createUserFolder(Long uniqueId, String moduleName) throws IOException {
         String userFolderPath =

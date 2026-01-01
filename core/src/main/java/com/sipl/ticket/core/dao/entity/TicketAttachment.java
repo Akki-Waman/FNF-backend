@@ -44,4 +44,8 @@ public class TicketAttachment {
 
     @Column(name = "uploaded_on", nullable = false)
     private LocalDateTime uploadedOn;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "document_id")
+    private DmsDocument dmsDocument;
 }
