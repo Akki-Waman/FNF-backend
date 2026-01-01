@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
+import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
@@ -41,4 +42,9 @@ public interface ServiceController {
 
     @GetMapping("/export")
     ResponseEntity<Void> exportServicesExcel(HttpServletResponse response);
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> searchServices(
+            @RequestBody ServiceSearchRequestDto requestDto
+    );
 }

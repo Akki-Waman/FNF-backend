@@ -26,4 +26,6 @@ public interface ServiceMapper {
     );
 
     List<ServiceResponseDTO> toResponseDtoList(List<ServiceEntity> services);
+
+    List<ServiceResponseDTO> mapServicesDropListToDtoList(List<ServiceEntity> content);
 }

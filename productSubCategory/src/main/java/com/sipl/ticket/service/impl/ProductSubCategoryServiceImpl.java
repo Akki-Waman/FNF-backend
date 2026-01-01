@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dao.entity.ProductSubCategories;
 import com.sipl.ticket.core.dao.repository.ProductCategoryRepository;
 import com.sipl.ticket.core.dao.repository.ProductSubCategoryRepository;
 import com.sipl.ticket.core.dto.request.ProductSubCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductSubCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
@@ -15,6 +16,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -298,6 +303,7 @@ public class ProductSubCategoryServiceImpl
             );
         }
     }
+
     @Override
     public void exportProductSubCategoriesExcel(
             HttpServletResponse response) {
@@ -328,4 +334,59 @@ public class ProductSubCategoryServiceImpl
             );
         }
     }
-}
+        @Override
+        public ApiResponseDTO<PagedResponse<ProductSubCategoryDto>>
+        searchProductSubCategories(
+                ProductSubCategorySearchRequestDto dto) {
+
+            try {
+                Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                        ? Sort.by(dto.getSortBy()).ascending()
+                        : Sort.by(dto.getSortBy()).descending();
+
+                Pageable pageable = PageRequest.of(
+                        dto.getPage(),
+                        dto.getSize(),
+                        sort
+                );
+
+                Page<ProductSubCategories> pageResult =
+                        repository.searchByProductSubCategoryId(
+                                dto.getProductSubCategoryId(),
+                                pageable
+                        );
+
+                if (pageResult.isEmpty()) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            "No product sub categories found",
+                            HttpStatus.NOT_FOUND,
+                            true
+                    );
+                }
+
+                return new ApiResponseDTO<>(
+                        new PagedResponse<>(
+                                mapper.toDtoList(pageResult.getContent()),
+                                pageResult.getNumber(),
+                                pageResult.getTotalElements(),
+                                pageResult.getTotalPages(),
+                                pageResult.getSize(),
+                                pageResult.isLast()
+                        ),
+                        "Product sub categories fetched successfully",
+                        HttpStatus.OK,
+                        false
+                );
+
+            } catch (Exception e) {
+                log.error("searchProductSubCategories error", e);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Internal server error",
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        true
+                );
+            }
+        }
+    }

@@ -26,4 +26,6 @@ public interface ProductSubCategoryMapper extends AuditEntityMapper {
 
     List<ProductSubCategoryDto> toResponseDtoList(List<ProductSubCategories> entities);
 
+    List<ProductSubCategoryDto> toDtoList(List<ProductSubCategories> content);
+
 }

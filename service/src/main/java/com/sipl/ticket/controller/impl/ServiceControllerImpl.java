@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ServiceController;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
+import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
@@ -94,5 +95,17 @@ public class ServiceControllerImpl implements ServiceController {
         log.info("<<End>> exportServicesExcel endpoint called <<End>>");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> searchServices(
+            @RequestBody ServiceSearchRequestDto requestDto) {
+
+        log.info("Searching services with request: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<ServiceResponseDTO>> response =
+                serviceService.searchServices(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }
