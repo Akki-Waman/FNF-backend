@@ -1,11 +1,14 @@
 package com.sipl.ticket.core.dao.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
 
+@Entity
+@Data
 @Table(name = "cities")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
