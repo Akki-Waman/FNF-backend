@@ -293,21 +293,12 @@ public class CountryServiceImpl implements CountryService {
                 name, isForeign, pageable.getPageNumber(), pageable.getPageSize());
 
         try {
-            Page<Country> pageResult;
-
-            if (name != null && !name.trim().isEmpty()) {
-                pageResult = repository
-                        .findByCountryNameContainingIgnoreCaseAndIsActive(
-                                name.trim(), true, pageable);
-
-            } else if (isForeign != null) {
-                pageResult = repository
-                        .findByIsForeignAndIsActive(
-                                isForeign, true, pageable);
-
-            } else {
-                pageResult = repository.findByIsActive(true, pageable);
-            }
+            Page<Country> pageResult =
+                    repository.searchCountries(
+                            (name != null && !name.trim().isEmpty()) ? name.trim() : null,
+                            isForeign,
+                            pageable
+                    );
 
             if (pageResult.isEmpty()) {
                 log.info("END :: searchCountries | No records found");
@@ -323,7 +314,8 @@ public class CountryServiceImpl implements CountryService {
                     pageResult.map(mapper::toDto);
 
             log.info("END :: searchCountries | totalElements={}, totalPages={}",
-                    responsePage.getTotalElements(), responsePage.getTotalPages());
+                    responsePage.getTotalElements(),
+                    responsePage.getTotalPages());
 
             return new ApiResponseDTO<>(
                     responsePage,
@@ -342,6 +334,7 @@ public class CountryServiceImpl implements CountryService {
             );
         }
     }
+
 
 
 
