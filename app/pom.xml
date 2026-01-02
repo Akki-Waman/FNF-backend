@@ -178,6 +178,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>ticket</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>task</artifactId>
+        </dependency>
 
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->

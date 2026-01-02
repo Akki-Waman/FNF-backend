@@ -37,9 +37,10 @@
         <module>state</module>
         <module>country</module>
 		<module>city</module>
-        <module>ticket</module>
+        <module>task</module>
+		<module>ticket</module>
 
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -320,6 +321,11 @@
                 <artifactId>ticket</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>task</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>
