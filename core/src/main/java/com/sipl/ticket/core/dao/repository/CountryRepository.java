@@ -25,12 +25,12 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
 
 
     @Query("SELECT c FROM Country c " +
-            "WHERE (:countryId IS NULL OR c.id = :countryId) " +
+            "WHERE (:countryId IS NULL OR c.countryId = :countryId) " +
             "AND (:countryName IS NULL OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :countryName, '%'))) " +
             "AND (:taxType IS NULL OR c.taxType = :taxType) " +
             "AND (:isForeign IS NULL OR c.isForeign = :isForeign) " +
             "AND (:isActive IS NULL OR c.isActive = :isActive) " +
-            "ORDER BY c.id DESC")
+            "ORDER BY c.countryId DESC")
     Page<Country> searchCountries(
             @Param("countryId") Long countryId,
             @Param("countryName") String countryName,

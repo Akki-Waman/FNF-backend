@@ -280,7 +280,7 @@ public class CountryServiceImpl implements CountryService {
 
 
     @Override
-    @Cacheable(value = "countrySearchCache", key = "#requestDto")
+    //@Cacheable(value = "countrySearchCache", key = "#requestDto")
     public ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
             CountrySearchRequestDto requestDto) {
 
