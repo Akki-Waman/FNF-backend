@@ -41,6 +41,6 @@ public class DmsDocument {
     @Column(name = "content_hash")
     private String contentHash;
 
-    @Column(name = "is_deleted")
+    @Column(name = "deleted")
     private Boolean isDeleted = false;
 }
