@@ -32,7 +32,7 @@ public class BrandsControllerImpl implements BrandsController {
         ApiResponseDTO<BrandDto> response = brandsService.saveBrand(dto);
 
         log.info("<<End>>saveBrand endpoint called<<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BrandsControllerImpl implements BrandsController {
         ApiResponseDTO<PagedResponse<BrandDto>> response =
                 brandsService.searchBrands(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
     @Override
     public ResponseEntity<Void> exportBrandsCsv(HttpServletResponse response) {
