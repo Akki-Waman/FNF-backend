@@ -53,12 +53,12 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> getById(
             Long id) {
 
-        log.info("<<Start>> getProductSubCategoryById <<Start>>");
+        log.info("<<Start>> getById <<Start>>");
 
         ApiResponseDTO<ProductSubCategoryDto> response =
                 productSubCategoryService.getById(id);
 
-        log.info("<<End>> getProductSubCategoryById <<End>>");
+        log.info("<<End>> getById <<End>>");
         return ResponseEntity.ok(response);
     }
 
@@ -66,12 +66,12 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long id) {
 
-        log.info("<<Start>> deleteProductSubCategory <<Start>>");
+        log.info("<<Start>> deleteById <<Start>>");
 
         ApiResponseDTO<String> response =
                 productSubCategoryService.deleteById(id);
 
-        log.info("<<End>> deleteProductSubCategory <<End>>");
+        log.info("<<End>> deleteById <<End>>");
         return ResponseEntity.ok(response);
     }
 

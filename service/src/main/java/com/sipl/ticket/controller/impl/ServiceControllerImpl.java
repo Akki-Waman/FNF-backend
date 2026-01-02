@@ -53,12 +53,12 @@ public class ServiceControllerImpl implements ServiceController {
     public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getById(
             Long serviceId) {
 
-        log.info("<<Start>> getServiceById <<Start>>");
+        log.info("<<Start>> getById <<Start>>");
 
         ApiResponseDTO<ServiceResponseDTO> response =
                 serviceService.getById(serviceId);
 
-        log.info("<<End>> getServiceById <<End>>");
+        log.info("<<End>> getById <<End>>");
         return ResponseEntity.ok(response);
     }
 
@@ -66,12 +66,12 @@ public class ServiceControllerImpl implements ServiceController {
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long serviceId) {
 
-        log.info("<<Start>> deleteService <<Start>>");
+        log.info("<<Start>> deleteById <<Start>>");
 
         ApiResponseDTO<String> response =
                 serviceService.deleteById(serviceId);
 
-        log.info("<<End>> deleteService <<End>>");
+        log.info("<<End>> deleteById <<End>>");
         return ResponseEntity.ok(response);
     }
 
