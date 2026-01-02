@@ -29,7 +29,7 @@ public class ShiftControllerImpl implements ShiftController {
         ApiResponseDTO<ShiftResponseDTO> response = shiftService.saveShift(shiftRequestDto);
         log.info("<<End>>saveShift endpoint called<<End>>");
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override

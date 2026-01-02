@@ -34,7 +34,7 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.saveTag(tagsRequestDto);
 
         log.info("<<End>> saveTag endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.updateTag(tagsRequestDto);
 
         log.info("<<End>> updateTag endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.getById(tagId);
 
         log.info("<<End>> getById endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.deleteById(tagId);
 
         log.info("<<End>> deleteById endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.searchTags(requestDto);
 
         log.info("<<End>> searchTags endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override

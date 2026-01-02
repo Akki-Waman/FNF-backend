@@ -254,7 +254,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
             DepartmentSearchRequestDto dto) {
 
-        Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+        Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
                 ? Sort.by(dto.getSortBy()).ascending()
                 : Sort.by(dto.getSortBy()).descending();
 

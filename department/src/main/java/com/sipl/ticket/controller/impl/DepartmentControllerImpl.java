@@ -97,7 +97,7 @@ public class DepartmentControllerImpl implements DepartmentController {
         ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> response =
                 departmentService.searchDepartments(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
     @Override
     public ResponseEntity<Void> exportDepartmentsCsv(HttpServletResponse response) {

@@ -268,7 +268,7 @@ public class TagsServiceImpl implements TagsService {
             TagsSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
                     ? Sort.by(dto.getSortBy()).ascending()
                     : Sort.by(dto.getSortBy()).descending();
 
