@@ -21,10 +21,10 @@ public class TaskControllerImpl implements TaskController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> addTask(String taskRequestDto, List<MultipartFile> files) {
-        log.info("<<START>> addTask controller <<START>>");
+        log.info("<<START>> addTask <<START>>");
         ApiResponseDTO<CombinedTaskResponseDto> response =
                 taskService.addTask(taskRequestDto, files);
-        log.info("<<END>> addTask controller <<END>>");
+        log.info("<<END>> addTask <<END>>");
         return ResponseEntity.ok(response);
     }
 }

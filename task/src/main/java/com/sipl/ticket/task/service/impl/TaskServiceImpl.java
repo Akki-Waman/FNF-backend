@@ -53,8 +53,6 @@ public class TaskServiceImpl implements TaskService {
             String taskRequestDto,
             List<MultipartFile> files) {
 
-        log.info("<<START>> addTask service");
-
         try {
             TaskRequestDto dto =
                     objectMapper.readValue(taskRequestDto, TaskRequestDto.class);
@@ -75,7 +73,6 @@ public class TaskServiceImpl implements TaskService {
                             taskAttachmentMapper.mapToDtoList(attachments)
                     );
 
-            log.info("<<END>> addTask service SUCCESS");
             return new ApiResponseDTO<>(
                     responseDto,
                     null,
@@ -153,14 +150,17 @@ public class TaskServiceImpl implements TaskService {
         LocalDate dueDate = dto.getDueDate();
 
         if (startDate != null && startDate.isBefore(today)) {
+            log.warn("Start date {} is in the past for Task with subject={}", startDate, dto.getSubject());
             throw new RuntimeException("Start date cannot be in the past");
         }
 
         if (dueDate != null && dueDate.isBefore(today)) {
+            log.warn("Due date {} is in the past for Task with subject={}", dueDate, dto.getSubject());
             throw new RuntimeException("Due date cannot be in the past");
         }
 
         if (startDate != null && dueDate != null && dueDate.isBefore(startDate)) {
+            log.warn("Due date {} is before start date {} for Task with subject={}", dueDate, startDate, dto.getSubject());
             throw new RuntimeException("Due date cannot be before start date");
         }
     }
@@ -278,8 +278,10 @@ public class TaskServiceImpl implements TaskService {
             List<MultipartFile> files,
             Task task) {
 
-        if (files == null || files.isEmpty())
+        if (files == null || files.isEmpty()) {
+            log.warn("No files provided for Task id={}", task.getTaskId());
             return Collections.emptyList();
+        }
 
         List<TaskAttachment> attachments = new ArrayList<>();
 
@@ -307,6 +309,7 @@ public class TaskServiceImpl implements TaskService {
     private void validateAssignee(TaskRequestDto dto) {
 
         if (dto.getAssigneeUserIds() == null || dto.getAssigneeUserIds().isEmpty()) {
+            log.warn("No assignee provided for Task with subject={}", dto.getSubject());
             throw new RuntimeException("At least one assignee is required");
         }
     }
@@ -322,6 +325,7 @@ public class TaskServiceImpl implements TaskService {
         assignees.retainAll(dto.getFollowerUserIds());
 
         if (!assignees.isEmpty()) {
+            log.warn("Duplicate users found in assignee and follower list for Task with subject={}", dto.getSubject());
             throw new RuntimeException("Same user cannot be assignee and follower");
         }
     }
