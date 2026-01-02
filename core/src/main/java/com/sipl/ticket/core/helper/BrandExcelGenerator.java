@@ -23,21 +23,7 @@ public class BrandExcelGenerator {
 
         int rowIndex = 0;
 
-        Font titleFont = workbook.createFont();
-        titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 18);
-
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(titleFont);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        Row titleRow = sheet.createRow(rowIndex++);
-        Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Brands List");
-        titleCell.setCellStyle(titleStyle);
-
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
-
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
         rowIndex++;
 
         Font headerFont = workbook.createFont();
@@ -50,7 +36,15 @@ public class BrandExcelGenerator {
         setBorders(headerStyle);
 
         Row headerRow = sheet.createRow(rowIndex++);
-        String[] headers = {"Brand ID", "Brand Name"};
+
+        String[] headers = {
+                "Brand ID",
+                "Brand Name",
+                "Created By",
+                "Modified By",
+                "Created Time",
+                "Modified Time"
+        };
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -62,23 +56,56 @@ public class BrandExcelGenerator {
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         setBorders(dataStyle);
 
-        for (BrandDto b : brands) {
+        CellStyle dateStyle = workbook.createCellStyle();
+        dateStyle.setAlignment(HorizontalAlignment.LEFT);
+        dateStyle.setDataFormat(
+                workbook.createDataFormat()
+                        .getFormat("dd-MM-yyyy HH:mm:ss"));
+        setBorders(dateStyle);
+
+        for (BrandDto dto : brands) {
+
             Row row = sheet.createRow(rowIndex++);
-            Cell c1 = row.createCell(0);
-            c1.setCellValue(b.getBrandId());
+
+            Cell c0 = row.createCell(0);
+            c0.setCellValue(dto.getBrandId());
+            c0.setCellStyle(dataStyle);
+
+            Cell c1 = row.createCell(1);
+            c1.setCellValue(dto.getBrandName());
             c1.setCellStyle(dataStyle);
 
-            Cell c2 = row.createCell(1);
-            c2.setCellValue(b.getBrandName());
+            Cell c2 = row.createCell(2);
+            c2.setCellValue(dto.getCreatedBy());
             c2.setCellStyle(dataStyle);
+
+            Cell c3 = row.createCell(3);
+            c3.setCellValue(dto.getModifiedBy());
+            c3.setCellStyle(dataStyle);
+
+            Cell c4 = row.createCell(4);
+            if (dto.getCreatedTime() != null) {
+                c4.setCellValue(dto.getCreatedTime());
+                c4.setCellStyle(dateStyle);
+            } else {
+                c4.setCellStyle(dataStyle);
+            }
+
+            Cell c5 = row.createCell(5);
+            if (dto.getModifiedTime() != null) {
+                c5.setCellValue(dto.getModifiedTime());
+                c5.setCellStyle(dateStyle);
+            } else {
+                c5.setCellStyle(dataStyle);
+            }
         }
 
-        sheet.setAutoFilter(
-                new CellRangeAddress(
-                        headerRow.getRowNum(),
-                        headerRow.getRowNum(),
-                        0,
-                        headers.length - 1));
+
+        sheet.setAutoFilter(new CellRangeAddress(
+                headerRow.getRowNum(),
+                headerRow.getRowNum(),
+                0,
+                headers.length - 1));
 
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
