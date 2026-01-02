@@ -34,7 +34,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.saveProductCategory(dto);
 
         log.info("<<End>> saveProductCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.updateProductCategory(dto);
 
         log.info("<<End>> updateProductCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.getById(productCategoryId);
 
         log.info("<<End>> getProductCategoryById <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.deleteById(productCategoryId);
 
         log.info("<<End>> deleteProductCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.getAllProductCategories();
 
         log.info("<<End>> getAllProductCategories <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
         ApiResponseDTO<PagedResponse<ProductCategoryDto>> response =
                 productCategoryService.searchProductCategories(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -113,4 +113,3 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
         return ResponseEntity.ok().build();
     }
 }
-

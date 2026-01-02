@@ -33,7 +33,7 @@ public class ServiceControllerImpl implements ServiceController {
                 serviceService.saveService(dto);
 
         log.info("<<End>> saveService <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ServiceControllerImpl implements ServiceController {
                 serviceService.updateService(dto);
 
         log.info("<<End>> updateService <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ServiceControllerImpl implements ServiceController {
                 serviceService.getById(serviceId);
 
         log.info("<<End>> getServiceById <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ServiceControllerImpl implements ServiceController {
                 serviceService.deleteById(serviceId);
 
         log.info("<<End>> deleteService <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class ServiceControllerImpl implements ServiceController {
                 serviceService.getAllServices();
 
         log.info("<<End>> getAllServices <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -108,6 +108,6 @@ public class ServiceControllerImpl implements ServiceController {
         ApiResponseDTO<PagedResponse<ServiceResponseDTO>> response =
                 serviceService.searchServices(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 }

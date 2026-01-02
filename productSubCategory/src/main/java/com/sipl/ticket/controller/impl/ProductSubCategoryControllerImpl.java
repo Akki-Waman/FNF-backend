@@ -33,7 +33,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 productSubCategoryService.saveProductSubCategory(dto);
 
         log.info("<<End>> saveProductSubCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 productSubCategoryService.updateProductSubCategory(dto);
 
         log.info("<<End>> updateProductSubCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 productSubCategoryService.getById(id);
 
         log.info("<<End>> getProductSubCategoryById <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 productSubCategoryService.deleteById(id);
 
         log.info("<<End>> deleteProductSubCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 productSubCategoryService.getAllProductSubCategories();
 
         log.info("<<End>> getAllProductSubCategories <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -109,6 +109,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
         ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> response =
                 productSubCategoryService.searchProductSubCategories(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 }
+
