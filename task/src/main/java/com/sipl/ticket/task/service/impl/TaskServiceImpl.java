@@ -32,12 +32,10 @@ public class TaskServiceImpl implements TaskService {
     private final TaskFollowerRepository taskFollowerRepository;
     private final TaskTagRepository taskTagRepository;
     private final TaskAttachmentRepository taskAttachmentRepository;
-
     private final UsersRepository usersRepository;
     private final BranchRepository branchRepository;
     private final TicketRepository ticketRepository;
     private final TagsRepository tagsRepository;
-
     private final TaskMapper taskMapper;
     private final TaskAssigneeMapper taskAssigneeMapper;
     private final TaskFollowerMapper taskFollowerMapper;
