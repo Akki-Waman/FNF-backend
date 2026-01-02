@@ -1,5 +1,6 @@
 package com.sipl.ticket.branch.controller;
 
+import com.sipl.ticket.core.dto.request.BranchRequestDto;
 import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
@@ -8,6 +9,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/branches")
@@ -21,7 +24,7 @@ public interface BranchController {
     )
     @PostMapping("/save")
     ResponseEntity<ApiResponseDTO<BranchDto>> saveBranch(
-            @RequestBody BranchDto dto
+            @RequestBody BranchRequestDto dto
     );
 
     @ApiOperation(
@@ -30,7 +33,7 @@ public interface BranchController {
     )
     @PutMapping("/update")
     ResponseEntity<ApiResponseDTO<BranchDto>> updateBranch(
-            @RequestBody BranchDto dto
+            @RequestBody BranchRequestDto dto
     );
 
     @ApiOperation(
@@ -59,4 +62,12 @@ public interface BranchController {
     ResponseEntity<ApiResponseDTO<PagedResponse<BranchDto>>> searchBranches(
             @RequestBody BranchSearchRequestDto requestDto
     );
+
+    @ApiOperation(
+            value = "Get all branches",
+            notes = "Fetch all active branches",
+            response = BranchDto.class
+    )
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<BranchDto>> getAllBranches();
 }

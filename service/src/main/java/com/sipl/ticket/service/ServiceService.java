@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
+import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
@@ -31,4 +32,7 @@ public interface ServiceService {
 
     void exportServicesExcel(HttpServletResponse response);
 
+    ApiResponseDTO<PagedResponse<ServiceResponseDTO>> searchServices(
+            ServiceSearchRequestDto requestDto
+    );
 }

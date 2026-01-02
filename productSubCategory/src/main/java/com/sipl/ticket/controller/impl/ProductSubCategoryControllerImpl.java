@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ProductSubCategoryController;
 import com.sipl.ticket.core.dto.request.ProductSubCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductSubCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
@@ -9,6 +10,7 @@ import com.sipl.ticket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
@@ -79,5 +81,18 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
                 "<<End>> exportProductSubCategoriesExcel endpoint called <<End>>");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductSubCategoryDto>>>
+    searchProductSubCategories(
+            @RequestBody ProductSubCategorySearchRequestDto requestDto) {
+
+        log.info("Searching product sub categories: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> response =
+                productSubCategoryService.searchProductSubCategories(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

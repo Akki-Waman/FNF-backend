@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.LocationController;
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
+import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -92,4 +93,21 @@ public class LocationControllerImpl implements LocationController {
         log.info("<<End>>getAllLocations endpoint called<<End>>");
         return response;
     }
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> searchLocations(
+            LocationSearchRequestDTO requestDto) {
+
+        log.info("<<Start>>searchLocations endpoint called<<Start>>");
+
+        ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> response =
+                ResponseEntity.ok(
+                        locationService.searchLocations(requestDto)
+                );
+
+        log.info("<<End>>searchLocations endpoint called<<End>>");
+
+        return response;
+    }
+
+
 }

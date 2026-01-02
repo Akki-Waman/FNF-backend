@@ -3,6 +3,7 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.Shift;
 import com.sipl.ticket.core.dao.repository.ShiftRepository;
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
+import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
@@ -12,6 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -259,4 +264,67 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+    @Override
+    public ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(
+            ShiftSearchRequestDto dto) {
+
+        try {
+            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+                    ? Sort.by(dto.getSortBy()).ascending()
+                    : Sort.by(dto.getSortBy()).descending();
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    sort
+            );
+
+            Page<Shift> pageResult =
+                    repository.findByShiftId(
+                            dto.getShiftId(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No shifts found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<ShiftResponseDTO> content = pageResult.getContent()
+                    .stream()
+                    .map(mapper::toResponseDto)
+                    .collect(Collectors.toList());
+
+            PagedResponse<ShiftResponseDTO> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Shifts fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchShifts error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 }
