@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -258,19 +259,17 @@ public class ProductSubCategoryServiceImpl
 
     @Override
     @Cacheable("productSubCategories")
-    public ApiResponseDTO<PagedResponse<ProductSubCategoryDto>>
-    getAllProductSubCategories() {
-
-        log.info("Fetching all active product sub categories");
+    public ApiResponseDTO<ProductSubCategoryDto> getAllProductSubCategories() {
 
         try {
-            List<ProductSubCategoryDto> response = repository.findAll()
+            List<ProductSubCategoryDto> list = repository
+                    .findAll(Sort.by(Sort.Direction.DESC, "productSubCategoryId"))
                     .stream()
                     .filter(sc -> Boolean.TRUE.equals(sc.getIsActive()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No product sub categories found",
@@ -280,21 +279,15 @@ public class ProductSubCategoryServiceImpl
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            response,
-                            0,
-                            response.size(),
-                            1,
-                            response.size(),
-                            true
-                    ),
-                    "Product sub categories fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Product sub categories fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllProductSubCategories unexpected error", e);
+            log.error("getAllProductSubCategories error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

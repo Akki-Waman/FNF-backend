@@ -30,7 +30,7 @@ public interface ProductCategoryService {
             Long productCategoryId
     );
 
-    ApiResponseDTO<PagedResponse<ProductCategoryDto>> getAllProductCategories();
+    ApiResponseDTO<ProductCategoryDto> getAllProductCategories();
 
     void exportProductCategoriesExcel(HttpServletResponse response);
 

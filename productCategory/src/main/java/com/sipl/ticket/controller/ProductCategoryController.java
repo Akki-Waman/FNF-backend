@@ -38,7 +38,7 @@ public interface ProductCategoryController {
     );
 
     @GetMapping("/getAll")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ProductCategoryDto>>> getAllProductCategories();
+    ResponseEntity<ApiResponseDTO<ProductCategoryDto>> getAllProductCategories();
 
     @GetMapping("/export")
     ResponseEntity<Void> exportProductCategoriesExcel(HttpServletResponse response);

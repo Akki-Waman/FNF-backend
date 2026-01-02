@@ -24,7 +24,7 @@ public interface ProductSubCategoryService {
 
     ApiResponseDTO<String> deleteById(Long productSubCategoryId);
 
-    ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> getAllProductSubCategories();
+    ApiResponseDTO<ProductSubCategoryDto> getAllProductSubCategories();
 
     void exportProductSubCategoriesExcel(HttpServletResponse response);
 

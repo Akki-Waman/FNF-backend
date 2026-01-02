@@ -25,7 +25,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
 
     @Override
     public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> saveProductSubCategory(
-            @Valid ProductSubCategoryRequestDto dto) {
+            @Valid @RequestBody ProductSubCategoryRequestDto dto) {
 
         log.info("<<Start>> saveProductSubCategory <<Start>>");
 
@@ -38,7 +38,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
 
     @Override
     public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> updateProductSubCategory(
-            ProductSubCategoryRequestDto dto) {
+            @RequestBody ProductSubCategoryRequestDto dto) {
 
         log.info("<<Start>> updateProductSubCategory <<Start>>");
 
@@ -50,36 +50,52 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> getById(Long id) {
+    public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> getById(
+            Long id) {
 
-        return ResponseEntity.ok(productSubCategoryService.getById(id));
+        log.info("<<Start>> getProductSubCategoryById <<Start>>");
+
+        ApiResponseDTO<ProductSubCategoryDto> response =
+                productSubCategoryService.getById(id);
+
+        log.info("<<End>> getProductSubCategoryById <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<String>> deleteById(Long id) {
+    public ResponseEntity<ApiResponseDTO<String>> deleteById(
+            Long id) {
 
-        return ResponseEntity.ok(productSubCategoryService.deleteById(id));
+        log.info("<<Start>> deleteProductSubCategory <<Start>>");
+
+        ApiResponseDTO<String> response =
+                productSubCategoryService.deleteById(id);
+
+        log.info("<<End>> deleteProductSubCategory <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductSubCategoryDto>>>
-    getAllProductSubCategories() {
+    public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> getAllProductSubCategories() {
 
-        return ResponseEntity.ok(productSubCategoryService.getAllProductSubCategories());
+        log.info("<<Start>> getAllProductSubCategories <<Start>>");
+
+        ApiResponseDTO<ProductSubCategoryDto> response =
+                productSubCategoryService.getAllProductSubCategories();
+
+        log.info("<<End>> getAllProductSubCategories <<End>>");
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
+
     @Override
     public ResponseEntity<Void> exportProductSubCategoriesExcel(
             HttpServletResponse response) {
 
-        log.info(
-                "<<Start>> exportProductSubCategoriesExcel endpoint called <<Start>>");
+        log.info("<<Start>> exportProductSubCategoriesExcel <<Start>>");
 
-        productSubCategoryService
-                .exportProductSubCategoriesExcel(response);
+        productSubCategoryService.exportProductSubCategoriesExcel(response);
 
-        log.info(
-                "<<End>> exportProductSubCategoriesExcel endpoint called <<End>>");
-
+        log.info("<<End>> exportProductSubCategoriesExcel <<End>>");
         return ResponseEntity.ok().build();
     }
 
@@ -88,7 +104,7 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     searchProductSubCategories(
             @RequestBody ProductSubCategorySearchRequestDto requestDto) {
 
-        log.info("Searching product sub categories: {}", requestDto);
+        log.info("Searching product sub categories with request: {}", requestDto);
 
         ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> response =
                 productSubCategoryService.searchProductSubCategories(requestDto);
