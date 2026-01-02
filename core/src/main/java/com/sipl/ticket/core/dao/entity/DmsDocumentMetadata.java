@@ -1,33 +1,32 @@
 package com.sipl.ticket.core.dao.entity;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ticket_attachments")
+@Table(name = "dms_document_metadata")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-public class TicketAttachment {
+public class DmsDocumentMetadata {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "attachment_id")
-    private Long attachmentId;
+    @Column(name = "document_metadata_id")
+    private Long documentMetadataId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "ticket_id")
-    private Ticket ticket;
+    @Column(name = "metadata_key")
+    private String metadataKey;
 
+    @Column(name = "metadata_value")
+    private String metadataValue;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "document_id")
-    private DmsDocument dmsDocument;
+    private DmsDocument document;
 }

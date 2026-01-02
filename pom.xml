@@ -316,6 +316,11 @@
 				<artifactId>branch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>task</artifactId>
