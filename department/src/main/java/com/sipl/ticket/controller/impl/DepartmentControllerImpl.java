@@ -92,10 +92,11 @@ public class DepartmentControllerImpl implements DepartmentController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> searchDepartments(
             @Valid DepartmentSearchRequestDto requestDto) {
 
-        log.info("Searching departments: {}", requestDto);
+        log.info("<<Start>> searchDepartments <<Start>>");
 
         ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> response =
                 departmentService.searchDepartments(requestDto);
+        log.info("<<End>> searchDepartments <<End>>");
 
         return ResponseEntity.ok(response);
     }

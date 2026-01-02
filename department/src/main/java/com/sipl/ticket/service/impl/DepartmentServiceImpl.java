@@ -14,11 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,120 +37,146 @@ public class DepartmentServiceImpl implements DepartmentService {
     @CacheEvict(value = "departments", allEntries = true)
     public ApiResponseDTO<DepartmentResponseDTO> saveDepartment(DepartmentRequestDto dto) {
 
-        log.info("<<Start>>saveDepartment endpoint called<<Start>>");
+        log.info("Saving department with name: {}", dto.getDepartmentName());
 
         try {
+            String name = dto.getDepartmentName().trim();
 
-            String departmentName = dto.getDepartmentName().trim();
-
-            if (repository.existsByDepartmentNameIgnoreCaseAndIsDeletedFalse(departmentName)) {
-                return new ApiResponseDTO<>(null,
-                        "Department "+departmentName+" already exists",
+            if (repository.existsByDepartmentNameIgnoreCase(name)) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Department '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
-                        true);
+                        true
+                );
             }
 
             Department department = mapper.toEntity(dto);
             department.setIsActive(true);
-            department.setIsDeleted(false);
 
             Department saved = repository.save(department);
 
             return new ApiResponseDTO<>(
-                    mapper.toResponseDto(saved),
-                    "Department "+departmentName+" created successfully",
-                    HttpStatus.OK,
+                    mapper.toDto(saved),
+                    "Department created successfully",
+                    HttpStatus.CREATED,
                     false
             );
 
         } catch (Exception e) {
-            log.error("saveDepartment error", e);
-            return new ApiResponseDTO<>(null,
+            log.error("Error occurred while saving department", e);
+            return new ApiResponseDTO<>(
+                    null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
-        } finally {
-            log.info("<<End>>saveDepartment endpoint called<<End>>");
+                    true
+            );
         }
     }
-
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
     public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(DepartmentRequestDto dto) {
 
-        log.info("<<Start>>updateDepartment endpoint called<<Start>>");
+        log.info("Updating department, id={}, name={}",
+                dto.getDepartmentId(), dto.getDepartmentName());
 
         try {
+            if (dto == null || dto.getDepartmentId() == null ||
+                    dto.getDepartmentName() == null || dto.getDepartmentName().trim().isEmpty()) {
 
-            Department department = repository.findById(dto.getDepartmentId())
-                    .filter(d -> !Boolean.TRUE.equals(d.getIsDeleted()))
-                    .orElse(null);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Department ID and name are required",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+            Department department =
+                    repository.findById(dto.getDepartmentId()).orElse(null);
 
             if (department == null) {
-                return new ApiResponseDTO<>(null,
-                        "Department "+department+" not found",
+                return new ApiResponseDTO<>(
+                        null,
+                        "Department not found",
                         HttpStatus.NOT_FOUND,
-                        true);
+                        true
+                );
             }
 
-            String departmentName = dto.getDepartmentName().trim();
+            if (Boolean.FALSE.equals(department.getIsActive())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Inactive department cannot be updated",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
-            if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNotAndIsDeletedFalse(
-                    departmentName, dto.getDepartmentId())) {
-                return new ApiResponseDTO<>(null,
-                        "Department with same name already exists",
+            String name = dto.getDepartmentName().trim();
+
+            if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
+                    name, dto.getDepartmentId())) {
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "Department with the name '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
-                        true);
+                        true
+                );
             }
 
-            department.setDepartmentName(departmentName);
+            department.setDepartmentName(name);
             Department updated = repository.save(department);
 
             return new ApiResponseDTO<>(
-                    mapper.toResponseDto(updated),
-                    "Department "+departmentName+" updated successfully",
+                    mapper.toDto(updated),
+                    "Department updated successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
             log.error("updateDepartment unexpected error", e);
-            return new ApiResponseDTO<>(null,
+            return new ApiResponseDTO<>(
+                    null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
-        } finally {
-            log.info("<<End>>updateDepartment endpoint called<<End>>");
+                    true
+            );
         }
     }
 
     @Override
     public ApiResponseDTO<DepartmentResponseDTO> getById(Long id) {
 
-        log.info("<<Start>>getById endpoint called<<Start>>");
+        log.info("Fetching department by id={}", id);
 
         try {
             return repository.findById(id)
-                    .filter(d -> !Boolean.TRUE.equals(d.getIsDeleted()))
+                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
                     .map(d -> new ApiResponseDTO<>(
-                            mapper.toResponseDto(d),
+                            mapper.toDto(d),
                             "Department found",
                             HttpStatus.OK,
-                            false))
+                            false
+                    ))
                     .orElseGet(() -> new ApiResponseDTO<>(
                             null,
                             "Department not found",
                             HttpStatus.NOT_FOUND,
-                            true));
+                            true
+                    ));
+
         } catch (Exception e) {
-            log.error("getById unexpected error", e);
-            return new ApiResponseDTO<>(null,
+            log.error("getById unexpected error, id={}", id, e);
+            return new ApiResponseDTO<>(
+                    null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
-        } finally {
-            log.info("<<End>>getById endpoint called<<End>>");
+                    true
+            );
         }
     }
 
@@ -162,7 +184,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @CacheEvict(value = "departments", allEntries = true)
     public ApiResponseDTO<String> deleteById(Long id) {
 
-        log.info("<<Start>> deleteById endpoint called<<Start>>");
+        log.info("Deactivating department, id={}", id);
 
         try {
             Department department = repository.findById(id).orElse(null);
@@ -176,17 +198,16 @@ public class DepartmentServiceImpl implements DepartmentService {
                 );
             }
 
-            if (Boolean.TRUE.equals(department.getIsDeleted())) {
+            if (Boolean.FALSE.equals(department.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Department already deleted",
+                        "Department is already inactive",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             department.setIsActive(false);
-            department.setIsDeleted(true);
             repository.save(department);
 
             return new ApiResponseDTO<>(
@@ -197,18 +218,15 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
 
         } catch (Exception e) {
-            log.error("Error while deleting department, id={}", id, e);
+            log.error("deleteById unexpected error, id={}", id, e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>> deleteById endpoint called<<End>>");
         }
     }
-
 
     @Override
     @Cacheable("departments")
@@ -217,7 +235,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         log.info("Fetching all active departments");
 
         try {
-            List<Department> list = repository.findByIsDeletedFalse();
+            List<DepartmentResponseDTO> list = repository.findAll()
+                    .stream()
+                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
 
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -228,11 +250,8 @@ public class DepartmentServiceImpl implements DepartmentService {
                 );
             }
 
-            List<DepartmentResponseDTO> response =
-                    mapper.toResponseDtoList(list);
-
             return new ApiResponseDTO<>(
-                    response,
+                    list,
                     HttpStatus.OK,
                     "Departments fetched successfully",
                     false,
@@ -240,7 +259,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
 
         } catch (Exception e) {
-            log.error("getAllDepartments unexpected error", e);
+            log.error("getAllDepartments error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -254,51 +273,64 @@ public class DepartmentServiceImpl implements DepartmentService {
     public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
             DepartmentSearchRequestDto dto) {
 
-        Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                ? Sort.by(dto.getSortBy()).ascending()
-                : Sort.by(dto.getSortBy()).descending();
+        try {
+            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
+                    ? Sort.by(dto.getSortBy()).ascending()
+                    : Sort.by(dto.getSortBy()).descending();
 
-        Pageable pageable =
-                PageRequest.of(dto.getPage(), dto.getSize(), sort);
+            Pageable pageable =
+                    PageRequest.of(dto.getPage(), dto.getSize(), sort);
 
-        Page<Department> pageResult =
-                repository.searchByDepartmentId(
-                        dto.getDepartmentId(),
-                        pageable
+            Page<Department> pageResult =
+                    repository.searchByDepartmentId(
+                            dto.getDepartmentId(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No departments found",
+                        HttpStatus.NOT_FOUND,
+                        true
                 );
+            }
 
-        if (pageResult.isEmpty()) {
+            List<DepartmentResponseDTO> content = pageResult.getContent()
+                    .stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            PagedResponse<DepartmentResponseDTO> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Departments fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchDepartments error", e);
             return new ApiResponseDTO<>(
                     null,
-                    "No departments found",
-                    HttpStatus.NOT_FOUND,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
         }
-
-        List<DepartmentResponseDTO> content = pageResult.getContent()
-                .stream()
-                .map(mapper::toResponseDto)
-                .collect(Collectors.toList());
-
-        PagedResponse<DepartmentResponseDTO> pagedResponse =
-                new PagedResponse<>(
-                        content,
-                        pageResult.getNumber(),
-                        pageResult.getTotalElements(),
-                        pageResult.getTotalPages(),
-                        pageResult.getSize(),
-                        pageResult.isLast()
-                );
-
-        return new ApiResponseDTO<>(
-                pagedResponse,
-                "Departments fetched successfully",
-                HttpStatus.OK,
-                false
-        );
     }
+
     @Override
+    @Transactional(readOnly = true)
     public void exportDepartmentsCsv(HttpServletResponse response) {
 
         log.info("Exporting active departments to CSV");
@@ -307,10 +339,10 @@ public class DepartmentServiceImpl implements DepartmentService {
             List<DepartmentResponseDTO> departments = repository.findAll()
                     .stream()
                     .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
-                    .map(mapper::toResponseDto)
-                    .collect(Collectors.toList()); // Java 8 safe
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
 
-            DepartmentExcelGenerator.generateCsv(departments, response);
+            DepartmentExcelGenerator.generateExcel(departments, response);
 
             log.info("Departments CSV export completed successfully, totalRecords={}",
                     departments.size());
@@ -320,5 +352,4 @@ public class DepartmentServiceImpl implements DepartmentService {
             throw new RuntimeException("Failed to export departments CSV", e);
         }
     }
-
 }

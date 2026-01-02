@@ -3,27 +3,28 @@ package com.sipl.ticket.core.mapper;
 import com.sipl.ticket.core.dao.entity.Department;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
-import org.mapstruct.*;
+import org.mapstruct.InheritConfiguration;
+import org.mapstruct.Mapper;
 
 import java.util.List;
 
 @Mapper(
-        unmappedTargetPolicy = ReportingPolicy.WARN,
-        componentModel = "spring"
+        componentModel = "spring",
+        uses = AuditUserMasterMapper.class
 )
-public interface DepartmentMapper {
+public interface DepartmentMapper extends AuditEntityMapper {
 
-    @Mapping(target = "departmentId", ignore = true)
+    @InheritConfiguration(name = "toEntity")
     Department toEntity(DepartmentRequestDto departmentRequestDto);
 
-    DepartmentResponseDTO toResponseDto(Department department);
+    @InheritConfiguration(name = "toDto")
+    DepartmentResponseDTO toDto(Department department);
 
-    @Mapping(target = "departmentId", ignore = true)
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    Department partialUpdate(
-            DepartmentRequestDto departmentRequestDto,
-            @MappingTarget Department department
+    List<DepartmentResponseDTO> mapDepartmentsListToDtoList(
+            List<Department> departments
     );
 
-    List<DepartmentResponseDTO> toResponseDtoList(List<Department> departments);
+    List<DepartmentResponseDTO> mapDepartmentsDropListToDtoList(
+            List<Department> departments
+    );
 }

@@ -3,29 +3,24 @@ package com.sipl.ticket.core.mapper;
 import com.sipl.ticket.core.dao.entity.ServiceEntity;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
-import org.mapstruct.*;
+import org.mapstruct.InheritConfiguration;
+import org.mapstruct.Mapper;
 
 import java.util.List;
 
 @Mapper(
-        unmappedTargetPolicy = ReportingPolicy.WARN,
-        componentModel = "spring"
+        componentModel = "spring",
+        uses = AuditUserMasterMapper.class
 )
-public interface ServiceMapper {
+public interface ServiceMapper extends AuditEntityMapper {
 
-    @Mapping(target = "serviceId", ignore = true)
+    @InheritConfiguration(name = "toEntity")
     ServiceEntity toEntity(ServiceRequestDto serviceRequestDto);
 
-    ServiceResponseDTO toResponseDto(ServiceEntity service);
+    @InheritConfiguration(name = "toDto")
+    ServiceResponseDTO toDto(ServiceEntity service);
 
-    @Mapping(target = "serviceId", ignore = true)
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    ServiceEntity partialUpdate(
-            ServiceRequestDto serviceRequestDto,
-            @MappingTarget ServiceEntity service
-    );
+    List<ServiceResponseDTO> mapServicesListToDtoList(List<ServiceEntity> services);
 
-    List<ServiceResponseDTO> toResponseDtoList(List<ServiceEntity> services);
-
-    List<ServiceResponseDTO> mapServicesDropListToDtoList(List<ServiceEntity> content);
+    List<ServiceResponseDTO> mapServicesDropListToDtoList(List<ServiceEntity> services);
 }

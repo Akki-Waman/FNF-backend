@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ServiceResponseDTO {
+public class ServiceResponseDTO extends AuditDto {
 
     private Long serviceId;
 
@@ -19,6 +19,5 @@ public class ServiceResponseDTO {
 
     private Boolean isActive;
 
-    private Boolean isDeleted;
 }
 
