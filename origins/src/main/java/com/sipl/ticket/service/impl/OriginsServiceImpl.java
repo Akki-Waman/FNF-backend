@@ -16,6 +16,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sipl.ticket.core.dto.request.OriginSearchRequestDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -54,7 +59,7 @@ public class OriginsServiceImpl implements OriginsService {
             log.debug("Trimmed origin name: '{}'", name);
 
             log.debug("Checking if origin already exists for name: '{}'", name);
-            boolean exists = repository.searchOrigins(name, true)
+            boolean exists = repository.findActiveByOriginName(name)
                     .stream()
                     .anyMatch(o -> o.getOriginName().equalsIgnoreCase(name));
 
@@ -136,7 +141,7 @@ public class OriginsServiceImpl implements OriginsService {
 
             String name = dto.getOriginName().trim();
 
-            boolean exists = repository.searchOrigins(name, true)
+            boolean exists = repository.findActiveByOriginName(name)
                     .stream()
                     .anyMatch(o ->
                             o.getOriginName().equalsIgnoreCase(name)
@@ -292,6 +297,87 @@ public class OriginsServiceImpl implements OriginsService {
             );
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponseDTO<PagedResponse<OriginDto>> searchOrigins(
+            OriginSearchRequestDto dto) {
+
+        log.info("<<START>> searchOrigins service called");
+        log.info("Search params | originId={}, page={}, size={}",
+                dto.getOriginId(), dto.getPage(), dto.getSize());
+
+        try {
+
+            Sort sort = Sort.by("originId").descending();
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    sort
+            );
+
+            log.debug("Pageable created | {}", pageable);
+
+            Page<Origins> pageResult = repository.searchByOriginId(
+                    dto.getOriginId(),
+                    pageable
+            );
+
+            log.info("DB result | totalElements={}, totalPages={}",
+                    pageResult.getTotalElements(),
+                    pageResult.getTotalPages());
+
+            if (pageResult.isEmpty()) {
+                log.warn("No origins found for originId={}", dto.getOriginId());
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "No origins found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<OriginDto> content = pageResult.getContent()
+                    .stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            log.info("Records mapped | count={}", content.size());
+
+            PagedResponse<OriginDto> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            log.info("<<END>> searchOrigins service completed successfully");
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Origins fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("Error in searchOrigins | originId={}",
+                    dto.getOriginId(), e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 
     @Override
     @Transactional(readOnly = true)
