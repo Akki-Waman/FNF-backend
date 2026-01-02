@@ -19,31 +19,22 @@ import java.util.List;
 @Api(tags = "Country APIs")
 public interface CountryController {
 
-
     @PostMapping("/save")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> createCountry(
-            @RequestBody CountryRequestDto requestDto
-    );
+            @RequestBody CountryRequestDto requestDto);
 
-
-    @PutMapping("/update/{countryId}")
+    @PutMapping("/update/{id}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> updateCountry(
-            @PathVariable Long countryId,
-            @RequestBody CountryRequestDto requestDto
-    );
+            @PathVariable Long id,
+            @RequestBody CountryRequestDto requestDto);
 
-    @GetMapping("/get/{countryId}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> getCountryById(
-            @PathVariable Long countryId
-    );
+            Long countryId);
 
-    @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> getAllCountries();
 
-    @DeleteMapping("/delete/{countryId}")
     ResponseEntity<ApiResponseDTO<String>> deleteCountry(
-            @PathVariable Long countryId
-    );
+            Long countryId);
 
     @GetMapping("/search")
     ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(

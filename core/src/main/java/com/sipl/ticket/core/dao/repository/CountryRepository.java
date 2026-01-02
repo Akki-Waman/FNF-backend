@@ -1,14 +1,12 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Country;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface CountryRepository extends JpaRepository<Country, Long> {
@@ -17,31 +15,15 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
 
     boolean existsByCountryNameIgnoreCaseAndCountryIdNot(String name, Long countryId);
 
+    /* -------- GET ALL ACTIVE -------- */
+    @Query("SELECT c FROM Country c WHERE c.isActive = true ORDER BY c.countryId DESC")
+    Page<Country> findAllActive(Pageable pageable);
+
+    /* -------- GET BY ID -------- */
+    @Query("SELECT c FROM Country c WHERE c.countryId = :id AND c.isActive = true")
+    Country findActiveById(@Param("id") Long id);
+
     /* -------- SEARCH -------- */
-    List<Country> findByCountryNameContainingIgnoreCaseAndIsActive(
-            String countryName,
-            Boolean isActive
-    );
-
-    List<Country> findByIsForeignAndIsActive(
-            Boolean isForeign,
-            Boolean isActive
-    );
-
-    Page<Country> findByCountryNameContainingIgnoreCaseAndIsActive(
-            String countryName,
-            Boolean isActive,
-            Pageable pageable);
-
-    Page<Country> findByIsForeignAndIsActive(
-            Boolean isForeign,
-            Boolean isActive,
-            Pageable pageable);
-
-    Page<Country> findByIsActive(
-            Boolean isActive,
-            Pageable pageable);
-
     @Query(
             "SELECT c FROM Country c " +
                     "WHERE c.isActive = true " +
@@ -54,6 +36,4 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
             @Param("isForeign") Boolean isForeign,
             Pageable pageable
     );
-
-
 }
