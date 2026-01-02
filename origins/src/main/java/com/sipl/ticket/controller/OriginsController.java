@@ -1,5 +1,6 @@
 package com.sipl.ticket.controller;
 
+import com.sipl.ticket.core.dto.request.OriginSearchRequestDto;
 import com.sipl.ticket.core.dto.request.OriginsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.awt.print.Pageable;
 
 @RestController
 @RequestMapping("api/v1/origins")
@@ -39,7 +41,14 @@ public interface OriginsController {
     @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> getAll();
 
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> search(
+            @RequestBody OriginSearchRequestDto dto
+    );
+
     @GetMapping("/export")
     void downloadExcel(HttpServletResponse response);
+
+
 }
 

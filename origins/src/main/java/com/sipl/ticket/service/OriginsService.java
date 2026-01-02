@@ -1,5 +1,6 @@
 package com.sipl.ticket.service;
 
+import com.sipl.ticket.core.dto.request.OriginSearchRequestDto;
 import com.sipl.ticket.core.dto.request.OriginsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
@@ -27,6 +28,10 @@ public interface OriginsService {
 
     ApiResponseDTO<PagedResponse<OriginDto>> getAllOrigins();
 
+
+    ApiResponseDTO<PagedResponse<OriginDto>> searchOrigins(
+            OriginSearchRequestDto dto
+    );
 
     void downloadExcel(HttpServletResponse response);
 }
