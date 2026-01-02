@@ -10,8 +10,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskDto extends AuditDto{
-
+public class TaskCustomResponseDTO {
     private Long taskId;
 
     private String subject;
@@ -34,9 +33,11 @@ public class TaskDto extends AuditDto{
 
     private String relatedToType;
 
-    private Integer status;
+    private String status;
 
-    private BranchDto branch;
+    private Integer branchId;
+    private String branchName;
 
-    private TicketsResponseDTO ticket;
+    private Long ticketId;
+    private String ticketSubject;
 }
