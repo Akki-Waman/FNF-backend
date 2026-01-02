@@ -7,14 +7,12 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class CountrySearchRequestDto {
+public class CountrySearchRequestDto extends SearchRequestDto {
 
     private Long countryId;
     private String countryName;
     private String taxType;
     private Boolean isForeign;
-    private Boolean isActive;
 
-    private int page = 0;
-    private int size = 10;
+
 }
