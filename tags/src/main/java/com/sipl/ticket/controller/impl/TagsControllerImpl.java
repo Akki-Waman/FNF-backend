@@ -86,10 +86,9 @@ public class TagsControllerImpl implements TagsController {
 
         log.info("<<End>> getAllTags endpoint called <<End>>");
 
-        return ResponseEntity
-                .status(response.getStatus())
-                .body(response);
+        return ResponseEntity.ok(response);
     }
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<TagResponseDto>>> searchTags(

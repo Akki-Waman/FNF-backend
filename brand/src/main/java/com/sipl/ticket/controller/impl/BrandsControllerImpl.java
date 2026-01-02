@@ -84,9 +84,8 @@ public class BrandsControllerImpl implements BrandsController {
 
         log.info("<<End>> getAllBrands <<End>>");
 
-        return ResponseEntity
-                .status(response.getStatus())
-                .body(response);
+        return ResponseEntity.ok(response);
+
     }
 
     @Override

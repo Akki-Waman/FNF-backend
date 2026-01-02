@@ -85,9 +85,7 @@ public class DepartmentControllerImpl implements DepartmentController {
 
         log.info("<<End>> getAllDepartments <<End>>");
 
-        return ResponseEntity
-                .status(response.getStatus())
-                .body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
