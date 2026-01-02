@@ -43,7 +43,7 @@ public interface CountryController {
             value = "Get All Countries",
             notes = "Fetch all active countries"
     )
-    @GetMapping("/getAll")
+    @GetMapping("")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> getAllCountries();
 
     @ApiOperation(
