@@ -75,16 +75,18 @@ public class StateControllerImpl implements StateController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll() {
+    public ResponseEntity<ApiResponseDTO<StateResponseDto>> getAll() {
 
         log.info("<<Start>> get States endpoint called <<Start>>");
 
-        ApiResponseDTO<List<StateResponseDto>> response =
+        ApiResponseDTO<StateResponseDto> response =
                 stateService.getAllStates();
 
         log.info("<<End>> get States endpoint called <<End>>");
         return ResponseEntity.ok(response);
     }
+
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> search(

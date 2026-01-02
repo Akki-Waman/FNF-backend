@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.print.Pageable;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/origins")
@@ -38,8 +39,9 @@ public interface OriginsController {
             @PathVariable Long originId
     );
 
-    @GetMapping(" ")
-    ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> getAll();
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<OriginDto>> getAllOrigins();
+
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> search(

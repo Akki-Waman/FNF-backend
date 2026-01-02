@@ -26,7 +26,8 @@ public interface StateService {
             Long stateId
     );
 
-    ApiResponseDTO<List<StateResponseDto>> getAllStates();
+    ApiResponseDTO<StateResponseDto> getAllStates();
+
 
 
     ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(

@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -260,18 +261,18 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @Cacheable("origins")
-    public ApiResponseDTO<PagedResponse<OriginDto>> getAllOrigins() {
+    public ApiResponseDTO<OriginDto> getAllOrigins() {
 
         log.info("Fetching all active origins");
 
         try {
-            List<OriginDto> response = repository.findAll()
+            List<OriginDto> list = repository.findAll()
                     .stream()
                     .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No origins found",
@@ -281,14 +282,15 @@ public class OriginsServiceImpl implements OriginsService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Origins fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Origins fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllOrigins unexpected error", e);
+            log.error("getAllOrigins error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -297,6 +299,7 @@ public class OriginsServiceImpl implements OriginsService {
             );
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)
