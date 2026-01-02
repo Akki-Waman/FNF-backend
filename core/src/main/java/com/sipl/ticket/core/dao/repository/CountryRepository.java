@@ -1,14 +1,39 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Country;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CountryRepository extends JpaRepository<Country, Long> {
 
+    boolean existsByCountryNameIgnoreCase(String name);
 
     boolean existsByCountryNameIgnoreCaseAndCountryIdNot(String name, Long countryId);
 
-    boolean existsByCountryNameIgnoreCase(String name);
+    /* -------- GET ALL ACTIVE -------- */
+    @Query("SELECT c FROM Country c WHERE c.isActive = true ORDER BY c.countryId DESC")
+    Page<Country> findAllActive(Pageable pageable);
+
+    /* -------- GET BY ID -------- */
+    @Query("SELECT c FROM Country c WHERE c.countryId = :id AND c.isActive = true")
+    Country findActiveById(@Param("id") Long id);
+
+    /* -------- SEARCH -------- */
+    @Query(
+            "SELECT c FROM Country c " +
+                    "WHERE c.isActive = true " +
+                    "AND (:name IS NULL OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+                    "AND (:isForeign IS NULL OR c.isForeign = :isForeign) " +
+                    "ORDER BY c.countryId DESC"
+    )
+    Page<Country> searchCountries(
+            @Param("name") String name,
+            @Param("isForeign") Boolean isForeign,
+            Pageable pageable
+    );
 }

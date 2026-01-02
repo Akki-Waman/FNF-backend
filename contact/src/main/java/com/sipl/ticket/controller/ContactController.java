@@ -38,4 +38,14 @@ public interface ContactController {
 
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts();
+
+    /*@GetMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
+            @RequestParam(required = false) String contactName,
+            @RequestParam(required = false) String emailAddress,
+            @RequestParam(required = false) String mobileNo,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) Boolean isActive
+    );*/
+
 }

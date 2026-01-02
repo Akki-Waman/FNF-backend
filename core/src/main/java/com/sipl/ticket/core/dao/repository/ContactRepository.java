@@ -2,6 +2,8 @@ package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Contact;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -26,5 +28,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     /* ================= FETCH ================= */
 
     List<Contact> findByIsActiveTrue();
-}
 
+
+}

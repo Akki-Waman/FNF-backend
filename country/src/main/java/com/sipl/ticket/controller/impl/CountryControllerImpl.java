@@ -7,6 +7,9 @@ import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import com.sipl.ticket.service.CountryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,4 +88,21 @@ public class CountryControllerImpl implements CountryController {
         log.info("<<End>>deleteCountry endpoint called<<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    @Override
+    public ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
+            String name,
+            Boolean isForeign,
+            int page,
+            int size) {
+
+        log.info("START :: searchCountries | name={}, isForeign={}, page={}, size={}",
+                name, isForeign, page, size);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return ResponseEntity.ok(
+                countryService.searchCountries(name, isForeign, pageable)
+        );
+    }
+
 }

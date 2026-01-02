@@ -5,6 +5,9 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,29 +19,28 @@ import java.util.List;
 @Api(tags = "Country APIs")
 public interface CountryController {
 
-
     @PostMapping("/save")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> createCountry(
-            @RequestBody CountryRequestDto requestDto
-    );
+            @RequestBody CountryRequestDto requestDto);
 
-
-    @PutMapping("/update/{countryId}")
+    @PutMapping("/update/{id}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> updateCountry(
-            @PathVariable Long countryId,
-            @RequestBody CountryRequestDto requestDto
-    );
+            @PathVariable Long id,
+            @RequestBody CountryRequestDto requestDto);
 
-    @GetMapping("/get/{countryId}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> getCountryById(
-            @PathVariable Long countryId
-    );
+            Long countryId);
 
-    @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> getAllCountries();
 
-    @DeleteMapping("/delete/{countryId}")
     ResponseEntity<ApiResponseDTO<String>> deleteCountry(
-            @PathVariable Long countryId
+            Long countryId);
+
+    @GetMapping("/search")
+    ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean isForeign,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     );
 }
