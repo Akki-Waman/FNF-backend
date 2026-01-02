@@ -15,15 +15,15 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
 
     boolean existsByCountryNameIgnoreCaseAndCountryIdNot(String name, Long countryId);
 
-    /* -------- GET ALL ACTIVE -------- */
+
     @Query("SELECT c FROM Country c WHERE c.isActive = true ORDER BY c.countryId DESC")
     Page<Country> findAllActive(Pageable pageable);
 
-    /* -------- GET BY ID -------- */
+
     @Query("SELECT c FROM Country c WHERE c.countryId = :id AND c.isActive = true")
     Country findActiveById(@Param("id") Long id);
 
-    /* -------- SEARCH -------- */
+
     @Query(
             "SELECT c FROM Country c " +
                     "WHERE c.isActive = true " +
