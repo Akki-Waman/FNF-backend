@@ -1,7 +1,9 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
+import com.sipl.ticket.core.dto.request.UnitSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -69,4 +71,8 @@ public interface UnitController {
     @GetMapping("/export")
     ResponseEntity<Void> exportUnitsExcel(HttpServletResponse response);
 
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<UnitDto>>> searchUnits(
+            @RequestBody UnitSearchRequestDto requestDto
+    );
 }

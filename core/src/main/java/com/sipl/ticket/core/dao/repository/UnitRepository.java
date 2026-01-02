@@ -1,6 +1,8 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Unit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +26,17 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
             String unitName,
             Long unitId
     );
+
+    @Query(
+            "SELECT u " +
+                    "FROM Unit u " +
+                    "WHERE u.isActive = true " +
+                    "AND (:unitId IS NULL OR u.unitId = :unitId) " +
+                    "ORDER BY u.unitId DESC"
+    )
+    Page<Unit> searchByUnitId(
+            @Param("unitId") Long unitId,
+            Pageable pageable
+    );
+
 }
