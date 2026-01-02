@@ -122,7 +122,6 @@ public class DepartmentExcelGenerator {
         workbook.write(response.getOutputStream());
         workbook.close();
     }
-
     private static void setBorders(CellStyle style) {
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderBottom(BorderStyle.THIN);
