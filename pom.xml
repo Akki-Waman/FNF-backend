@@ -38,6 +38,7 @@
         <module>country</module>
 		<module>city</module>
         <module>task</module>
+		<module>ticket</module>
 
     </modules>
 
