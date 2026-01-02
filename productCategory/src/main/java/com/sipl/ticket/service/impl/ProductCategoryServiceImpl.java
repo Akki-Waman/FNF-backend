@@ -3,6 +3,7 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.ProductCategories;
 import com.sipl.ticket.core.dao.repository.ProductCategoryRepository;
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
@@ -13,6 +14,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -309,4 +314,58 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<PagedResponse<ProductCategoryDto>> searchProductCategories(
+            ProductCategorySearchRequestDto dto) {
+
+        try {
+            Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                    ? Sort.by(dto.getSortBy()).ascending()
+                    : Sort.by(dto.getSortBy()).descending();
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    sort
+            );
+
+            Page<ProductCategories> pageResult =
+                    repository.searchByProductCategoryId(
+                            dto.getProductCategoryId(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No product categories found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            return new ApiResponseDTO<>(
+                    new PagedResponse<>(
+                            mapper.toDtoList(pageResult.getContent()),
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    ),
+                    "Product categories fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchProductCategories error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ProductCategoryController;
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
@@ -9,6 +10,7 @@ import com.sipl.ticket.service.ProductCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -88,6 +90,19 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
         log.info("<<End>> exportProductCategoriesExcel endpoint called <<End>>");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductCategoryDto>>>
+    searchProductCategories(
+            @RequestBody ProductCategorySearchRequestDto requestDto) {
+
+        log.info("Searching product categories: {}", requestDto);
+
+        ApiResponseDTO<PagedResponse<ProductCategoryDto>> response =
+                productCategoryService.searchProductCategories(requestDto);
+
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
 }

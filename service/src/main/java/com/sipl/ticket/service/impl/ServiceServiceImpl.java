@@ -4,6 +4,7 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.ServiceEntity;
 import com.sipl.ticket.core.dao.repository.ServiceRepository;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
+import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
@@ -14,6 +15,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -277,7 +282,7 @@ public class ServiceServiceImpl implements ServiceService {
                     .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
                     .map(s -> new ServiceResponseDTO(
                             s.getServiceId(),
-                            s.getServiceName(),s.getIsActive(),s.getIsDeleted()
+                            s.getServiceName(), s.getIsActive(), s.getIsDeleted()
                     ))
                     .collect(Collectors.toList());
 
@@ -292,5 +297,65 @@ public class ServiceServiceImpl implements ServiceService {
             log.error("exportServicesExcel unexpected error", e);
             throw new RuntimeException("Failed to export services Excel", e);
         }
+    }
+        @Override
+        public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> searchServices(
+                ServiceSearchRequestDto dto) {
+
+            try {
+                Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                        ? Sort.by(dto.getSortBy()).ascending()
+                        : Sort.by(dto.getSortBy()).descending();
+
+                Pageable pageable = PageRequest.of(
+                        dto.getPage(),
+                        dto.getSize(),
+                        sort
+                );
+
+                Page<ServiceEntity> pageResult =
+                        repository.searchByServiceId(
+                                dto.getServiceId(),
+                                pageable
+                        );
+
+                if (pageResult.isEmpty()) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            "No services found",
+                            HttpStatus.NOT_FOUND,
+                            true
+                    );
+                }
+
+                List<ServiceResponseDTO> content =
+                        mapper.mapServicesDropListToDtoList(pageResult.getContent());
+
+                PagedResponse<ServiceResponseDTO> pagedResponse =
+                        new PagedResponse<>(
+                                content,
+                                pageResult.getNumber(),
+                                pageResult.getTotalElements(),
+                                pageResult.getTotalPages(),
+                                pageResult.getSize(),
+                                pageResult.isLast()
+                        );
+
+                return new ApiResponseDTO<>(
+                        pagedResponse,
+                        "Services fetched successfully",
+                        HttpStatus.OK,
+                        false
+                );
+
+            } catch (Exception e) {
+                log.error("searchServices error", e);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Internal server error",
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        true
+                );
+            }
     }
 }

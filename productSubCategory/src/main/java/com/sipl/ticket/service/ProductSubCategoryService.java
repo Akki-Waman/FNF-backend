@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.ProductSubCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductSubCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
@@ -26,5 +27,10 @@ public interface ProductSubCategoryService {
     ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> getAllProductSubCategories();
 
     void exportProductSubCategoriesExcel(HttpServletResponse response);
+
+    ApiResponseDTO<PagedResponse<ProductSubCategoryDto>>
+    searchProductSubCategories(
+            ProductSubCategorySearchRequestDto requestDto
+    );
 
 }

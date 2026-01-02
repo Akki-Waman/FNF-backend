@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
+import com.sipl.ticket.core.dto.request.ProductCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
@@ -41,5 +42,11 @@ public interface ProductCategoryController {
 
     @GetMapping("/export")
     ResponseEntity<Void> exportProductCategoriesExcel(HttpServletResponse response);
+
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ProductCategoryDto>>> searchProductCategories(
+            @RequestBody ProductCategorySearchRequestDto requestDto
+    );
 
 }
