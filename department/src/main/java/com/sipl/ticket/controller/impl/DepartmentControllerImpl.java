@@ -76,15 +76,18 @@ public class DepartmentControllerImpl implements DepartmentController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> getAllDepartments() {
+    public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments() {
 
-        log.info("<<Start>>getAllDepartments endpoint called<<Start>>");
+        log.info("<<Start>> getAllDepartments <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> response =
-                ResponseEntity.ok(departmentService.getAllDepartments());
+        ApiResponseDTO<DepartmentResponseDTO> response =
+                departmentService.getAllDepartments();
 
-        log.info("<<End>>getAllDepartments endpoint called<<End>>");
-        return response;
+        log.info("<<End>> getAllDepartments <<End>>");
+
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
     }
 
     @Override

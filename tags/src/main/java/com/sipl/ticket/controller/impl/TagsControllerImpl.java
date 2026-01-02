@@ -85,7 +85,10 @@ public class TagsControllerImpl implements TagsController {
                 tagsService.getAllTags();
 
         log.info("<<End>> getAllTags endpoint called <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
     }
 
     @Override

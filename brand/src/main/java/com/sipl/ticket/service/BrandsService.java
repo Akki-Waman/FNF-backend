@@ -28,7 +28,7 @@ public interface BrandsService {
             Long brandId
     );
 
-    ApiResponseDTO<PagedResponse<BrandDto>> getAllBrands();
+    ApiResponseDTO<BrandDto> getAllBrands();
 
     ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(
             BrandSearchRequestDto requestDto

@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -227,18 +228,18 @@ public class ShiftServiceImpl implements ShiftService {
 
     @Override
     @Cacheable("shifts")
-    public ApiResponseDTO<PagedResponse<ShiftResponseDTO>> getAllShifts() {
+    public ApiResponseDTO<ShiftResponseDTO> getAllShifts() {
 
         log.info("Fetching all active shifts");
 
         try {
-            List<ShiftResponseDTO> response = repository.findAll()
+            List<ShiftResponseDTO> list = repository.findAll()
                     .stream()
                     .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
                     .map(mapper::toResponseDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No shifts found",
@@ -248,10 +249,11 @@ public class ShiftServiceImpl implements ShiftService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Shifts fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Shifts fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
@@ -264,6 +266,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+
     @Override
     public ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(
             ShiftSearchRequestDto dto) {

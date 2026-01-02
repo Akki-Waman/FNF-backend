@@ -26,7 +26,7 @@ public interface ShiftService {
             Long shiftId
     );
 
-    ApiResponseDTO<PagedResponse<ShiftResponseDTO>> getAllShifts();
+    ApiResponseDTO<ShiftResponseDTO> getAllShifts();
 
     ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(
             ShiftSearchRequestDto requestDto
