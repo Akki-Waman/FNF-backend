@@ -401,11 +401,13 @@ public class OriginsServiceImpl implements OriginsService {
                     })
                     .collect(Collectors.toList());
 
-            OriginsExcelGenerator.generateCsv(dtoList, response);
+            OriginsExcelGenerator.generateExcel(dtoList, response);
 
         } catch (IOException e) {
             log.error("Error while downloading Origins CSV", e);
             throw new RuntimeException("Failed to download Origins CSV");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         log.info("<<End>> download Origins CSV service called <<End>>");
