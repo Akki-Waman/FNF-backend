@@ -107,7 +107,7 @@ public class TaskServiceImpl implements TaskService {
 
         validateTaskRequest(dto);
         validateTaskDates(dto);
-        validateAssigneeAndFollower(dto);
+        validateAssignee(dto);
         validateNoDuplicateUsers(dto);
 
         Branches branch = getBranch(dto.getBranchId());
@@ -304,14 +304,10 @@ public class TaskServiceImpl implements TaskService {
         return taskAttachmentRepository.saveAll(attachments);
     }
 
-    private void validateAssigneeAndFollower(TaskRequestDto dto) {
+    private void validateAssignee(TaskRequestDto dto) {
 
         if (dto.getAssigneeUserIds() == null || dto.getAssigneeUserIds().isEmpty()) {
             throw new RuntimeException("At least one assignee is required");
-        }
-
-        if (dto.getFollowerUserIds() == null || dto.getFollowerUserIds().isEmpty()) {
-            throw new RuntimeException("At least one follower is required");
         }
     }
 
