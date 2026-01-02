@@ -19,11 +19,14 @@ public class DmsConfig {
     @Bean
     public DocumentClientService documentClientService() {
         return new DocumentClientService.Builder(dmsServiceUrl)
-                .uploadEndpoint("/api/v1/documents/upload/")
-                .downloadEndpoint("/api/v1/documents/download/")
-                .deleteEndpoint("/api/v1/documents/delete/")
-                .getEndpoint("/api/v1/documents/info/")
+                .uploadEndpoint("/upload")
+                .downloadEndpoint("/download")
+                .deleteEndpoint("/delete/")
+                .getEndpoint("/info")
                 .applicationId("app001")
                 .build();
     }
+
+
+
 }
