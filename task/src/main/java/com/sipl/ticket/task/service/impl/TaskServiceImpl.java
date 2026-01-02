@@ -124,18 +124,22 @@ public class TaskServiceImpl implements TaskService {
     private void validateTaskRequest(TaskRequestDto dto) {
 
         if (dto == null) {
+            log.warn("Task request is null");
             throw new RuntimeException("Task request cannot be null");
         }
 
         if (dto.getSubject() == null || dto.getSubject().trim().isEmpty()) {
+            log.warn("Task subject is missing in request");
             throw new RuntimeException("Task subject is required");
         }
 
         if (dto.getBranchId() == null) {
+            log.warn("Branch ID is missing for Task with subject={}", dto.getSubject());
             throw new RuntimeException("Branch is required");
         }
 
         if (dto.getTicketId() == null) {
+            log.warn("Ticket ID is missing for Task with subject={}", dto.getSubject());
             throw new RuntimeException("Ticket is required");
         }
     }
