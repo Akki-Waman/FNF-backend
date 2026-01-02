@@ -68,14 +68,7 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
-    @CacheEvict(
-            value = {
-                    "countryById",
-                    "allCountries",
-                    "searchCountries"
-            },
-            allEntries = true
-    )
+    @CacheEvict(value = "countries", allEntries = true)
     public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
 
         log.info("START :: updateCountry | id={}, payload={}", id, dto);
