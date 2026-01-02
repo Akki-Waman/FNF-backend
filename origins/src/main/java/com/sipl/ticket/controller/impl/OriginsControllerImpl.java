@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class OriginsControllerImpl implements OriginsController {
                 originsService.saveOrigin(dto);
 
         log.info("<<End>> save Origin endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class OriginsControllerImpl implements OriginsController {
                 originsService.updateOrigin(dto);
 
         log.info("<<End>> update Origin endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class OriginsControllerImpl implements OriginsController {
                 originsService.getById(originId);
 
         log.info("<<End>> get Origin by id endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -72,20 +73,21 @@ public class OriginsControllerImpl implements OriginsController {
                 originsService.deleteById(originId);
 
         log.info("<<End>> delete Origin endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> getAll() {
+    public ResponseEntity<ApiResponseDTO<OriginDto>> getAllOrigins() {
 
         log.info("<<Start>> getAll Origins endpoint called <<Start>>");
 
-        ApiResponseDTO<PagedResponse<OriginDto>> response =
+        ApiResponseDTO<OriginDto> response =
                 originsService.getAllOrigins();
 
         log.info("<<End>> getAll Origins endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<OriginDto>>> search(
@@ -97,7 +99,7 @@ public class OriginsControllerImpl implements OriginsController {
                 originsService.searchOrigins(dto);
 
         log.info("<<End>> search Origin endpoint called <<End>>");
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override

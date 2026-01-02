@@ -38,7 +38,8 @@ public interface StateController {
     );
 
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<List<StateResponseDto>>> getAll();
+    ResponseEntity<ApiResponseDTO<StateResponseDto>> getAll();
+
 
 
     @PostMapping("/search")

@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -151,8 +152,10 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @Cacheable("states")
-    public ApiResponseDTO<List<StateResponseDto>> getAllStates() {
+    public ApiResponseDTO<StateResponseDto> getAllStates() {
+
         log.info("Fetching all active states");
+
         try {
             List<StateResponseDto> list = stateRepository.findAll()
                     .stream()
@@ -161,16 +164,33 @@ public class StateServiceImpl implements StateService {
                     .collect(Collectors.toList());
 
             if (list.isEmpty()) {
-                return new ApiResponseDTO<>(null, "No states found", HttpStatus.NOT_FOUND, true);
+                return new ApiResponseDTO<>(
+                        null,
+                        "No states found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
             }
 
-            return new ApiResponseDTO<>(list, "States fetched successfully", HttpStatus.OK, false);
+            return new ApiResponseDTO<>(
+                    list,
+                    HttpStatus.OK,
+                    "States fetched successfully",
+                    false,
+                    LocalDateTime.now()
+            );
 
         } catch (Exception e) {
             log.error("Error occurred while fetching states", e);
-            return new ApiResponseDTO<>(null, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR, true);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(StateSearchRequestDto dto) {

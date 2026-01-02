@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 public interface OriginsService {
 
@@ -26,7 +27,9 @@ public interface OriginsService {
             Long originId
     );
 
-    ApiResponseDTO<PagedResponse<OriginDto>> getAllOrigins();
+    ApiResponseDTO<OriginDto> getAllOrigins();
+
+
 
 
     ApiResponseDTO<PagedResponse<OriginDto>> searchOrigins(
