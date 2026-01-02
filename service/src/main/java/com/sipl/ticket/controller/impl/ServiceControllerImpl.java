@@ -103,11 +103,11 @@ public class ServiceControllerImpl implements ServiceController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> searchServices(
             @RequestBody ServiceSearchRequestDto requestDto) {
 
-        log.info("Searching services with request: {}", requestDto);
+        log.info("<<Start>> searchServices <<Start>>");
 
         ApiResponseDTO<PagedResponse<ServiceResponseDTO>> response =
                 serviceService.searchServices(requestDto);
-
+        log.info("<<End>> searchServices <<End>>");
         return ResponseEntity.ok(response);
     }
 }

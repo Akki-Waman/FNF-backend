@@ -92,10 +92,11 @@ public class BrandsControllerImpl implements BrandsController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> searchBrands(
             BrandSearchRequestDto requestDto) {
 
-        log.info("Searching brands with request: {}", requestDto);
+        log.info("<<Start>> searchBrands <<Start>>");
 
         ApiResponseDTO<PagedResponse<BrandDto>> response =
                 brandsService.searchBrands(requestDto);
+        log.info("<<End>> searchBrands <<End>>");
 
         return ResponseEntity.ok(response);
     }

@@ -23,7 +23,6 @@ public class ServiceExcelGenerator {
 
         int rowIndex = 0;
 
-        /* ================= TITLE ================= */
         Font titleFont = workbook.createFont();
         titleFont.setBold(true);
         titleFont.setFontHeightInPoints((short) 18);
@@ -34,16 +33,14 @@ public class ServiceExcelGenerator {
 
         Row titleRow = sheet.createRow(rowIndex++);
         Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Services List");
         titleCell.setCellStyle(titleStyle);
 
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
         rowIndex++;
 
         /* ================= HEADER ================= */
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
-        headerFont.setFontHeightInPoints((short) 14);
 
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFont(headerFont);
@@ -51,7 +48,15 @@ public class ServiceExcelGenerator {
         setBorders(headerStyle);
 
         Row headerRow = sheet.createRow(rowIndex++);
-        String[] headers = {"Service ID", "Service Name"};
+
+        String[] headers = {
+                "Service ID",
+                "Service Name",
+                "Created By",
+                "Modified By",
+                "Created Time",
+                "Modified Time"
+        };
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -59,31 +64,57 @@ public class ServiceExcelGenerator {
             cell.setCellStyle(headerStyle);
         }
 
-        /* ================= DATA ================= */
         CellStyle dataStyle = workbook.createCellStyle();
-        dataStyle.setAlignment(HorizontalAlignment.LEFT);
         setBorders(dataStyle);
 
-        for (ServiceResponseDTO s : services) {
+        CellStyle dateStyle = workbook.createCellStyle();
+        dateStyle.setDataFormat(
+                workbook.createDataFormat()
+                        .getFormat("dd-MM-yyyy HH:mm:ss"));
+        setBorders(dateStyle);
+
+        for (ServiceResponseDTO dto : services) {
             Row row = sheet.createRow(rowIndex++);
-            Cell c1 = row.createCell(0);
-            c1.setCellValue(s.getServiceId());
+
+            Cell c0 = row.createCell(0);
+            c0.setCellValue(dto.getServiceId());
+            c0.setCellStyle(dataStyle);
+
+            Cell c1 = row.createCell(1);
+            c1.setCellValue(dto.getServiceName());
             c1.setCellStyle(dataStyle);
 
-            Cell c2 = row.createCell(1);
-            c2.setCellValue(s.getServiceName());
+            Cell c2 = row.createCell(2);
+            c2.setCellValue(dto.getCreatedBy());
             c2.setCellStyle(dataStyle);
+
+            Cell c3 = row.createCell(3);
+            c3.setCellValue(dto.getModifiedBy());
+            c3.setCellStyle(dataStyle);
+
+            Cell c4 = row.createCell(4);
+            if (dto.getCreatedTime() != null) {
+                c4.setCellValue(dto.getCreatedTime());
+                c4.setCellStyle(dateStyle);
+            } else {
+                c4.setCellStyle(dataStyle);
+            }
+
+            Cell c5 = row.createCell(5);
+            if (dto.getModifiedTime() != null) {
+                c5.setCellValue(dto.getModifiedTime());
+                c5.setCellStyle(dateStyle);
+            } else {
+                c5.setCellStyle(dataStyle);
+            }
         }
 
-        /* ================= FILTER ================= */
-        sheet.setAutoFilter(
-                new CellRangeAddress(
-                        headerRow.getRowNum(),
-                        headerRow.getRowNum(),
-                        0,
-                        headers.length - 1));
+        sheet.setAutoFilter(new CellRangeAddress(
+                headerRow.getRowNum(),
+                headerRow.getRowNum(),
+                0,
+                headers.length - 1));
 
-        /* ================= AUTO SIZE ================= */
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }

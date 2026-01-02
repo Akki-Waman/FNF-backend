@@ -104,10 +104,11 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
     searchProductSubCategories(
             @RequestBody ProductSubCategorySearchRequestDto requestDto) {
 
-        log.info("Searching product sub categories with request: {}", requestDto);
+        log.info("<<Start>> searchProductSubCategories <<Start>>");
 
         ApiResponseDTO<PagedResponse<ProductSubCategoryDto>> response =
                 productSubCategoryService.searchProductSubCategories(requestDto);
+        log.info("<<End>> searchProductSubCategories <<End>>");
 
         return ResponseEntity.ok(response);
     }

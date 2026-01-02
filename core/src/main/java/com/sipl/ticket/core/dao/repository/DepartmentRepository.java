@@ -6,27 +6,25 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
+@Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    boolean existsByDepartmentNameIgnoreCaseAndIsDeletedFalse(String departmentName);
+    boolean existsByDepartmentNameIgnoreCase(String departmentName);
 
-    boolean existsByDepartmentNameIgnoreCaseAndDepartmentIdNotAndIsDeletedFalse(
+    boolean existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
             String departmentName, Long departmentId
     );
 
-    List<Department> findByIsDeletedFalse();
-
-    @Query("SELECT d " +
-            "FROM Department d " +
-            "WHERE d.isActive = true " +
-            "AND (:departmentId IS NULL OR d.departmentId = :departmentId)")
+    @Query(
+            " SELECT d " +
+                    " FROM Department d " +
+                    " WHERE (:departmentId IS NULL OR d.departmentId = :departmentId) " +
+                    " AND d.isActive = true "
+    )
     Page<Department> searchByDepartmentId(
             @Param("departmentId") Long departmentId,
             Pageable pageable
     );
-
-
 }

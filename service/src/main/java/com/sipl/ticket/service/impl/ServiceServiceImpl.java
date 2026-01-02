@@ -41,42 +41,33 @@ public class ServiceServiceImpl implements ServiceService {
     @CacheEvict(value = "services", allEntries = true)
     public ApiResponseDTO<ServiceResponseDTO> saveService(ServiceRequestDto dto) {
 
-        log.info("Saving service with name: {}", dto.getServiceName());
-
         try {
-            String name = dto.getServiceName().trim();
-
-            if (repository.existsByServiceNameIgnoreCaseAndIsDeletedFalse(name)) {
-                log.warn("Service already exists with name: {}", name);
+            if (repository.existsByServiceNameIgnoreCase(dto.getServiceName())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Service '" + name + "' already exists.",
+                        "Service with name already exists",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
             ServiceEntity service = mapper.toEntity(dto);
-            service.setServiceName(name);
             service.setIsActive(true);
-            service.setIsDeleted(false);
 
-            ServiceEntity savedService = repository.save(service);
-
-            log.info("Service created successfully with id: {}", savedService.getServiceId());
+            ServiceEntity saved = repository.save(service);
 
             return new ApiResponseDTO<>(
-                    mapper.toResponseDto(savedService),
+                    mapper.toDto(saved),
                     "Service created successfully",
                     HttpStatus.CREATED,
                     false
             );
 
         } catch (Exception e) {
-            log.error("Error occurred while saving service", e);
+            log.error("saveService error", e);
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error",
+                    "Something went wrong while creating service",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
@@ -87,165 +78,147 @@ public class ServiceServiceImpl implements ServiceService {
     @CacheEvict(value = "services", allEntries = true)
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
-        log.info("Updating service, id={}, name={}", dto.getServiceId(), dto.getServiceName());
+        ServiceEntity service =
+                repository.findById(dto.getServiceId()).orElse(null);
 
-        try {
-            if (dto == null || dto.getServiceId() == null ||
-                    dto.getServiceName() == null || dto.getServiceName().trim().isEmpty()) {
+        if (service == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Service not found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
 
-                return new ApiResponseDTO<>(
-                        null,
-                        "Service ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
+                dto.getServiceName(), dto.getServiceId())) {
 
-            ServiceEntity service = repository.findById(dto.getServiceId())
-                    .filter(s -> !Boolean.TRUE.equals(s.getIsDeleted()))
-                    .orElse(null);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Service name already exists",
+                    HttpStatus.CONFLICT,
+                    true
+            );
+        }
 
-            if (service == null) {
-                return new ApiResponseDTO<>(
+        service.setServiceName(dto.getServiceName());
+        ServiceEntity saved = repository.save(service);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(saved),
+                "Service updated successfully",
+                HttpStatus.OK,
+                false
+        );
+    }
+
+    @Override
+    @Cacheable(value = "services", key = "#serviceId")
+    public ApiResponseDTO<ServiceResponseDTO> getById(Long serviceId) {
+
+        return repository.findById(serviceId)
+                .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                .map(s -> new ApiResponseDTO<>(
+                        mapper.toDto(s),
+                        "Service found",
+                        HttpStatus.OK,
+                        false
+                ))
+                .orElseGet(() -> new ApiResponseDTO<>(
                         null,
                         "Service not found",
                         HttpStatus.NOT_FOUND,
                         true
-                );
-            }
-
-            String name = dto.getServiceName().trim();
-
-            if (repository.existsByServiceNameIgnoreCaseAndServiceIdNotAndIsDeletedFalse(
-                    name, dto.getServiceId())) {
-
-                log.warn("Duplicate service name '{}' found while updating", name);
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Service with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            service.setServiceName(name);
-            ServiceEntity updated = repository.save(service);
-
-            log.info("Service updated successfully, id={}", updated.getServiceId());
-
-            return new ApiResponseDTO<>(
-                    mapper.toResponseDto(updated),
-                    "Service updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateService unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
-        }
-    }
-
-    @Override
-    public ApiResponseDTO<ServiceResponseDTO> getById(Long id) {
-
-        log.info("Fetching service by id={}", id);
-
-        try {
-            return repository.findById(id)
-                    .filter(s -> !Boolean.TRUE.equals(s.getIsDeleted()))
-                    .map(s -> new ApiResponseDTO<>(
-                            mapper.toResponseDto(s),
-                            "Service found",
-                            HttpStatus.OK,
-                            false
-                    ))
-                    .orElseGet(() -> new ApiResponseDTO<>(
-                            null,
-                            "Service not found",
-                            HttpStatus.NOT_FOUND,
-                            true
-                    ));
-
-        } catch (Exception e) {
-            log.error("getById unexpected error, id={}", id, e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
-        }
+                ));
     }
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
-    public ApiResponseDTO<String> deleteById(Long id) {
+    public ApiResponseDTO<String> deleteById(Long serviceId) {
 
-        log.info("Deleting service, id={}", id);
+        ServiceEntity service = repository.findById(serviceId).orElse(null);
 
-        try {
-            ServiceEntity service = repository.findById(id).orElse(null);
-
-            if (service == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Service not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.TRUE.equals(service.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Service is already deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            service.setIsActive(false);
-            service.setIsDeleted(true);
-            repository.save(service);
-
-            log.info("Service deleted successfully, id={}", id);
-
+        if (service == null) {
             return new ApiResponseDTO<>(
                     null,
-                    "Service deleted successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("deleteById unexpected error, id={}", id, e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Service not found",
+                    HttpStatus.NOT_FOUND,
                     true
             );
         }
+
+        service.setIsActive(false);
+        repository.save(service);
+
+        return new ApiResponseDTO<>(
+                null,
+                "Service deleted successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
-    @Cacheable("services")
-    public ApiResponseDTO<ServiceResponseDTO> getAllServices() {
+    public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> searchServices(
+            ServiceSearchRequestDto dto) {
 
-        log.info("Fetching all services");
+        Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
+                ? Sort.by(dto.getSortBy()).ascending()
+                : Sort.by(dto.getSortBy()).descending();
+
+        Pageable pageable = PageRequest.of(
+                dto.getPage(),
+                dto.getSize(),
+                sort
+        );
+
+        Page<ServiceEntity> pageResult =
+                repository.searchServices(
+                        dto.getServiceId(),
+                        dto.getIsActive(),
+                        pageable
+                );
+
+        if (pageResult.isEmpty()) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No services found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        List<ServiceResponseDTO> content = pageResult.getContent()
+                .stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+
+        return new ApiResponseDTO<>(
+                new PagedResponse<>(
+                        content,
+                        pageResult.getNumber(),
+                        pageResult.getTotalElements(),
+                        pageResult.getTotalPages(),
+                        pageResult.getSize(),
+                        pageResult.isLast()
+                ),
+                "Services fetched successfully",
+                HttpStatus.OK,
+                false
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "services")
+    public ApiResponseDTO<ServiceResponseDTO> getAllServices() {
 
         try {
             List<ServiceResponseDTO> list = repository
-                    .findByIsDeletedFalse()
+                    .findAll(Sort.by(Sort.Direction.DESC, "serviceId"))
                     .stream()
-                    .map(mapper::toResponseDto)
+                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .map(mapper::toDto)
                     .collect(Collectors.toList());
 
             if (list.isEmpty()) {
@@ -262,7 +235,7 @@ public class ServiceServiceImpl implements ServiceService {
                     HttpStatus.OK,
                     "Services fetched successfully",
                     false,
-                    LocalDateTime.now()
+                    null
             );
 
         } catch (Exception e) {
@@ -277,90 +250,22 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @CacheEvict(value = "services", allEntries = true)
     public void exportServicesExcel(HttpServletResponse response) {
-
-        log.info("Exporting active services to Excel");
 
         try {
             List<ServiceResponseDTO> services = repository.findAll()
                     .stream()
                     .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
-                    .map(s -> new ServiceResponseDTO(
-                            s.getServiceId(),
-                            s.getServiceName(), s.getIsActive(), s.getIsDeleted()
-                    ))
+                    .map(mapper::toDto)
                     .collect(Collectors.toList());
 
             ServiceExcelGenerator.generateExcel(services, response);
 
-            log.info(
-                    "Services Excel export completed successfully, totalRecords={}",
-                    services.size()
-            );
-
         } catch (Exception e) {
-            log.error("exportServicesExcel unexpected error", e);
+            log.error("exportServicesExcel error", e);
             throw new RuntimeException("Failed to export services Excel", e);
         }
     }
-        @Override
-        public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> searchServices(
-                ServiceSearchRequestDto dto) {
-
-            try {
-                Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
-                        ? Sort.by(dto.getSortBy()).ascending()
-                        : Sort.by(dto.getSortBy()).descending();
-
-                Pageable pageable = PageRequest.of(
-                        dto.getPage(),
-                        dto.getSize(),
-                        sort
-                );
-
-                Page<ServiceEntity> pageResult =
-                        repository.searchByServiceId(
-                                dto.getServiceId(),
-                                pageable
-                        );
-
-                if (pageResult.isEmpty()) {
-                    return new ApiResponseDTO<>(
-                            null,
-                            "No services found",
-                            HttpStatus.NOT_FOUND,
-                            true
-                    );
-                }
-
-                List<ServiceResponseDTO> content =
-                        mapper.mapServicesDropListToDtoList(pageResult.getContent());
-
-                PagedResponse<ServiceResponseDTO> pagedResponse =
-                        new PagedResponse<>(
-                                content,
-                                pageResult.getNumber(),
-                                pageResult.getTotalElements(),
-                                pageResult.getTotalPages(),
-                                pageResult.getSize(),
-                                pageResult.isLast()
-                        );
-
-                return new ApiResponseDTO<>(
-                        pagedResponse,
-                        "Services fetched successfully",
-                        HttpStatus.OK,
-                        false
-                );
-
-            } catch (Exception e) {
-                log.error("searchServices error", e);
-                return new ApiResponseDTO<>(
-                        null,
-                        "Internal server error",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        true
-                );
-            }
-    }
 }
+

@@ -24,7 +24,6 @@ public class ProductSubCategoryExcelGenerator {
 
         int rowIndex = 0;
 
-        /* ================= TITLE ================= */
         Font titleFont = workbook.createFont();
         titleFont.setBold(true);
         titleFont.setFontHeightInPoints((short) 18);
@@ -35,16 +34,13 @@ public class ProductSubCategoryExcelGenerator {
 
         Row titleRow = sheet.createRow(rowIndex++);
         Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Product Sub Categories");
         titleCell.setCellStyle(titleStyle);
 
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
         rowIndex++;
 
-        /* ================= HEADER ================= */
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
-        headerFont.setFontHeightInPoints((short) 14);
 
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFont(headerFont);
@@ -52,10 +48,15 @@ public class ProductSubCategoryExcelGenerator {
         setBorders(headerStyle);
 
         Row headerRow = sheet.createRow(rowIndex++);
+
         String[] headers = {
                 "Sub Category ID",
                 "Category Name",
-                "Sub Category Name"
+                "Sub Category Name",
+                "Created By",
+                "Modified By",
+                "Created Time",
+                "Modified Time"
         };
 
         for (int i = 0; i < headers.length; i++) {
@@ -64,32 +65,51 @@ public class ProductSubCategoryExcelGenerator {
             cell.setCellStyle(headerStyle);
         }
 
-        /* ================= DATA ================= */
+        CellStyle dateStyle = workbook.createCellStyle();
+        dateStyle.setDataFormat(
+                workbook.createDataFormat()
+                        .getFormat("dd-MM-yyyy HH:mm:ss"));
+        setBorders(dateStyle);
+
         CellStyle dataStyle = workbook.createCellStyle();
         setBorders(dataStyle);
 
-        for (ProductSubCategoryDto s : subCategories) {
+        for (ProductSubCategoryDto dto : subCategories) {
             Row row = sheet.createRow(rowIndex++);
-            row.createCell(0).setCellValue(s.getProductSubCategoryId());
-            row.createCell(1).setCellValue(
-                    s.getProductCategories().getProductCategoryName());
-            row.createCell(2).setCellValue(
-                    s.getProductSubCategoryName());
 
-            row.getCell(0).setCellStyle(dataStyle);
-            row.getCell(1).setCellStyle(dataStyle);
-            row.getCell(2).setCellStyle(dataStyle);
+            row.createCell(0).setCellValue(dto.getProductSubCategoryId());
+            row.createCell(1).setCellValue(
+                    dto.getProductCategories() != null
+                            ? dto.getProductCategories().getProductCategoryName()
+                            : "");
+            row.createCell(2).setCellValue(dto.getProductSubCategoryName());
+            row.createCell(3).setCellValue(dto.getCreatedBy());
+            row.createCell(4).setCellValue(dto.getModifiedBy());
+
+            if (dto.getCreatedTime() != null) {
+                Cell c = row.createCell(5);
+                c.setCellValue(dto.getCreatedTime());
+                c.setCellStyle(dateStyle);
+            }
+
+            if (dto.getModifiedTime() != null) {
+                Cell c = row.createCell(6);
+                c.setCellValue(dto.getModifiedTime());
+                c.setCellStyle(dateStyle);
+            }
+
+            for (int i = 0; i <= 4; i++) {
+                row.getCell(i).setCellStyle(dataStyle);
+            }
         }
 
-        /* ================= FILTER ================= */
-        sheet.setAutoFilter(
-                new CellRangeAddress(
-                        headerRow.getRowNum(),
-                        headerRow.getRowNum(),
-                        0,
-                        headers.length - 1));
+        sheet.setAutoFilter(new CellRangeAddress(
+                headerRow.getRowNum(),
+                headerRow.getRowNum(),
+                0,
+                headers.length - 1));
 
-        /* ================= AUTO SIZE ================= */
+
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }
@@ -97,11 +117,11 @@ public class ProductSubCategoryExcelGenerator {
         workbook.write(response.getOutputStream());
         workbook.close();
     }
-
     private static void setBorders(CellStyle style) {
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
     }
+
 }

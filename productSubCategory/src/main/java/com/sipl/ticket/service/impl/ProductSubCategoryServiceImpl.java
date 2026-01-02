@@ -333,7 +333,7 @@ public class ProductSubCategoryServiceImpl
                 ProductSubCategorySearchRequestDto dto) {
 
             try {
-                Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                Sort sort = "desc".equalsIgnoreCase(dto.getSortDir())
                         ? Sort.by(dto.getSortBy()).ascending()
                         : Sort.by(dto.getSortBy()).descending();
 
