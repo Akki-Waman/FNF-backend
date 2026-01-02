@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -211,40 +212,44 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Cacheable("departments")
-    public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> getAllDepartments() {
+    public ApiResponseDTO<DepartmentResponseDTO> getAllDepartments() {
 
-        log.info("<<Start>>getAllDepartments endpoint called<<Start>>");
+        log.info("Fetching all active departments");
 
         try {
             List<Department> list = repository.findByIsDeletedFalse();
 
             if (list.isEmpty()) {
-                return new ApiResponseDTO<>(null,
+                return new ApiResponseDTO<>(
+                        null,
                         "No departments found",
                         HttpStatus.NOT_FOUND,
-                        true);
+                        true
+                );
             }
 
             List<DepartmentResponseDTO> response =
                     mapper.toResponseDtoList(list);
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Departments fetched successfully",
+                    response,
                     HttpStatus.OK,
-                    false
+                    "Departments fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
             log.error("getAllDepartments unexpected error", e);
-            return new ApiResponseDTO<>(null,
+            return new ApiResponseDTO<>(
+                    null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
-        } finally {
-            log.info("<<End>>getAllDepartments endpoint called<<End>>");
+                    true
+            );
         }
     }
+
     @Override
     public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
             DepartmentSearchRequestDto dto) {

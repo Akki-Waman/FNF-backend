@@ -75,15 +75,17 @@ public class BrandsControllerImpl implements BrandsController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> getAllBrands() {
+    public ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands() {
 
-        log.info("<<Start>>getAllBrands endpoint called<<Start>>");
+        log.info("<<Start>> getAllBrands <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> response =
-                ResponseEntity.ok(brandsService.getAllBrands());
+        ApiResponseDTO<BrandDto> response =
+                brandsService.getAllBrands();
 
-        log.info("<<End>>getAllBrands endpoint called<<End>>");
-        return response;
+        log.info("<<End>> getAllBrands <<End>>");
+
+        return ResponseEntity.ok(response);
+
     }
 
     @Override

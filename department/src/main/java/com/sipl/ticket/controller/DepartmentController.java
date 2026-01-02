@@ -4,6 +4,7 @@ package com.sipl.ticket.controller;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
 import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import io.swagger.annotations.Api;
@@ -38,9 +39,13 @@ public interface DepartmentController {
     ResponseEntity<ApiResponseDTO<String>> deleteById(
             @PathVariable Long departmentId
     );
-
-    @GetMapping("/getAll")
-    ResponseEntity<ApiResponseDTO<PagedResponse<DepartmentResponseDTO>>> getAllDepartments();
+    @ApiOperation(
+            value = "Get all departments",
+            notes = "Fetch all active departments",
+            response = DepartmentResponseDTO.class
+    )
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments();
 
     @ApiOperation(
             value = "Search departments",

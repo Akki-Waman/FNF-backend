@@ -3,9 +3,11 @@ package com.sipl.ticket.controller;
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
 import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +37,14 @@ public interface ShiftController {
             @PathVariable Long shiftId
     );
 
-    @GetMapping(" ")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> getAllShifts();
+    @ApiOperation(
+            value = "Get all shifts",
+            notes = "Fetch all active shifts",
+            response = ShiftResponseDTO.class
+    )
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getAllShifts();
+
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> searchShifts(

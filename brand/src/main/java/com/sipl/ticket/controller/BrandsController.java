@@ -38,8 +38,13 @@ public interface BrandsController {
             @PathVariable Long brandId
     );
 
-    @GetMapping("/getAll")
-    ResponseEntity<ApiResponseDTO<PagedResponse<BrandDto>>> getAllBrands();
+    @ApiOperation(
+            value = "Get all brands",
+            notes = "Fetch all active brands",
+            response = BrandDto.class
+    )
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands();
 
     @ApiOperation(
             value = "Search brands",

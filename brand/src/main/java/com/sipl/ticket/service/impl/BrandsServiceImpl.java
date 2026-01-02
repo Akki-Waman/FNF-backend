@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -231,18 +232,18 @@ public class BrandsServiceImpl implements BrandsService {
 
     @Override
     @Cacheable("brands")
-    public ApiResponseDTO<PagedResponse<BrandDto>> getAllBrands() {
+    public ApiResponseDTO<BrandDto> getAllBrands() {
 
         log.info("Fetching all active brands");
 
         try {
-            List<BrandDto> response = repository.findAll()
+            List<BrandDto> list = repository.findAll()
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No brands found",
@@ -252,14 +253,15 @@ public class BrandsServiceImpl implements BrandsService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Brands fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Brands fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllBrands unexpected error", e);
+            log.error("getAllBrands error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

@@ -63,7 +63,7 @@ public interface TagsController {
             notes = "Fetch all active tags in descending order of tagId",
             response = TagResponseDto.class
     )
-    @GetMapping("/getAll")
+    @GetMapping("")
     ResponseEntity<ApiResponseDTO<TagResponseDto>> getAllTags();
 
     @ApiOperation(
