@@ -37,8 +37,9 @@
         <module>state</module>
         <module>country</module>
 		<module>city</module>
+        <module>task</module>
 
-	</modules>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
@@ -312,6 +313,11 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>branch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>task</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
