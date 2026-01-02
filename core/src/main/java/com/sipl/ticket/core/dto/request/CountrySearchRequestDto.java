@@ -13,7 +13,6 @@ public class CountrySearchRequestDto extends SearchRequestDto {
     private String countryName;
     private String taxType;
     private Boolean isForeign;
-    private Boolean isActive;
 
 
 }
