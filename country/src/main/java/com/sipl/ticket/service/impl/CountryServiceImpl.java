@@ -3,6 +3,7 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.Country;
 import com.sipl.ticket.core.dao.repository.CountryRepository;
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
+import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import com.sipl.ticket.core.mapper.CountryMapper;
@@ -12,11 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,14 +72,7 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
-    @CacheEvict(
-            value = {
-                    "countryById",
-                    "allCountries",
-                    "searchCountries"
-            },
-            allEntries = true
-    )
+    @CacheEvict(value = "countries", allEntries = true)
     public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
 
         log.info("START :: updateCountry | id={}, payload={}", id, dto);
@@ -172,7 +169,7 @@ public class CountryServiceImpl implements CountryService {
             value = "allCountries",
             unless = "#result == null || #result.error == true"
     )
-    public ApiResponseDTO<List<CountryResponseDto>> getAllCountries() {
+    public ApiResponseDTO<CountryResponseDto> getAllCountries() {
 
         log.info("START :: getAllCountries");
 
@@ -197,9 +194,10 @@ public class CountryServiceImpl implements CountryService {
             log.info("END :: getAllCountries | count={}", countries.size());
             return new ApiResponseDTO<>(
                     countries,
-                    "Countries fetched successfully",
                     HttpStatus.OK,
-                    false
+                    "Countries fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
@@ -281,49 +279,64 @@ public class CountryServiceImpl implements CountryService {
 
 
 
-
     @Override
-    @Cacheable(
-            value = "searchCountries",
-            key = "T(java.util.Objects).hash(#name, #isForeign, #pageable.pageNumber, #pageable.pageSize)",
-            unless = "#result == null || #result.error == true"
-    )
-    public ApiResponseDTO<Page<CountryResponseDto>> searchCountries(
-            String name, Boolean isForeign, Pageable pageable) {
+    //@Cacheable(value = "countrySearchCache", key = "#requestDto")
+    public ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
+            CountrySearchRequestDto requestDto) {
 
-        log.info("START :: searchCountries | name={}, isForeign={}, page={}, size={}",
-                name, isForeign, pageable.getPageNumber(), pageable.getPageSize());
+        log.info("START :: searchCountries | request={}", requestDto);
 
         try {
-            Page<Country> page = repository.searchCountries(
-                    (name != null && !name.isBlank()) ? name.trim() : null,
-                    isForeign,
-                    pageable);
+            Pageable pageable = PageRequest.of(
+                    requestDto.getPage(),
+                    requestDto.getSize()
+            );
 
-            if (page.isEmpty()) {
-                return new ApiResponseDTO<>(null,
-                        "No countries found",
-                        HttpStatus.NOT_FOUND,
-                        true);
+            Page<Country> countryPage = repository.searchCountries(
+                    requestDto.getCountryId(),
+                    requestDto.getCountryName(),
+                    requestDto.getTaxType(),
+                    requestDto.getIsForeign(),
+                    requestDto.getIsActive(),
+                    pageable
+            );
+
+            if (countryPage.isEmpty()) {
+                log.info("END :: searchCountries | No records found");
+                return ResponseEntity.ok(
+                        new ApiResponseDTO<>(
+                                "No countries found",
+                                HttpStatus.NOT_FOUND,
+                                false
+                        )
+                );
             }
 
-            Page<CountryResponseDto> dtoPage = page.map(mapper::toDto);
+            Page<CountryResponseDto> responsePage =
+                    countryPage.map(mapper::toDto);
 
-            log.info("END :: searchCountries | total={}", dtoPage.getTotalElements());
+            log.info("END :: searchCountries | total={}", responsePage.getTotalElements());
 
-            return new ApiResponseDTO<>(dtoPage,
-                    "Countries fetched successfully",
-                    HttpStatus.OK,
-                    false);
+            return ResponseEntity.ok(
+                    new ApiResponseDTO<>(
+                            responsePage,
+                            "Countries fetched successfully",
+                            HttpStatus.OK,
+                            false
+                    )
+            );
 
         } catch (Exception e) {
             log.error("ERROR :: searchCountries", e);
-            return new ApiResponseDTO<>(null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDTO<>(
+                            "Internal server error",
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            true
+                    ));
         }
     }
+
 
 
 

@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.CountryController;
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
+import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import com.sipl.ticket.service.CountryService;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,15 +65,15 @@ public class CountryControllerImpl implements CountryController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> getAllCountries() {
+    public ResponseEntity<ApiResponseDTO<CountryResponseDto>> getAllCountries() {
 
         log.info("<<Start>>getAllCountries endpoint called<<Start>>");
 
-        ApiResponseDTO<List<CountryResponseDto>> response =
+        ApiResponseDTO<CountryResponseDto> response =
                 countryService.getAllCountries();
 
         log.info("<<End>>getAllCountries endpoint called<<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -88,21 +88,18 @@ public class CountryControllerImpl implements CountryController {
         log.info("<<End>>deleteCountry endpoint called<<End>>");
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+
+
+
+
     @Override
     public ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
-            String name,
-            Boolean isForeign,
-            int page,
-            int size) {
+            @RequestBody CountrySearchRequestDto requestDto) {
 
-        log.info("START :: searchCountries | name={}, isForeign={}, page={}, size={}",
-                name, isForeign, page, size);
-
-        Pageable pageable = PageRequest.of(page, size);
-
-        return ResponseEntity.ok(
-                countryService.searchCountries(name, isForeign, pageable)
-        );
+        return countryService.searchCountries(requestDto);
     }
+
+
 
 }

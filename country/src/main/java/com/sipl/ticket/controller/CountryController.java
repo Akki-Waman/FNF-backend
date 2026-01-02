@@ -1,7 +1,9 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
+import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,19 +30,35 @@ public interface CountryController {
             @PathVariable Long id,
             @RequestBody CountryRequestDto requestDto);
 
+    @ApiOperation(
+            value = "Get Country by ID",
+            notes = "Fetch Country details using Country ID",
+            response = CountryResponseDto.class
+    )
+    @GetMapping("/get/{countryId}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> getCountryById(
-            Long countryId);
+            @PathVariable("countryId") Long countryId);
 
-    ResponseEntity<ApiResponseDTO<List<CountryResponseDto>>> getAllCountries();
+    @ApiOperation(
+            value = "Get All Countries",
+            notes = "Fetch all active countries"
+    )
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<CountryResponseDto>> getAllCountries();
 
+    @ApiOperation(
+            value = "Delete Country",
+            notes = "Soft deletes (deactivates) a country by ID"
+    )
+    @DeleteMapping("/delete/{countryId}")
     ResponseEntity<ApiResponseDTO<String>> deleteCountry(
-            Long countryId);
+            @PathVariable("countryId") Long countryId);
 
-    @GetMapping("/search")
+    @ApiOperation("Search Countries with filters & pagination")
+    @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean isForeign,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    );
+            @RequestBody CountrySearchRequestDto requestDto);
+
+
+
 }
