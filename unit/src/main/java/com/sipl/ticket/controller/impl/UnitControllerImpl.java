@@ -2,7 +2,9 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.UnitController;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
+import com.sipl.ticket.core.dto.request.UnitSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +96,21 @@ public class UnitControllerImpl implements UnitController {
         log.info("<<End>> exportUnitsExcel endpoint called <<End>>");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<UnitDto>>>
+    searchUnits(
+            @RequestBody UnitSearchRequestDto requestDto) {
+
+        log.info("<<Start>> searchUnits <<Start>>");
+
+        ApiResponseDTO<PagedResponse<UnitDto>> response =
+                unitService.searchUnits(requestDto);
+
+        log.info("<<End>> searchUnits <<End>>");
+
+        return ResponseEntity.ok(response);
     }
 
 }

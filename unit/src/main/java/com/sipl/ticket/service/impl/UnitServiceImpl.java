@@ -3,7 +3,9 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.core.dao.entity.Unit;
 import com.sipl.ticket.core.dao.repository.UnitRepository;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
+import com.sipl.ticket.core.dto.request.UnitSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import com.sipl.ticket.core.helper.UnitExcelGenerator;
 import com.sipl.ticket.core.mapper.UnitMapper;
@@ -11,6 +13,10 @@ import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -273,6 +279,70 @@ public class UnitServiceImpl implements UnitService {
         } catch (Exception e) {
             log.error("exportUnitsExcel unexpected error", e);
             throw new RuntimeException("Failed to export units Excel", e);
+        }
+    }
+
+    @Override
+    public ApiResponseDTO<PagedResponse<UnitDto>> searchUnits(
+            UnitSearchRequestDto dto) {
+
+        try {
+            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
+                    ? Sort.by(dto.getSortBy()).ascending()
+                    : Sort.by(dto.getSortBy()).descending();
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    sort
+            );
+
+
+            Page<Unit> pageResult =
+                    repository.searchByUnitId(
+                            dto.getUnitId(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No units found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<UnitDto> content = pageResult.getContent()
+                    .stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            PagedResponse<UnitDto> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Units fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchUnits error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
     }
 }
