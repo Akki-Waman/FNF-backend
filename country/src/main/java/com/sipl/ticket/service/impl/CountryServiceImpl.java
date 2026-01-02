@@ -68,7 +68,14 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
-    @CacheEvict(value = "countries", allEntries = true)
+    @CacheEvict(
+            value = {
+                    "countryById",
+                    "allCountries",
+                    "searchCountries"
+            },
+            allEntries = true
+    )
     public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
 
         log.info("START :: updateCountry | id={}, payload={}", id, dto);
@@ -117,6 +124,11 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    @Cacheable(
+            value = "countryById",
+            key = "#countryId",
+            unless = "#result == null || #result.error == true"
+    )
     public ApiResponseDTO<CountryResponseDto> getCountryById(Long countryId) {
 
         log.info("START :: getCountryById | countryId={}", countryId);
@@ -156,6 +168,10 @@ public class CountryServiceImpl implements CountryService {
 
 
     @Override
+    @Cacheable(
+            value = "allCountries",
+            unless = "#result == null || #result.error == true"
+    )
     public ApiResponseDTO<List<CountryResponseDto>> getAllCountries() {
 
         log.info("START :: getAllCountries");
@@ -267,6 +283,11 @@ public class CountryServiceImpl implements CountryService {
 
 
     @Override
+    @Cacheable(
+            value = "searchCountries",
+            key = "T(java.util.Objects).hash(#name, #isForeign, #pageable.pageNumber, #pageable.pageSize)",
+            unless = "#result == null || #result.error == true"
+    )
     public ApiResponseDTO<Page<CountryResponseDto>> searchCountries(
             String name, Boolean isForeign, Pageable pageable) {
 
