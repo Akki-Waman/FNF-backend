@@ -23,6 +23,7 @@ public class TaskAttachment extends AuditEntity{
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    @Column(name = "document_id", nullable = false)
-    private Integer documentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false)
+    private DmsDocument dmsDocument;
 }

@@ -1,4 +1,28 @@
 package com.sipl.ticket.task.controller;
 
-public class TaskController {
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@RequestMapping("/api/v1/tasks")
+@RestController
+@CrossOrigin(origins = "*")
+@Api(tags = "Task APIs")
+public interface TaskController {
+
+    @ApiOperation(
+            value = "Create a new task",
+            notes = "Provide task details to create a new task"
+    )
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> addTask(
+            @RequestPart("taskRequestDto") String taskRequestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
+    );
 }

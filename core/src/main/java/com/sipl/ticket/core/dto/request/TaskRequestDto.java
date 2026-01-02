@@ -25,11 +25,10 @@ public class TaskRequestDto {
     private String relatedToType;
     private Integer status;
 
-    private Long branchId;
+    private Integer branchId;
     private Long ticketId;
 
     private List<Long> assigneeUserIds;
     private List<Long> followerUserIds;
-    private List<Integer> tagIds;
-    private List<Integer> documentIds;
+    private List<Long> tagIds;
 }
