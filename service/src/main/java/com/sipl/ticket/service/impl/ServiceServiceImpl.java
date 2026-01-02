@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -236,12 +237,16 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Cacheable("services")
-    public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> getAllServices() {
+    public ApiResponseDTO<ServiceResponseDTO> getAllServices() {
 
         log.info("Fetching all services");
 
         try {
-            List<ServiceEntity> list = repository.findByIsDeletedFalse();
+            List<ServiceResponseDTO> list = repository
+                    .findByIsDeletedFalse()
+                    .stream()
+                    .map(mapper::toResponseDto)
+                    .collect(Collectors.toList());
 
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -252,17 +257,16 @@ public class ServiceServiceImpl implements ServiceService {
                 );
             }
 
-            List<ServiceResponseDTO> response = mapper.toResponseDtoList(list);
-
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(response, 0, response.size(), 1, response.size(), true),
-                    "Services fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Services fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllServices unexpected error", e);
+            log.error("getAllServices error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -271,6 +275,7 @@ public class ServiceServiceImpl implements ServiceService {
             );
         }
     }
+
     @Override
     public void exportServicesExcel(HttpServletResponse response) {
 

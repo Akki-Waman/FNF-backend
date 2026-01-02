@@ -38,7 +38,7 @@ public interface ServiceController {
     );
 
     @GetMapping("/getAll")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> getAllServices();
+    ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices();
 
     @GetMapping("/export")
     ResponseEntity<Void> exportServicesExcel(HttpServletResponse response);

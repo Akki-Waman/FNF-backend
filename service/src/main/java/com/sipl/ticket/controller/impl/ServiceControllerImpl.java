@@ -27,73 +27,75 @@ public class ServiceControllerImpl implements ServiceController {
     public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> saveService(
             @Valid @RequestBody ServiceRequestDto dto) {
 
-        log.info("<<Start>>saveService endpoint called<<Start>>");
+        log.info("<<Start>> saveService <<Start>>");
 
-        ApiResponseDTO<ServiceResponseDTO> response = serviceService.saveService(dto);
+        ApiResponseDTO<ServiceResponseDTO> response =
+                serviceService.saveService(dto);
 
-        log.info("<<End>>saveService endpoint called<<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        log.info("<<End>> saveService <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> updateService(
-            ServiceRequestDto serviceRequestDto) {
+            @RequestBody ServiceRequestDto dto) {
 
-        log.info("<<Start>>updateService endpoint called<<Start>>");
+        log.info("<<Start>> updateService <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> response =
-                ResponseEntity.ok(serviceService.updateService(serviceRequestDto));
+        ApiResponseDTO<ServiceResponseDTO> response =
+                serviceService.updateService(dto);
 
-        log.info("<<End>>updateService endpoint called<<End>>");
-        return response;
+        log.info("<<End>> updateService <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getById(
             Long serviceId) {
 
-        log.info("<<Start>>getById endpoint called<<Start>>");
+        log.info("<<Start>> getById <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> response =
-                ResponseEntity.ok(serviceService.getById(serviceId));
+        ApiResponseDTO<ServiceResponseDTO> response =
+                serviceService.getById(serviceId);
 
-        log.info("<<End>>getById endpoint called<<End>>");
-        return response;
+        log.info("<<End>> getById <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
             Long serviceId) {
 
-        log.info("<<Start>>deleteById endpoint called<<Start>>");
+        log.info("<<Start>> deleteById <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<String>> response =
-                ResponseEntity.ok(serviceService.deleteById(serviceId));
+        ApiResponseDTO<String> response =
+                serviceService.deleteById(serviceId);
 
-        log.info("<<End>>deleteById endpoint called<<End>>");
-        return response;
+        log.info("<<End>> deleteById <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> getAllServices() {
+    public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices() {
 
-        log.info("<<Start>>getAllServices endpoint called<<Start>>");
+        log.info("<<Start>> getAllServices <<Start>>");
 
-        ResponseEntity<ApiResponseDTO<PagedResponse<ServiceResponseDTO>>> response =
-                ResponseEntity.ok(serviceService.getAllServices());
+        ApiResponseDTO<ServiceResponseDTO> response =
+                serviceService.getAllServices();
 
-        log.info("<<End>>getAllServices endpoint called<<End>>");
-        return response;
+        log.info("<<End>> getAllServices <<End>>");
+        return ResponseEntity.ok(response);
     }
-    @Override
-    public ResponseEntity<Void> exportServicesExcel(HttpServletResponse response) {
 
-        log.info("<<Start>> exportServicesExcel endpoint called <<Start>>");
+    @Override
+    public ResponseEntity<Void> exportServicesExcel(
+            HttpServletResponse response) {
+
+        log.info("<<Start>> exportServicesExcel <<Start>>");
 
         serviceService.exportServicesExcel(response);
 
-        log.info("<<End>> exportServicesExcel endpoint called <<End>>");
-
+        log.info("<<End>> exportServicesExcel <<End>>");
         return ResponseEntity.ok().build();
     }
 
@@ -106,6 +108,6 @@ public class ServiceControllerImpl implements ServiceController {
         ApiResponseDTO<PagedResponse<ServiceResponseDTO>> response =
                 serviceService.searchServices(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 }

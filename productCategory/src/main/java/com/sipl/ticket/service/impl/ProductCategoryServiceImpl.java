@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -239,18 +240,17 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @Cacheable("productCategories")
-    public ApiResponseDTO<PagedResponse<ProductCategoryDto>> getAllProductCategories() {
-
-        log.info("Fetching all active product categories");
+    public ApiResponseDTO<ProductCategoryDto> getAllProductCategories() {
 
         try {
-            List<ProductCategoryDto> response = repository.findAll()
+            List<ProductCategoryDto> list = repository
+                    .findAll(Sort.by(Sort.Direction.DESC, "productCategoryId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
-            if (response.isEmpty()) {
+            if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No product categories found",
@@ -260,21 +260,15 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             }
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            response,
-                            0,
-                            response.size(),
-                            1,
-                            response.size(),
-                            true
-                    ),
-                    "Product categories fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Product categories fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("getAllProductCategories unexpected error", e);
+            log.error("getAllProductCategories error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -283,6 +277,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             );
         }
     }
+
     @Override
     public void exportProductCategoriesExcel(HttpServletResponse response) {
 

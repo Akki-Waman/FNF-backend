@@ -34,7 +34,7 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
                 productCategoryService.saveProductCategory(dto);
 
         log.info("<<End>> saveProductCategory <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -43,9 +43,11 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
 
         log.info("<<Start>> updateProductCategory <<Start>>");
 
-        return ResponseEntity.ok(
-                productCategoryService.updateProductCategory(dto)
-        );
+        ApiResponseDTO<ProductCategoryDto> response =
+                productCategoryService.updateProductCategory(dto);
+
+        log.info("<<End>> updateProductCategory <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -54,9 +56,11 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
 
         log.info("<<Start>> getById <<Start>>");
 
-        return ResponseEntity.ok(
-                productCategoryService.getById(productCategoryId)
-        );
+        ApiResponseDTO<ProductCategoryDto> response =
+                productCategoryService.getById(productCategoryId);
+
+        log.info("<<End>> getById <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -65,31 +69,23 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
 
         log.info("<<Start>> deleteById <<Start>>");
 
-        return ResponseEntity.ok(
-                productCategoryService.deleteById(productCategoryId)
-        );
+        ApiResponseDTO<String> response =
+                productCategoryService.deleteById(productCategoryId);
+
+        log.info("<<End>> deleteById <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductCategoryDto>>> getAllProductCategories() {
+    public ResponseEntity<ApiResponseDTO<ProductCategoryDto>> getAllProductCategories() {
 
         log.info("<<Start>> getAllProductCategories <<Start>>");
 
-        return ResponseEntity.ok(
-                productCategoryService.getAllProductCategories()
-        );
-    }
+        ApiResponseDTO<ProductCategoryDto> response =
+                productCategoryService.getAllProductCategories();
 
-    @Override
-    public ResponseEntity<Void> exportProductCategoriesExcel(HttpServletResponse response) {
-
-        log.info("<<Start>> exportProductCategoriesExcel endpoint called <<Start>>");
-
-        productCategoryService.exportProductCategoriesExcel(response);
-
-        log.info("<<End>> exportProductCategoriesExcel endpoint called <<End>>");
-
-        return ResponseEntity.ok().build();
+        log.info("<<End>> getAllProductCategories <<End>>");
+        return ResponseEntity.ok(response);
     }
 
     @Override
@@ -97,12 +93,23 @@ public class ProductCategoryControllerImpl implements ProductCategoryController 
     searchProductCategories(
             @RequestBody ProductCategorySearchRequestDto requestDto) {
 
-        log.info("Searching product categories: {}", requestDto);
+        log.info("Searching product categories with request: {}", requestDto);
 
         ApiResponseDTO<PagedResponse<ProductCategoryDto>> response =
                 productCategoryService.searchProductCategories(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<Void> exportProductCategoriesExcel(
+            HttpServletResponse response) {
+
+        log.info("<<Start>> exportProductCategoriesExcel <<Start>>");
+
+        productCategoryService.exportProductCategoriesExcel(response);
+
+        log.info("<<End>> exportProductCategoriesExcel <<End>>");
+        return ResponseEntity.ok().build();
+    }
 }
