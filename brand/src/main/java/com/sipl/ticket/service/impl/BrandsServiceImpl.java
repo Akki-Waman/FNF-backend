@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.BrandDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.helper.BrandExcelGenerator;
 import com.sipl.ticket.core.mapper.BrandsMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.BrandsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -276,15 +277,13 @@ public class BrandsServiceImpl implements BrandsService {
             BrandSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
+
 
             Page<Brands> pageResult =
                     repository.searchByBrandId(

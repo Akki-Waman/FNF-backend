@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.helper.DepartmentExcelGenerator;
 import com.sipl.ticket.core.mapper.DepartmentMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -274,12 +275,12 @@ public class DepartmentServiceImpl implements DepartmentService {
             DepartmentSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable =
-                    PageRequest.of(dto.getPage(), dto.getSize(), sort);
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
+            );
 
             Page<Department> pageResult =
                     repository.searchByDepartmentId(

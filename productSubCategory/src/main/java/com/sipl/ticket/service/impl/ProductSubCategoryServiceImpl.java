@@ -11,6 +11,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
 import com.sipl.ticket.core.helper.ProductSubCategoryExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductSubCategoryMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -333,14 +334,11 @@ public class ProductSubCategoryServiceImpl
                 ProductSubCategorySearchRequestDto dto) {
 
             try {
-                Sort sort = "desc".equalsIgnoreCase(dto.getSortDir())
-                        ? Sort.by(dto.getSortBy()).ascending()
-                        : Sort.by(dto.getSortBy()).descending();
-
-                Pageable pageable = PageRequest.of(
+                Pageable pageable = PaginationUtil.pageable(
                         dto.getPage(),
                         dto.getSize(),
-                        sort
+                        dto.getSortBy(),
+                        dto.getSortDir()
                 );
 
                 Page<ProductSubCategories> pageResult =

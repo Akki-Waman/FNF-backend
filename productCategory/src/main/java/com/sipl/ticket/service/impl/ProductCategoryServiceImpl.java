@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductCategoryDto;
 import com.sipl.ticket.core.helper.ProductCategoryExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductCategoryMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ProductCategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -314,16 +315,12 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             ProductCategorySearchRequestDto dto) {
 
         try {
-            Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
-
             Page<ProductCategories> pageResult =
                     repository.searchByProductCategoryId(
                             dto.getProductCategoryId(),

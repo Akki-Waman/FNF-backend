@@ -29,8 +29,7 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
             "AND (:countryName IS NULL OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :countryName, '%'))) " +
             "AND (:taxType IS NULL OR c.taxType = :taxType) " +
             "AND (:isForeign IS NULL OR c.isForeign = :isForeign) " +
-            "AND (:isActive IS NULL OR c.isActive = :isActive) " +
-            "ORDER BY c.countryId DESC")
+            "AND (:isActive IS NULL OR c.isActive = :isActive) ")
     Page<Country> searchCountries(
             @Param("countryId") Long countryId,
             @Param("countryName") String countryName,

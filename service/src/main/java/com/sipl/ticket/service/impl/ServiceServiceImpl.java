@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
 import com.sipl.ticket.core.helper.ServiceExcelGenerator;
 import com.sipl.ticket.core.mapper.ServiceMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ServiceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -162,14 +163,11 @@ public class ServiceServiceImpl implements ServiceService {
     public ApiResponseDTO<PagedResponse<ServiceResponseDTO>> searchServices(
             ServiceSearchRequestDto dto) {
 
-        Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                ? Sort.by(dto.getSortBy()).ascending()
-                : Sort.by(dto.getSortBy()).descending();
-
-        Pageable pageable = PageRequest.of(
+        Pageable pageable = PaginationUtil.pageable(
                 dto.getPage(),
                 dto.getSize(),
-                sort
+                dto.getSortBy(),
+                dto.getSortDir()
         );
 
         Page<ServiceEntity> pageResult =

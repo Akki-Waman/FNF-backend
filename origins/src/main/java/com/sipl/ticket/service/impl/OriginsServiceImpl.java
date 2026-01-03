@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.helper.OriginsExcelGenerator;
 import com.sipl.ticket.core.mapper.OriginsMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.OriginsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -312,15 +313,12 @@ public class OriginsServiceImpl implements OriginsService {
 
         try {
 
-            Sort sort = Sort.by("originId").descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
-
-            log.debug("Pageable created | {}", pageable);
 
             Page<Origins> pageResult = repository.searchByOriginId(
                     dto.getOriginId(),

@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import com.sipl.ticket.core.helper.UnitExcelGenerator;
 import com.sipl.ticket.core.mapper.UnitMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -287,14 +288,11 @@ public class UnitServiceImpl implements UnitService {
             UnitSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
 
 

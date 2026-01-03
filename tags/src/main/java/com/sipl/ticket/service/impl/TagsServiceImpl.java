@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
 import com.sipl.ticket.core.helper.TagExcelGenerator;
 import com.sipl.ticket.core.mapper.TagsMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.TagsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -268,14 +269,11 @@ public class TagsServiceImpl implements TagsService {
             TagsSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
 
             Page<Tags> pageResult =
