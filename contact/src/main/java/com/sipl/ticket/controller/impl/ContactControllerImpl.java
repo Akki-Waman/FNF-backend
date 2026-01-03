@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ContactController;
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
+import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -66,29 +67,13 @@ public class ContactControllerImpl implements ContactController {
         return response;
     }
 
-   /* @Override
+    @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
-            String contactName,
-            String emailAddress,
-            String mobileNo,
-            Long departmentId,
-            Boolean isActive
+            @RequestBody ContactSearchRequestDto searchRequestDto
     ) {
-        log.info("<<Start>> searchContacts endpoint called <<Start>>");
-
-        ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> response =
-                ResponseEntity.ok(
-                        contactService.searchContacts(
-                                contactName,
-                                emailAddress,
-                                mobileNo,
-                                departmentId,
-                                isActive
-                        )
-                );
-
-        log.info("<<End>> searchContacts endpoint called <<End>>");
-        return response;
-    } */
+        return ResponseEntity.ok(
+                contactService.searchContacts(searchRequestDto)
+        );
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
+import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -27,13 +28,8 @@ public interface ContactService {
 
     ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts();
 
-    /* ================= SEARCH ================= */
 
-   /* ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
-            String contactName,
-            String emailAddress,
-            String mobileNo,
-            Long departmentId,
-            Boolean isActive
-    ); */
+    ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
+            ContactSearchRequestDto dto
+    );
 }

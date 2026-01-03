@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dao.entity.Department;
 import com.sipl.ticket.core.dao.repository.ContactRepository;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
+import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -28,15 +29,21 @@ public class ContactServiceImpl implements ContactService {
     private final DepartmentRepository departmentRepository;
     private final ContactMapper contactMapper;
 
-    /* ================= SAVE ================= */
+
 
     @Override
     public ApiResponseDTO<ContactResponseDto> saveContact(ContactRequestDto dto) {
 
-        log.info("<<Start>> saveContact called <<Start>>");
+        log.info(
+                "Creating contact [name={}, email={}, mobile={}]",
+                dto != null ? dto.getContactName() : null,
+                dto != null ? dto.getEmailAddress() : null,
+                dto != null ? dto.getMobileNo() : null
+        );
 
         try {
             if (dto == null || dto.getContactName() == null || dto.getContactName().trim().isEmpty()) {
+                log.warn("Contact creation failed – contact name is missing");
                 return new ApiResponseDTO<>(
                         null,
                         "Contact name is required",
@@ -49,6 +56,10 @@ public class ContactServiceImpl implements ContactService {
                     .orElse(null);
 
             if (department == null) {
+                log.warn(
+                        "Contact creation failed – department not found [departmentId={}]",
+                        dto.getDepartmentId()
+                );
                 return new ApiResponseDTO<>(
                         null,
                         "Department not found",
@@ -62,6 +73,10 @@ public class ContactServiceImpl implements ContactService {
             contact.setIsActive(true);
 
             Contact saved = contactRepository.save(contact);
+            log.info(
+                    "Contact created successfully [id={}]",
+                    saved.getContactId()
+            );
 
             return new ApiResponseDTO<>(
                     contactMapper.toResponseDto(saved),
@@ -71,7 +86,7 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error("saveContact error", e);
+            log.error("Unexpected error while creating contact", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -82,15 +97,20 @@ public class ContactServiceImpl implements ContactService {
 
     }
 
-    /* ================= UPDATE ================= */
+
 
     @Override
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
-        log.info("<<Start>> updateContact called <<Start>>");
+        log.info(
+                "Updating contact [id={}, name={}]",
+                dto != null ? dto.getContactId() : null,
+                dto != null ? dto.getContactName() : null
+        );
 
         try {
             if (dto == null || dto.getContactId() == null) {
+                log.warn("Contact update failed – contact ID is missing");
                 return new ApiResponseDTO<>(
                         null,
                         "Contact ID is required",
@@ -103,6 +123,10 @@ public class ContactServiceImpl implements ContactService {
                     .orElse(null);
 
             if (contact == null) {
+                log.warn(
+                        "Contact update failed – contact not found [id={}]",
+                        dto.getContactId()
+                );
                 return new ApiResponseDTO<>(
                         null,
                         "Contact not found",
@@ -115,6 +139,10 @@ public class ContactServiceImpl implements ContactService {
                     .orElse(null);
 
             if (department == null) {
+                log.warn(
+                        "Contact update failed – department not found [departmentId={}]",
+                        dto.getDepartmentId()
+                );
                 return new ApiResponseDTO<>(
                         null,
                         "Department not found",
@@ -127,6 +155,11 @@ public class ContactServiceImpl implements ContactService {
             contact.setDepartment(department);
 
             Contact updated = contactRepository.save(contact);
+            log.info(
+                    "Contact updated successfully [id={}]",
+                    updated.getContactId()
+            );
+
 
             return new ApiResponseDTO<>(
                     contactMapper.toResponseDto(updated),
@@ -136,7 +169,11 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error("updateContact error", e);
+            log.error(
+                    "Unexpected error while updating contact [id={}]",
+                    dto != null ? dto.getContactId() : null,
+                    e
+            );
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -146,12 +183,11 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-    /* ================= GET BY ID ================= */
 
     @Override
     public ApiResponseDTO<ContactResponseDto> getById(Long contactId) {
 
-        log.info("<<Start>> getById called <<Start>>");
+        log.info("Fetching contact by id={}", contactId);
 
         try {
             return contactRepository.findById(contactId)
@@ -169,7 +205,11 @@ public class ContactServiceImpl implements ContactService {
                     ));
 
         } catch (Exception e) {
-            log.error("getById error", e);
+            log.error(
+                    "Unexpected error while fetching contact [id={}]",
+                    contactId,
+                    e
+            );
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -179,18 +219,19 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-    /* ================= DELETE (SOFT) ================= */
+
 
     @Override
     public ApiResponseDTO<String> deleteById(Long contactId) {
 
-        log.info("<<Start>> deleteById called <<Start>>");
+        log.info("Deactivating contact [id={}]", contactId);
 
         try {
             Contact contact = contactRepository.findById(contactId)
                     .orElse(null);
 
             if (contact == null) {
+                log.warn("Contact delete failed – contact not found [id={}]", contactId);
                 return new ApiResponseDTO<>(
                         null,
                         "Contact not found",
@@ -200,6 +241,7 @@ public class ContactServiceImpl implements ContactService {
             }
 
             if (Boolean.FALSE.equals(contact.getIsActive())) {
+                log.warn("Contact already inactive [id={}]", contactId);
                 return new ApiResponseDTO<>(
                         null,
                         "Contact already inactive",
@@ -211,6 +253,8 @@ public class ContactServiceImpl implements ContactService {
             contact.setIsActive(false);
             contactRepository.save(contact);
 
+            log.info("Contact deactivated successfully [id={}]", contactId);
+
             return new ApiResponseDTO<>(
                     null,
                     "Contact deleted successfully",
@@ -219,7 +263,11 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error("deleteById error", e);
+            log.error(
+                    "Unexpected error while deleting contact [id={}]",
+                    contactId,
+                    e
+            );
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -229,17 +277,18 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-    /* ================= GET ALL ================= */
+
 
     @Override
     public ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts() {
 
-        log.info("<<Start>> getAllContacts called <<Start>>");
+        log.info("Fetching all contacts");
 
         try {
             List<Contact> contacts = contactRepository.findAll();
 
             if (contacts.isEmpty()) {
+                log.warn("No contacts found");
                 return new ApiResponseDTO<>(
                         null,
                         "No contacts found",
@@ -250,6 +299,11 @@ public class ContactServiceImpl implements ContactService {
 
             List<ContactResponseDto> response =
                     contactMapper.toResponseDtoList(contacts);
+
+            log.info(
+                    "Contacts fetched successfully, totalRecords={}",
+                    response.size()
+            );
 
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
@@ -266,7 +320,7 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error("getAllContacts error", e);
+            log.error("Unexpected error while fetching all contacts", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -275,65 +329,69 @@ public class ContactServiceImpl implements ContactService {
             );
         }
     }
-    /* ================= SEARCH ================= */
 
-   /* @Override
+
+    @Override
     public ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
-            String contactName,
-            String emailAddress,
-            String mobileNo,
-            Long departmentId,
-            Boolean isActive
+            ContactSearchRequestDto dto
     ) {
 
-        log.info("<<Start>> searchContacts called <<Start>>");
+        log.info("Searching contacts with filters {}", dto);
 
         try {
             List<Contact> contacts = contactRepository.searchContacts(
-                    contactName,
-                    emailAddress,
-                    mobileNo,
-                    departmentId,
-                    isActive
+                    dto.getContactId(),
+                    dto.getContactName(),
+                    dto.getEmailAddress(),
+                    dto.getMobileNo(),
+                    dto.getDepartmentId(),
+                    dto.getIsActive()
             );
 
-            if (contacts.isEmpty()) {
+            if (contacts == null || contacts.isEmpty()) {
+                log.warn("No contacts found for given search criteria");
                 return new ApiResponseDTO<>(
                         null,
-                        "No contacts found matching search criteria",
+                        "No contacts found",
                         HttpStatus.NOT_FOUND,
                         true
                 );
             }
 
-            List<ContactResponseDto> response =
+            List<ContactResponseDto> responseList =
                     contactMapper.toResponseDtoList(contacts);
 
-            return new ApiResponseDTO<>(
+            PagedResponse<ContactResponseDto> pagedResponse =
                     new PagedResponse<>(
-                            response,
+                            responseList,
                             0,
-                            response.size(),
+                            responseList.size(),
                             1,
-                            response.size(),
+                            responseList.size(),
                             true
-                    ),
-                    "Contacts searched successfully",
+                    );
+
+            log.info("Contacts search completed successfully, totalRecords={}",
+                    responseList.size());
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Contacts fetched successfully",
                     HttpStatus.OK,
                     false
             );
 
         } catch (Exception e) {
-            log.error("searchContacts error", e);
+            log.error("Exception occurred while searching contacts", e);
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error",
+                    "Internal server error while searching contacts",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>> searchContacts called <<End>>");
         }
-    }*/
+    }
+
+
 
 }

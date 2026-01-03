@@ -29,5 +29,24 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
     List<Contact> findByIsActiveTrue();
 
+    @Query(
+            "SELECT c FROM Contact c " +
+                    "JOIN c.department d " +
+                    "WHERE (:contactId IS NULL OR c.contactId = :contactId) " +
+                    "AND (:contactName IS NULL OR LOWER(c.contactName) LIKE LOWER(CONCAT('%', :contactName, '%'))) " +
+                    "AND (:emailAddress IS NULL OR LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :emailAddress, '%'))) " +
+                    "AND (:mobileNo IS NULL OR c.mobileNo LIKE CONCAT('%', :mobileNo, '%')) " +
+                    "AND (:departmentId IS NULL OR d.departmentId = :departmentId) " +
+                    "AND (:isActive IS NULL OR c.isActive = :isActive)"
+    )
+    List<Contact> searchContacts(
+            @Param("contactId") Long contactId,
+            @Param("contactName") String contactName,
+            @Param("emailAddress") String emailAddress,
+            @Param("mobileNo") String mobileNo,
+            @Param("departmentId") Long departmentId,
+            @Param("isActive") Boolean isActive
+    );
+
 
 }
