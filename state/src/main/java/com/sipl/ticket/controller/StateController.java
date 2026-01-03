@@ -9,6 +9,7 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -41,9 +42,10 @@ public interface StateController {
     ResponseEntity<ApiResponseDTO<StateResponseDto>> getAll();
 
 
-
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<StateResponseDto>>> search(
             @RequestBody StateSearchRequestDto dto
     );
+    @GetMapping("/export")
+    void downloadExcel(HttpServletResponse response);
 }

@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.request.StateSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
+import com.sipl.ticket.core.helper.StateExcelGenerator;
 import com.sipl.ticket.core.mapper.StateMapper;
 import com.sipl.ticket.service.StateService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import javax.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -196,7 +199,7 @@ public class StateServiceImpl implements StateService {
     public ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(StateSearchRequestDto dto) {
         log.info("<<Start>> search State service called <<Start>>");
         try {
-            // Sorting: Default ascending by stateName
+
             Sort sort = Sort.by("stateName").ascending();
 
             Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
@@ -243,6 +246,69 @@ public class StateServiceImpl implements StateService {
                     true
             );
         }
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<START>> Download States Excel service");
+
+        try {
+
+            List<StateResponseDto> dtoList = stateRepository.findAll()
+                    .stream()
+                    .filter(state -> Boolean.TRUE.equals(state.getIsActive()))
+                    .map(state -> {
+
+                        StateResponseDto dto = new StateResponseDto();
+
+                        dto.setStateId(state.getStateId());
+                        dto.setStateName(state.getStateName());
+                        dto.setIsActive(state.getIsActive());
+
+                        dto.setCountryName(
+                                state.getCountry() != null
+                                        ? state.getCountry().getCountryName()
+                                        : null
+                        );
+
+                        dto.setCreatedBy(
+                                state.getCreatedBy() != null
+                                        ? state.getCreatedBy().getUserName()
+                                        : null
+                        );
+
+                        dto.setCreatedTime(state.getCreatedTime());
+
+                        dto.setModifiedBy(
+                                state.getModifiedBy() != null
+                                        ? state.getModifiedBy().getUserName()
+                                        : null
+                        );
+
+                        dto.setModifiedTime(state.getModifiedTime());
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("Total active states fetched for Excel download: {}",
+                    dtoList.size());
+
+            StateExcelGenerator.generateExcel(dtoList, response);
+
+            log.info("States Excel generated successfully");
+
+        } catch (IOException ex) {
+            log.error("IOException occurred while downloading States Excel", ex);
+            throw new RuntimeException("Failed to download States Excel", ex);
+
+        } catch (Exception ex) {
+            log.error("Unexpected error occurred while downloading States Excel", ex);
+            throw new RuntimeException("Failed to download States Excel", ex);
+        }
+
+        log.info("<<END>> Download States Excel service");
     }
 
 }

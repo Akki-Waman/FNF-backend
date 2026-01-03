@@ -6,7 +6,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
 
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 public interface StateService {
 
@@ -28,9 +28,10 @@ public interface StateService {
 
     ApiResponseDTO<StateResponseDto> getAllStates();
 
-
-
     ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(
             StateSearchRequestDto dto
     );
+
+
+    void downloadExcel(HttpServletResponse response);
 }

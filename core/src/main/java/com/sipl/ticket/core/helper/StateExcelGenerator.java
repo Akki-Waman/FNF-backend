@@ -1,6 +1,6 @@
 package com.sipl.ticket.core.helper;
 
-import com.sipl.ticket.core.dto.response.OriginDto;
+import com.sipl.ticket.core.dto.response.StateResponseDto;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -11,22 +11,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
-public class OriginsExcelGenerator {
+public class StateExcelGenerator {
 
-    public static void generateExcel(List<OriginDto> origins,
+    public static void generateExcel(List<StateResponseDto> states,
                                      HttpServletResponse response) throws Exception {
 
         response.setContentType(
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader(
-                "Content-Disposition", "attachment; filename=origins.xlsx");
+                "Content-Disposition", "attachment; filename=states.xlsx");
 
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Origins");
+        Sheet sheet = workbook.createSheet("States");
 
         int rowIndex = 0;
 
-        /* ---------- Header ---------- */
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerFont.setFontHeightInPoints((short) 14);
@@ -38,8 +37,8 @@ public class OriginsExcelGenerator {
 
         Row headerRow = sheet.createRow(rowIndex++);
         String[] headers = {
-                "Origin ID",
-                "Origin Name",
+                "State ID",
+                "State Name",
                 "Status",
                 "Created By",
                 "Created Time",
@@ -53,7 +52,6 @@ public class OriginsExcelGenerator {
             cell.setCellStyle(headerStyle);
         }
 
-        /* ---------- Data ---------- */
         CellStyle dataStyle = workbook.createCellStyle();
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         setBorders(dataStyle);
@@ -61,32 +59,32 @@ public class OriginsExcelGenerator {
         DateTimeFormatter formatter =
                 DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-        for (OriginDto o : origins) {
+        for (StateResponseDto s : states) {
             Row row = sheet.createRow(rowIndex++);
 
             row.createCell(0).setCellValue(
-                    o.getOriginId() != null ? o.getOriginId() : 0);
+                    s.getStateId() != null ? s.getStateId() : 0);
 
             row.createCell(1).setCellValue(
-                    o.getOriginName() != null ? o.getOriginName() : "");
+                    s.getStateName() != null ? s.getStateName() : "");
 
             row.createCell(2).setCellValue(
-                    Boolean.TRUE.equals(o.getIsActive()) ? "Active" : "Inactive");
+                    Boolean.TRUE.equals(s.getIsActive()) ? "Active" : "Inactive");
 
             row.createCell(3).setCellValue(
-                    o.getCreatedBy() != null ? o.getCreatedBy() : "");
+                    s.getCreatedBy() != null ? s.getCreatedBy() : "");
 
             row.createCell(4).setCellValue(
-                    o.getCreatedTime() != null
-                            ? o.getCreatedTime().format(formatter)
+                    s.getCreatedTime() != null
+                            ? s.getCreatedTime().format(formatter)
                             : "");
 
             row.createCell(5).setCellValue(
-                    o.getModifiedBy() != null ? o.getModifiedBy() : "");
+                    s.getModifiedBy() != null ? s.getModifiedBy() : "");
 
             row.createCell(6).setCellValue(
-                    o.getModifiedTime() != null
-                            ? o.getModifiedTime().format(formatter)
+                    s.getModifiedTime() != null
+                            ? s.getModifiedTime().format(formatter)
                             : "");
 
             for (int i = 0; i < headers.length; i++) {
@@ -115,3 +113,4 @@ public class OriginsExcelGenerator {
         style.setBorderRight(BorderStyle.THIN);
     }
 }
+
