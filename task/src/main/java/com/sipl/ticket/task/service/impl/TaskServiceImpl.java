@@ -7,12 +7,16 @@ import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.TaskRequestDto;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
+import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -331,5 +335,69 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Same user cannot be assignee and follower");
         }
     }
+    @Override
+    public ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
+            TaskSearchRequestDto dto) {
 
+        log.info("Searching tasks with filters: {}", dto);
+
+        Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+                ? Sort.by(dto.getSortBy()).ascending()
+                : Sort.by(dto.getSortBy()).descending();
+
+        Pageable pageable = PageRequest.of(
+                dto.getPage(),
+                dto.getSize(),
+                sort
+        );
+
+        Page<Task> pageResult = taskRepository.searchTasks(
+                dto.getTaskId(),
+                dto.getSubject(),
+                pageable
+        );
+
+        if (pageResult.isEmpty()) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No tasks found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        List<TaskCombinedSearchResponseDTO> responseList =
+                pageResult.getContent().stream()
+                        .map(task -> {
+
+                            TaskCustomResponseDTO taskCustomDto =
+                                    taskMapper.toCustomDto(task);
+
+                            TaskCombinedSearchResponseDTO combinedDTO =
+                                    new TaskCombinedSearchResponseDTO();
+
+                            combinedDTO.setTaskCustomResponseDTO(taskCustomDto);
+                            combinedDTO.setTaskAssigneeCustomResponseDTOS(Collections.emptyList());
+                            combinedDTO.setTaskFollowerCustomResponseDTOS(Collections.emptyList());
+                            combinedDTO.setTaskTagCustomResponseDTOS(Collections.emptyList());
+                            combinedDTO.setTaskAttachmentCustomResponseDTOS(Collections.emptyList());
+
+                            return combinedDTO;
+                        })
+                        .collect(Collectors.toList());
+
+        return new ApiResponseDTO<>(
+                new PagedResponse<>(
+                        responseList,
+                        pageResult.getNumber(),
+                        pageResult.getTotalElements(),
+                        pageResult.getTotalPages(),
+                        pageResult.getSize(),
+                        pageResult.isLast()
+                ),
+                "Tasks fetched successfully",
+                HttpStatus.OK,
+                false
+        );
+    }
 }
