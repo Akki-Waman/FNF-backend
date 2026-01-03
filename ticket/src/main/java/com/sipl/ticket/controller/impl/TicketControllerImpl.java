@@ -35,7 +35,7 @@ public class TicketControllerImpl implements TicketController {
         log.info("<<START>> deleteTickets controller");
 
         ApiResponseDTO<Void> response =
-                ticketService.deleteTickets(requestDTO.getTicketIds());
+                ticketService.deleteTickets(requestDTO);
 
         log.info("<<END>> deleteTickets controller");
         return ResponseEntity.ok(response);

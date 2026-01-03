@@ -7,6 +7,7 @@ import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
@@ -244,9 +245,10 @@ public class TicketServiceImpl implements TicketService {
         }
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponseDTO<Void> deleteTickets(List<Long> ticketIds) {
+    public ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO) {
 
         try {
+            List<Long> ticketIds = requestDTO.getTicketIds();
             if (ticketIds == null || ticketIds.isEmpty()) {
                 log.warn("deleteTickets | empty or null ticketIds received");
 
