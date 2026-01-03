@@ -199,7 +199,7 @@ public class StateServiceImpl implements StateService {
     public ApiResponseDTO<PagedResponse<StateResponseDto>> searchStates(StateSearchRequestDto dto) {
         log.info("<<Start>> search State service called <<Start>>");
         try {
-            // Sorting: Default ascending by stateName
+
             Sort sort = Sort.by("stateName").ascending();
 
             Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
