@@ -23,17 +23,6 @@ public class DepartmentExcelGenerator {
 
         int rowIndex = 0;
 
-        Font titleFont = workbook.createFont();
-        titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 18);
-
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(titleFont);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        Row titleRow = sheet.createRow(rowIndex++);
-        Cell titleCell = titleRow.createCell(0);
-
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
         rowIndex++;
 

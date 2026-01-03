@@ -335,14 +335,8 @@ public class TagsServiceImpl implements TagsService {
             List<TagResponseDto> tags = repository.findAll()
                     .stream()
                     .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
-                    .map(t -> {
-                        TagResponseDto dto = new TagResponseDto();
-                        dto.setTagId(t.getTagId());
-                        dto.setTagName(t.getTagName());
-                        dto.setIsActive(t.getIsActive());
-                        return dto;
-                    })
-                    .collect(Collectors.toList()); // Java 8 safe
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
 
             TagExcelGenerator.generateExcel(tags, response);
 
@@ -354,6 +348,5 @@ public class TagsServiceImpl implements TagsService {
             throw new RuntimeException("Failed to export tags CSV", e);
         }
     }
-
 
 }
