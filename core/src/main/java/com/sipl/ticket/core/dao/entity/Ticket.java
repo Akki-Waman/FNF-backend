@@ -79,6 +79,10 @@ public class Ticket extends AuditEntity{
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Branches branch;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+
     /* ---------------- Relationships ---------------- */
 
     @OneToMany(

@@ -7,6 +7,7 @@ import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
@@ -101,6 +102,7 @@ public class TicketServiceImpl implements TicketService {
             ticket.setService(getService(dto));
             ticket.setClientProducts(getClientProduct(dto));
             ticket.setBranch(getBranch(dto));
+            ticket.setIsDeleted(false);
             Ticket savedTicket = ticketRepository.save(ticket);
             log.info("Ticket saved with ID: {}", savedTicket.getTicketId());
             return savedTicket;
@@ -241,5 +243,60 @@ public class TicketServiceImpl implements TicketService {
                     ticketAttachmentMapper.mapTagsListToDtoList(attachments)
             );
         }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO) {
 
+        try {
+            List<Long> ticketIds = requestDTO.getTicketIds();
+            if (ticketIds == null || ticketIds.isEmpty()) {
+                log.warn("deleteTickets | empty or null ticketIds received");
+
+                return new ApiResponseDTO<>(
+                        null, null, null,
+                        "Please select at least one ticket to delete.",
+                        HttpStatus.BAD_REQUEST,
+                        true, null, null
+                );
+            }
+
+            log.info("deleteTickets | ticketIds count: {}", ticketIds.size());
+            log.debug("deleteTickets | ticketIds: {}", ticketIds);
+
+            int updatedCount = ticketRepository.softDeleteByIds(ticketIds);
+
+            log.info("deleteTickets | rows affected: {}", updatedCount);
+
+            if (updatedCount == 0) {
+                log.warn("deleteTickets | no tickets updated, possible reasons: not found or already deleted");
+
+                return new ApiResponseDTO<>(
+                        null, null, null,
+                        "Selected tickets could not be found or may have already been deleted.",
+                        HttpStatus.NOT_FOUND,
+                        true, null, null
+                );
+            }
+
+            log.info("deleteTickets | successfully soft deleted {} tickets", updatedCount);
+            return new ApiResponseDTO<>(
+                    null, null, null,
+                    "Selected tickets have been deleted successfully.",
+                    HttpStatus.OK,
+                    false, null, null
+            );
+
+        } catch (Exception e) {
+            log.error("deleteTickets unexpected error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
     }
+
+
+
+}
