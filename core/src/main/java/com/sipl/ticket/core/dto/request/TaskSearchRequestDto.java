@@ -7,14 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskSearchRequestDto {
+public class TaskSearchRequestDto extends SearchRequestDto{
 
     private Long taskId;
     private String subject;
-
-    private Integer page = 0;
-    private Integer size = 10;
-
-    private String sortBy = "taskId";
-    private String sortDir = "desc";
 }
