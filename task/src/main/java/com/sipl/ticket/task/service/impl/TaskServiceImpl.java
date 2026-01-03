@@ -343,7 +343,7 @@ public class TaskServiceImpl implements TaskService {
         log.info("Searching tasks with request: {}", dto);
 
         String sortBy = dto.getSortBy();
-
+        
         if ("ticketId".equalsIgnoreCase(sortBy)) {
             sortBy = "ticket.ticketId";
         } else if ("id".equalsIgnoreCase(sortBy)) {
@@ -359,7 +359,6 @@ public class TaskServiceImpl implements TaskService {
                 dto.getSize(),
                 sort
         );
-
         Page<Task> pageResult = taskRepository.searchTasks(
                 dto.getTicketId(),
                 dto.getQuery(),
@@ -378,16 +377,48 @@ public class TaskServiceImpl implements TaskService {
         List<TaskCombinedSearchResponseDTO> content =
                 pageResult.getContent().stream()
                         .map(task -> {
+
+                            Long taskId = task.getTaskId();
+
                             TaskCombinedSearchResponseDTO response =
                                     new TaskCombinedSearchResponseDTO();
 
+                            // 🔹 Main task
                             response.setTaskCustomResponseDTO(
                                     taskMapper.toCustomDto(task)
                             );
-                            response.setTaskAssigneeCustomResponseDTOS(Collections.emptyList());
-                            response.setTaskFollowerCustomResponseDTOS(Collections.emptyList());
-                            response.setTaskTagCustomResponseDTOS(Collections.emptyList());
-                            response.setTaskAttachmentCustomResponseDTOS(Collections.emptyList());
+
+                            // 🔹 Assignees
+                            response.setTaskAssigneeCustomResponseDTOS(
+                                    taskAssigneeRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskAssigneeMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Followers
+                            response.setTaskFollowerCustomResponseDTOS(
+                                    taskFollowerRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskFollowerMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Tags
+                            response.setTaskTagCustomResponseDTOS(
+                                    taskTagRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskTagMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Attachments
+                            response.setTaskAttachmentCustomResponseDTOS(
+                                    taskAttachmentRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskAttachmentMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
 
                             return response;
                         })
