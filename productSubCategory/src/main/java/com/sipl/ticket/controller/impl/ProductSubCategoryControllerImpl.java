@@ -51,12 +51,12 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
 
     @Override
     public ResponseEntity<ApiResponseDTO<ProductSubCategoryDto>> getById(
-            Long id) {
+            Long productSubCategoryId) {
 
         log.info("<<Start>> getById <<Start>>");
 
         ApiResponseDTO<ProductSubCategoryDto> response =
-                productSubCategoryService.getById(id);
+                productSubCategoryService.getById(productSubCategoryId);
 
         log.info("<<End>> getById <<End>>");
         return ResponseEntity.ok(response);
@@ -64,12 +64,12 @@ public class ProductSubCategoryControllerImpl implements ProductSubCategoryContr
 
     @Override
     public ResponseEntity<ApiResponseDTO<String>> deleteById(
-            Long id) {
+            Long productSubCategoryId) {
 
         log.info("<<Start>> deleteById <<Start>>");
 
         ApiResponseDTO<String> response =
-                productSubCategoryService.deleteById(id);
+                productSubCategoryService.deleteById(productSubCategoryId);
 
         log.info("<<End>> deleteById <<End>>");
         return ResponseEntity.ok(response);
