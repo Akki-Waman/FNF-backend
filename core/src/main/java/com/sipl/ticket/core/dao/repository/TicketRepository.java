@@ -30,7 +30,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("UPDATE Ticket t SET t.isDeleted = true WHERE t.ticketId IN :ids")
+    @Query("UPDATE Ticket t SET t.isDeleted = true WHERE t.ticketId IN (:ids)")
     int softDeleteByIds(@Param("ids") List<Long> ids);
 
 
