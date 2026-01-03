@@ -2,11 +2,11 @@ package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.ProductCategories;
 import com.sipl.ticket.core.dao.entity.ProductSubCategories;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,8 +28,7 @@ public interface ProductCategoryRepository
             "SELECT pc " +
                     "FROM ProductCategories pc " +
                     "WHERE pc.isActive = true " +
-                    "AND (:productCategoryId IS NULL OR pc.productCategoryId = :productCategoryId) " +
-                    "ORDER BY pc.productCategoryId DESC"
+                    "AND (:productCategoryId IS NULL OR pc.productCategoryId = :productCategoryId) "
     )
     Page<ProductCategories> searchByProductCategoryId(
             @Param("productCategoryId") Long productCategoryId,
