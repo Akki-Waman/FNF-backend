@@ -26,24 +26,7 @@ public class OriginsExcelGenerator {
 
         int rowIndex = 0;
 
-        Font titleFont = workbook.createFont();
-        titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 18);
-
-        CellStyle titleStyle = workbook.createCellStyle();
-        titleStyle.setFont(titleFont);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        Row titleRow = sheet.createRow(rowIndex++);
-        Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Origins List");
-        titleCell.setCellStyle(titleStyle);
-
-        // 👉 column count increased
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
-
-        rowIndex++;
-
+        /* ---------- Header ---------- */
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerFont.setFontHeightInPoints((short) 14);
@@ -70,6 +53,7 @@ public class OriginsExcelGenerator {
             cell.setCellStyle(headerStyle);
         }
 
+        /* ---------- Data ---------- */
         CellStyle dataStyle = workbook.createCellStyle();
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         setBorders(dataStyle);
@@ -87,8 +71,7 @@ public class OriginsExcelGenerator {
                     o.getOriginName() != null ? o.getOriginName() : "");
 
             row.createCell(2).setCellValue(
-                    o.getIsActive() != null && o.getIsActive()
-                            ? "Active" : "Inactive");
+                    Boolean.TRUE.equals(o.getIsActive()) ? "Active" : "Inactive");
 
             row.createCell(3).setCellValue(
                     o.getCreatedBy() != null ? o.getCreatedBy() : "");

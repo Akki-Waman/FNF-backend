@@ -386,7 +386,7 @@ public class OriginsServiceImpl implements OriginsService {
     @Transactional(readOnly = true)
     public void downloadExcel(HttpServletResponse response) {
 
-        log.info("<<Start>> download Origins CSV service called <<Start>>");
+        log.info("<<START>> Download Origins Excel service");
 
         try {
             List<OriginDto> dtoList = repository.findAll()
@@ -394,22 +394,50 @@ public class OriginsServiceImpl implements OriginsService {
                     .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
                     .map(o -> {
                         OriginDto dto = new OriginDto();
+
+
                         dto.setOriginId(o.getOriginId());
                         dto.setOriginName(o.getOriginName());
                         dto.setIsActive(o.getIsActive());
+
+
+                        dto.setCreatedBy(
+                                o.getCreatedBy() != null
+                                        ? o.getCreatedBy().getUserName()
+                                        : null
+                        );
+
+                        dto.setCreatedTime(o.getCreatedTime());
+
+                        dto.setModifiedBy(
+                                o.getModifiedBy() != null
+                                        ? o.getModifiedBy().getUserName()
+                                        : null
+                        );
+
+                        dto.setModifiedTime(o.getModifiedTime());
+
                         return dto;
                     })
                     .collect(Collectors.toList());
 
+            log.info("Total active origins fetched for Excel download: {}",
+                    dtoList.size());
+
             OriginsExcelGenerator.generateExcel(dtoList, response);
 
+            log.info("Origins Excel generated successfully");
+
         } catch (IOException e) {
-            log.error("Error while downloading Origins CSV", e);
-            throw new RuntimeException("Failed to download Origins CSV");
+            log.error("IOException occurred while downloading Origins Excel", e);
+            throw new RuntimeException("Failed to download Origins Excel");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Unexpected error occurred while downloading Origins Excel", e);
+            throw new RuntimeException("Failed to download Origins Excel");
         }
 
-        log.info("<<End>> download Origins CSV service called <<End>>");
+        log.info("<<END>> Download Origins Excel service");
     }
+
+
 }
