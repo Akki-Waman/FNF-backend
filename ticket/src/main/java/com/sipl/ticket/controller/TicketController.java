@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 
+import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
 import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
@@ -25,4 +26,14 @@ public interface TicketController {
     public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> addTickets(
             @RequestPart(value = "ticketRequestDto") String ticketRequestDto,
             @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile);
+
+    @ApiOperation(
+            value = "Delete multiple tickets",
+            notes = "Delete tickets by providing list of ticket IDs"
+    )
+    @DeleteMapping("/delete")
+    ResponseEntity<ApiResponseDTO<Void>> deleteTickets(
+            @RequestBody DeleteTicketsRequestDTO requestDTO
+    );
+
 }

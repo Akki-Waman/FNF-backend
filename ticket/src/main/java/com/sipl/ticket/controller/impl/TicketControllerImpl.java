@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.TicketController;
+import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
 import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
@@ -27,4 +28,17 @@ public class TicketControllerImpl implements TicketController {
         log.info("<<END>> addProduct controller <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
+    @Override
+    public ResponseEntity<ApiResponseDTO<Void>> deleteTickets(
+            DeleteTicketsRequestDTO requestDTO) {
+
+        log.info("<<START>> deleteTickets controller");
+
+        ApiResponseDTO<Void> response =
+                ticketService.deleteTickets(requestDTO.getTicketIds());
+
+        log.info("<<END>> deleteTickets controller");
+        return ResponseEntity.ok(response);
+    }
+
 }
