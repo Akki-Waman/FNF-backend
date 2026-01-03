@@ -27,8 +27,7 @@ public interface StateRepository extends JpaRepository<State, Long> {
             "SELECT s " +
                     "FROM State s " +
                     "WHERE s.isActive = true " +
-                    "AND (:stateId IS NULL OR s.stateId = :stateId) " +
-                    "ORDER BY s.stateId DESC"
+                    "AND (:stateId IS NULL OR s.stateId = :stateId) "
     )
     Page<State> searchStates(
             @Param("stateId") Long stateId,

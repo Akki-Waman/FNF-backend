@@ -11,6 +11,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.StateResponseDto;
 import com.sipl.ticket.core.helper.StateExcelGenerator;
 import com.sipl.ticket.core.mapper.StateMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.StateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -200,9 +201,12 @@ public class StateServiceImpl implements StateService {
         log.info("<<Start>> search State service called <<Start>>");
         try {
 
-            Sort sort = Sort.by("stateName").ascending();
-
-            Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
+            );
 
             Page<State> pageResult = stateRepository.searchStates(dto.getStateId(), pageable);
 

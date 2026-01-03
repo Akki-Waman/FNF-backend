@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.mapper.BranchMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -210,16 +211,12 @@ public class BranchServiceImpl implements BranchService {
     public ApiResponseDTO<PagedResponse<BranchDto>> searchBranches(
             BranchSearchRequestDto dto) {
 
-        Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
-                ? Sort.by(dto.getSortBy()).ascending()
-                : Sort.by(dto.getSortBy()).descending();
-
-        Pageable pageable = PageRequest.of(
+        Pageable pageable = PaginationUtil.pageable(
                 dto.getPage(),
                 dto.getSize(),
-                sort
+                dto.getSortBy(),
+                dto.getSortDir()
         );
-
         Page<Branches> pageResult = repository.searchBranches(
                 dto.getBranchId(),
                 dto.getCompanyId(),

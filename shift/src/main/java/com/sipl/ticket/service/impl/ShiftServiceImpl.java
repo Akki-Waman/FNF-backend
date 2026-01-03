@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
 import com.sipl.ticket.core.mapper.ShiftMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ShiftService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -272,14 +273,11 @@ public class ShiftServiceImpl implements ShiftService {
             ShiftSearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("desc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
 
             Page<Shift> pageResult =

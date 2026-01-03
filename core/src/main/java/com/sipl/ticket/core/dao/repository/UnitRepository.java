@@ -31,9 +31,7 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
             "SELECT u " +
                     "FROM Unit u " +
                     "WHERE u.isActive = true " +
-                    "AND (:unitId IS NULL OR u.unitId = :unitId) " +
-                    "ORDER BY u.unitId DESC"
-    )
+                    "AND (:unitId IS NULL OR u.unitId = :unitId) ")
     Page<Unit> searchByUnitId(
             @Param("unitId") Long unitId,
             Pageable pageable

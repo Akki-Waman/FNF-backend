@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
 import com.sipl.ticket.core.mapper.CountryMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CountryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -292,9 +293,11 @@ public class CountryServiceImpl implements CountryService {
         log.info("Searching countries with filters={}", requestDto);
 
         try {
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     requestDto.getPage(),
-                    requestDto.getSize()
+                    requestDto.getSize(),
+                    requestDto.getSortBy(),
+                    requestDto.getSortDir()
             );
 
             Page<Country> countryPage = repository.searchCountries(

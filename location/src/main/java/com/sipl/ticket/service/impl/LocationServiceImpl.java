@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.mapper.LocationMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.LocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -282,16 +283,12 @@ public class LocationServiceImpl implements LocationService {
             LocationSearchRequestDTO dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
-
             Page<Locations> pageResult =
                     repository.searchLocations(
                             dto.getLocationId(),

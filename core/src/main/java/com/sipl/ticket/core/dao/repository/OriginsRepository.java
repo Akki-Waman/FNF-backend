@@ -27,8 +27,7 @@ public interface OriginsRepository extends JpaRepository<Origins, Long> {
             "SELECT o " +
                     "FROM Origins o " +
                     "WHERE o.isActive = true " +
-                    "AND (:originId IS NULL OR o.originId = :originId) " +
-                    "ORDER BY o.originId DESC"
+                    "AND (:originId IS NULL OR o.originId = :originId) "
     )
     Page<Origins> searchByOriginId(
             @Param("originId") Long originId,

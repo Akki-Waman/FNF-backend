@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CityService;
 import com.sipl.ticket.core.dao.entity.City;
 import com.sipl.ticket.core.dao.entity.State;
@@ -396,14 +397,11 @@ public class CityServiceImpl implements CityService {
             CitySearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
 
             Page<City> pageResult =

@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.mapper.CompanyMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -265,14 +266,11 @@ public class CompanyServiceImpl implements CompanyService {
             CompanySearchRequestDto dto) {
 
         try {
-            Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
-                    ? Sort.by(dto.getSortBy()).ascending()
-                    : Sort.by(dto.getSortBy()).descending();
-
-            Pageable pageable = PageRequest.of(
+            Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    sort
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
             Page<Companies> pageResult =
                     repository.searchByCompanyId(
