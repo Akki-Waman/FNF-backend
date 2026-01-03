@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -100,4 +101,14 @@ public class StateControllerImpl implements StateController {
         log.info("<<End>> search State endpoint called <<End>>");
         return ResponseEntity.ok(response);
     }
+    @Override
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> download States Excel endpoint called <<Start>>");
+
+        stateService.downloadExcel(response);
+
+        log.info("<<End>> download States Excel endpoint called <<End>>");
+    }
+
 }
