@@ -33,11 +33,11 @@ public class TaskControllerImpl implements TaskController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
             TaskSearchRequestDto requestDto) {
 
-        log.info("Task search API called with request: {}", requestDto);
+        log.info("<<START>> searchTasks <<START>>");
 
         ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> response =
                 taskService.searchTasks(requestDto);
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        log.info("<<END>> searchTasks <<END>>");
+        return ResponseEntity.ok(response);
     }
 }

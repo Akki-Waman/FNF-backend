@@ -335,15 +335,24 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Same user cannot be assignee and follower");
         }
     }
+
     @Override
     public ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
             TaskSearchRequestDto dto) {
 
-        log.info("Searching tasks with filters: {}", dto);
+        log.info("Searching tasks with request: {}", dto);
+
+        String sortBy = dto.getSortBy();
+
+        if ("ticketId".equalsIgnoreCase(sortBy)) {
+            sortBy = "ticket.ticketId";
+        } else if ("id".equalsIgnoreCase(sortBy)) {
+            sortBy = "taskId";
+        }
 
         Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
-                ? Sort.by(dto.getSortBy()).ascending()
-                : Sort.by(dto.getSortBy()).descending();
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(
                 dto.getPage(),
@@ -352,8 +361,8 @@ public class TaskServiceImpl implements TaskService {
         );
 
         Page<Task> pageResult = taskRepository.searchTasks(
-                dto.getTaskId(),
-                dto.getSubject(),
+                dto.getTicketId(),
+                dto.getQuery(),
                 pageable
         );
 
@@ -366,29 +375,27 @@ public class TaskServiceImpl implements TaskService {
             );
         }
 
-        List<TaskCombinedSearchResponseDTO> responseList =
+        List<TaskCombinedSearchResponseDTO> content =
                 pageResult.getContent().stream()
                         .map(task -> {
-
-                            TaskCustomResponseDTO taskCustomDto =
-                                    taskMapper.toCustomDto(task);
-
-                            TaskCombinedSearchResponseDTO combinedDTO =
+                            TaskCombinedSearchResponseDTO response =
                                     new TaskCombinedSearchResponseDTO();
 
-                            combinedDTO.setTaskCustomResponseDTO(taskCustomDto);
-                            combinedDTO.setTaskAssigneeCustomResponseDTOS(Collections.emptyList());
-                            combinedDTO.setTaskFollowerCustomResponseDTOS(Collections.emptyList());
-                            combinedDTO.setTaskTagCustomResponseDTOS(Collections.emptyList());
-                            combinedDTO.setTaskAttachmentCustomResponseDTOS(Collections.emptyList());
+                            response.setTaskCustomResponseDTO(
+                                    taskMapper.toCustomDto(task)
+                            );
+                            response.setTaskAssigneeCustomResponseDTOS(Collections.emptyList());
+                            response.setTaskFollowerCustomResponseDTOS(Collections.emptyList());
+                            response.setTaskTagCustomResponseDTOS(Collections.emptyList());
+                            response.setTaskAttachmentCustomResponseDTOS(Collections.emptyList());
 
-                            return combinedDTO;
+                            return response;
                         })
                         .collect(Collectors.toList());
 
         return new ApiResponseDTO<>(
                 new PagedResponse<>(
-                        responseList,
+                        content,
                         pageResult.getNumber(),
                         pageResult.getTotalElements(),
                         pageResult.getTotalPages(),
@@ -400,4 +407,5 @@ public class TaskServiceImpl implements TaskService {
                 false
         );
     }
+
 }

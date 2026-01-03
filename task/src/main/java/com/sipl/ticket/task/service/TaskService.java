@@ -18,4 +18,5 @@ public interface TaskService {
     ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
             TaskSearchRequestDto requestDto
     );
+
 }
