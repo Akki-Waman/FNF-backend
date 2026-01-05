@@ -52,4 +52,13 @@ public class TicketControllerImpl implements TicketController {
         log.info("<<End>> searchTickets <<End>>");
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile) {
+        log.info("<<START>> updateTickets controller <<START>>");
+        ApiResponseDTO<CombinedTicketResponseDto> apiResponse =
+                ticketService.updateTickets(ticketId,ticketRequestDto, multipartFile);
+        log.info("<<END>> updateTickets controller <<END>>");
+        return ResponseEntity.ok(apiResponse);
+    }
 }

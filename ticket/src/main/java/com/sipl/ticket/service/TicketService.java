@@ -21,4 +21,5 @@ public interface TicketService {
             TicketSearchRequestDto requestDto
     );
 
+    ApiResponseDTO<CombinedTicketResponseDto> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
 }

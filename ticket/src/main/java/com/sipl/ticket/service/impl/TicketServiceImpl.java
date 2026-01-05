@@ -379,6 +379,217 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponseDTO<CombinedTicketResponseDto> updateTickets(
+            Long ticketId,
+            String ticketRequestDto,
+            List<MultipartFile> multipartFiles) {
+
+        log.info("<<START>> updateTickets service ticketId={}", ticketId);
+
+        try {
+            NewTicketsRequestDTO requestDto =
+                    objectMapper.readValue(ticketRequestDto, NewTicketsRequestDTO.class);
+
+            TicketsResponseDTO ticketDto = requestDto.getTicketsResponseDTO();
+
+            Ticket existingTicket = ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+            Users assignedUser = validateAndGetAssignedUser(ticketDto);
+
+            updateTicketCoreFields(existingTicket, ticketDto, assignedUser);
+
+            Ticket updatedTicket = ticketRepository.save(existingTicket);
+
+            List<TicketTag> tags =
+                    updateTicketTags(
+                            requestDto.getTicketTagResponseDTOS(),
+                            updatedTicket);
+
+            List<TicketCc> ccs =
+                    updateTicketCcs(
+                            requestDto.getTicketCcResponseDTOS(),
+                            updatedTicket);
+
+            List<TicketAttachment> attachments =
+                    saveTicketAttachments(
+                            multipartFiles,
+                            updatedTicket,
+                            assignedUser);
+
+            Ticket fullTicket =
+                    ticketRepository.findByIdWithAllDetails(updatedTicket.getTicketId())
+                            .orElseThrow(() -> new RuntimeException("Ticket not found after update"));
+
+            CombinedTicketResponseDto responseDto =
+                    buildResponse(fullTicket, tags, ccs, attachments);
+
+            log.info("<<END>> updateTickets service SUCCESS ticketId={}", ticketId);
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    null,
+                    null,
+                    "Ticket updated successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Exception in updateTickets service ticketId={}", ticketId, e);
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
+
+    private void updateTicketCoreFields(
+            Ticket ticket,
+            TicketsResponseDTO dto,
+            Users assignedUser) {
+
+        if (dto.getSubject() != null)
+            ticket.setSubject(dto.getSubject().trim());
+
+        if (dto.getDescription() != null)
+            ticket.setDescription(dto.getDescription());
+
+        if (dto.getComplaintName() != null)
+            ticket.setComplaintName(dto.getComplaintName());
+
+        if (dto.getComplaintMobileNo() != null)
+            ticket.setComplaintMobileNo(dto.getComplaintMobileNo());
+
+        if (dto.getEmailAddress() != null)
+            ticket.setEmailAddress(dto.getEmailAddress());
+
+        if (dto.getPriority() != null)
+            ticket.setPriority(dto.getPriority());
+
+        if (dto.getStatus() != null)
+            ticket.setStatus(dto.getStatus());
+
+        ticket.setAssignedTo(assignedUser);
+
+        if (dto.getLocation() != null)
+            ticket.setLocation(getLocation(dto));
+
+        if (dto.getContact() != null)
+            ticket.setContact(getContact(dto));
+
+        if (dto.getDepartment() != null)
+            ticket.setDepartment(getDepartment(dto));
+
+        if (dto.getService() != null)
+            ticket.setService(getService(dto));
+
+        if (dto.getClientProducts() != null)
+            ticket.setClientProducts(getClientProduct(dto));
+
+        if (dto.getBranch() != null)
+            ticket.setBranch(getBranch(dto));
+    }
+
+    @Transactional
+    private List<TicketTag> updateTicketTags(
+            List<TicketTagResponseDTO> incomingDtos,
+            Ticket ticket) {
+
+        if (incomingDtos == null)
+            return ticketTagRepository.findByTicket(ticket);
+
+        List<TicketTag> existingTags =
+                ticketTagRepository.findByTicket(ticket);
+
+        Set<Long> existingTagIds = existingTags.stream()
+                .map(t -> t.getTags().getTagId())
+                .collect(Collectors.toSet());
+
+        Set<Long> incomingTagIds = incomingDtos.stream()
+                .map(dto -> dto.getTags().getTagId())
+                .collect(Collectors.toSet());
+
+        /* -------- DELETE -------- */
+        List<TicketTag> toDelete = existingTags.stream()
+                .filter(t -> !incomingTagIds.contains(t.getTags().getTagId()))
+                .collect(Collectors.toList());
+
+        ticketTagRepository.deleteAll(toDelete);
+
+        /* -------- ADD -------- */
+        List<TicketTag> toAdd = incomingTagIds.stream()
+                .filter(id -> !existingTagIds.contains(id))
+                .map(id -> {
+                    Tags tag = tagsRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Tag not found " + id));
+                    TicketTag tagEntity = new TicketTag();
+                    tagEntity.setTicket(ticket);
+                    tagEntity.setTags(tag);
+                    return tagEntity;
+                })
+                .collect(Collectors.toList());
+
+        ticketTagRepository.saveAll(toAdd);
+
+        return ticketTagRepository.findByTicket(ticket);
+    }
+
+    @Transactional
+    private List<TicketCc> updateTicketCcs(
+            List<TicketCcResponseDTO> incomingDtos,
+            Ticket ticket) {
+
+        if (incomingDtos == null)
+            return ticketCcRepository.findByTicket(ticket);
+
+        List<TicketCc> existingCcs =
+                ticketCcRepository.findByTicket(ticket);
+
+        Set<String> existingEmails = existingCcs.stream()
+                .map(TicketCc::getCc)
+                .collect(Collectors.toSet());
+
+        Set<String> incomingEmails = incomingDtos.stream()
+                .map(TicketCcResponseDTO::getCc)
+                .filter(email -> email != null && !email.isBlank())
+                .collect(Collectors.toSet());
+
+        /* -------- DELETE -------- */
+        List<TicketCc> toDelete = existingCcs.stream()
+                .filter(cc -> !incomingEmails.contains(cc.getCc()))
+                .collect(Collectors.toList());
+
+        ticketCcRepository.deleteAll(toDelete);
+
+        /* -------- ADD -------- */
+        List<TicketCc> toAdd = incomingEmails.stream()
+                .filter(email -> !existingEmails.contains(email))
+                .map(email -> {
+                    TicketCc cc = new TicketCc();
+                    cc.setTicket(ticket);
+                    cc.setCc(email);
+                    return cc;
+                })
+                .collect(Collectors.toList());
+
+        ticketCcRepository.saveAll(toAdd);
+
+        return ticketCcRepository.findByTicket(ticket);
+    }
+
+
+
 }
 
 
