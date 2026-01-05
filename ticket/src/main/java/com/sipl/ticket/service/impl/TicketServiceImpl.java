@@ -326,7 +326,7 @@ public class TicketServiceImpl implements TicketService {
                     ticketRepository.searchTickets(dto.getQuery(), pageable);
 
             if (pageResult.isEmpty()) {
-                log.warn("⚠️ No tickets found for query='{}'", dto.getQuery());
+                log.warn("No tickets found for query='{}'", dto.getQuery());
 
                 return new ApiResponseDTO<>(
                         null,
