@@ -2,9 +2,8 @@ package com.sipl.ticket.controller;
 
 
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
-import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
+import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +34,8 @@ public interface TicketController {
     ResponseEntity<ApiResponseDTO<Void>> deleteTickets(
             @RequestBody DeleteTicketsRequestDTO requestDTO
     );
-
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>>> searchTickets(
+            @RequestBody TicketSearchRequestDto requestDto
+    );
 }

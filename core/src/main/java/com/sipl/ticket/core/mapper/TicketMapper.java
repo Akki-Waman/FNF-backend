@@ -3,6 +3,7 @@ package com.sipl.ticket.core.mapper;
 import com.sipl.ticket.core.dao.entity.Tags;
 import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
+import com.sipl.ticket.core.dto.response.TicketCombinedResponseDto;
 import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
@@ -34,6 +35,7 @@ public interface TicketMapper extends AuditEntityMapper {
 
     List<TicketsResponseDTO> mapTagsListToDtoList(List<Ticket> tickets);
 
+    TicketCombinedResponseDto toCombinedDto(Ticket ticket);
 
 }
 

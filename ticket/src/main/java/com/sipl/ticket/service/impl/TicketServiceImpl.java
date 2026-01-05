@@ -9,12 +9,16 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
+import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.TicketFileUploadUtil;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -298,5 +302,83 @@ public class TicketServiceImpl implements TicketService {
     }
 
 
+    @Override
+    public ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>> searchTickets(
+            TicketSearchRequestDto dto) {
+
+        log.info("Ticket search started | query='{}', page={}, size={}, sortBy={}, sortDir={}",
+                dto.getQuery(),
+                dto.getPage(),
+                dto.getSize(),
+                dto.getSortBy(),
+                dto.getSortDir()
+        );
+
+        try {
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
+            );
+
+            Page<Ticket> pageResult =
+                    ticketRepository.searchTickets(dto.getQuery(), pageable);
+
+            if (pageResult.isEmpty()) {
+                log.warn("No tickets found for query='{}'", dto.getQuery());
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "No tickets matched your search criteria",
+                        HttpStatus.NOT_FOUND,
+                        false
+                );
+            }
+
+            List<TicketCombinedResponseDto> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(ticketMapper::toCombinedDto)
+                            .collect(Collectors.toList());
+
+            log.info("Ticket search success | query='{}', results={}, page={}/{}",
+                    dto.getQuery(),
+                    content.size(),
+                    pageResult.getNumber() + 1,
+                    pageResult.getTotalPages()
+            );
+
+            PagedResponse<TicketCombinedResponseDto> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Tickets fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+
+            log.error("Error while searching tickets | query='{}'", dto.getQuery(), e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Something went wrong while searching tickets. Please try again later.",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
 
 }
+
+

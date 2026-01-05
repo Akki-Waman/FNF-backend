@@ -2,9 +2,8 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.TicketController;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
-import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
+import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,4 +40,16 @@ public class TicketControllerImpl implements TicketController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>>> searchTickets(
+            TicketSearchRequestDto requestDto) {
+
+        log.info("<<Start>> searchTickets <<Start>>");
+
+        ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>> response =
+                ticketService.searchTickets(requestDto);
+
+        log.info("<<End>> searchTickets <<End>>");
+        return ResponseEntity.ok(response);
+    }
 }
