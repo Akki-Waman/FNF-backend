@@ -19,4 +19,7 @@ public interface TaskService {
             TaskSearchRequestDto requestDto
     );
 
+    ApiResponseDTO<CombinedTaskResponseDto> updateTask(
+            String taskRequestDto,
+            List<MultipartFile> files);
 }
