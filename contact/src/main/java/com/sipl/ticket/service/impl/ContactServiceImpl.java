@@ -13,11 +13,16 @@ import com.sipl.ticket.core.mapper.ContactMapper;
 import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import com.sipl.ticket.core.util.PaginationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -336,20 +341,23 @@ public class ContactServiceImpl implements ContactService {
             ContactSearchRequestDto dto
     ) {
 
-        log.info("Searching contacts with filters {}", dto);
+        log.info("Contact search initiated [query='{}']", dto.getQuery());
 
         try {
-            List<Contact> contacts = contactRepository.searchContacts(
-                    dto.getContactId(),
-                    dto.getContactName(),
-                    dto.getEmailAddress(),
-                    dto.getMobileNo(),
-                    dto.getDepartmentId(),
-                    dto.getIsActive()
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
             );
 
-            if (contacts == null || contacts.isEmpty()) {
-                log.warn("No contacts found for given search criteria");
+            Page<Contact> pageResult =
+                    contactRepository.searchContacts(
+                            dto.getQuery(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No contacts found",
@@ -358,21 +366,24 @@ public class ContactServiceImpl implements ContactService {
                 );
             }
 
-            List<ContactResponseDto> responseList =
-                    contactMapper.toResponseDtoList(contacts);
+            List<ContactResponseDto> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(contactMapper::toResponseDto)
+                            .collect(Collectors.toList());
 
             PagedResponse<ContactResponseDto> pagedResponse =
                     new PagedResponse<>(
-                            responseList,
-                            0,
-                            responseList.size(),
-                            1,
-                            responseList.size(),
-                            true
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
                     );
 
-            log.info("Contacts search completed successfully, totalRecords={}",
-                    responseList.size());
+            log.info("Contact search successful [totalRecords={}]",
+                    pageResult.getTotalElements());
 
             return new ApiResponseDTO<>(
                     pagedResponse,
@@ -382,15 +393,18 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error("Exception occurred while searching contacts", e);
+            log.error("searchContacts unexpected error", e);
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error while searching contacts",
+                    "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
         }
     }
+
+
+
 
 
 

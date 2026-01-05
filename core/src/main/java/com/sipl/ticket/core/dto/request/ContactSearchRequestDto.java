@@ -10,12 +10,6 @@ import javax.validation.constraints.*;
 @ToString
 public class ContactSearchRequestDto extends SearchRequestDto {
 
-    private Long contactId;
-    private String contactName;
-    private String emailAddress;
-    private String mobileNo;
-    private Long departmentId;
-    private Boolean isActive;
-
+    private String query;
 
 }
