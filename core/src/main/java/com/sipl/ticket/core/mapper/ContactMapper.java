@@ -14,18 +14,35 @@ public interface ContactMapper {
 
     @Mapping(target = "contactId", ignore = true)
     @Mapping(target = "department", ignore = true)
+
+    //  audit fields exist in ENTITY → safe to ignore
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdTime", ignore = true)
+    @Mapping(target = "modifiedTime", ignore = true)
+
     Contact toEntity(ContactRequestDto dto);
 
     /* ================= RESPONSE ================= */
 
     @Mapping(target = "departmentId", source = "department.departmentId")
     @Mapping(target = "departmentName", source = "department.departmentName")
+
+        //  DO NOT IGNORE AUDIT FIELDS HERE (they don't exist in DTO)
+
     ContactResponseDto toResponseDto(Contact contact);
 
     /* ================= UPDATE ================= */
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "department", ignore = true)
+
+    //  audit fields exist in ENTITY → safe to ignore
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "createdTime", ignore = true)
+    @Mapping(target = "modifiedTime", ignore = true)
+
     Contact partialUpdate(
             ContactRequestDto dto,
             @MappingTarget Contact contact

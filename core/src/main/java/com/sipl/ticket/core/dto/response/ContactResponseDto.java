@@ -16,12 +16,12 @@ public class ContactResponseDto {
     private String emailAddress;
     private String mobileNo;
 
-    // Foreign key info
+
     private Long departmentId;
     private String departmentName;
 
     private Boolean isActive;
 
-    // Audit details
+
     private AuditDto auditDto;
 }

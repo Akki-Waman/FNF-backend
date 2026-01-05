@@ -71,9 +71,17 @@ public class ContactControllerImpl implements ContactController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
             @RequestBody ContactSearchRequestDto searchRequestDto
     ) {
-        return ResponseEntity.ok(
-                contactService.searchContacts(searchRequestDto)
-        );
+        log.info("<<Start>> searchContacts  <<Start>>");
+
+        ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> response =
+                ResponseEntity.ok(
+                        contactService.searchContacts(searchRequestDto)
+                );
+
+        log.info("<<End>> searchContacts <<End>>");
+
+        return response;
     }
+
 
 }

@@ -1,6 +1,8 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Contact;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,21 +34,21 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     @Query(
             "SELECT c FROM Contact c " +
                     "JOIN c.department d " +
-                    "WHERE (:contactId IS NULL OR c.contactId = :contactId) " +
-                    "AND (:contactName IS NULL OR LOWER(c.contactName) LIKE LOWER(CONCAT('%', :contactName, '%'))) " +
-                    "AND (:emailAddress IS NULL OR LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :emailAddress, '%'))) " +
-                    "AND (:mobileNo IS NULL OR c.mobileNo LIKE CONCAT('%', :mobileNo, '%')) " +
-                    "AND (:departmentId IS NULL OR d.departmentId = :departmentId) " +
-                    "AND (:isActive IS NULL OR c.isActive = :isActive)"
+                    "WHERE (:query IS NULL OR " +
+                    "   LOWER(c.contactName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   c.mobileNo LIKE CONCAT('%', :query, '%') OR " +
+                    "   LOWER(d.departmentName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   CONCAT('', c.contactId) = :query OR " +
+                    "   CONCAT('', d.departmentId) = :query " +
+                    ") " +
+                    "AND c.isActive = true"
     )
-    List<Contact> searchContacts(
-            @Param("contactId") Long contactId,
-            @Param("contactName") String contactName,
-            @Param("emailAddress") String emailAddress,
-            @Param("mobileNo") String mobileNo,
-            @Param("departmentId") Long departmentId,
-            @Param("isActive") Boolean isActive
+    Page<Contact> searchContacts(
+            @Param("query") String query,
+            Pageable pageable
     );
+
 
 
 }
