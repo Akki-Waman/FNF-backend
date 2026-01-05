@@ -1,7 +1,7 @@
 package com.sipl.ticket.task.controller;
 
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
+import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +24,10 @@ public interface TaskController {
     public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> addTask(
             @RequestPart("taskRequestDto") String taskRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
+    );
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
+            @RequestBody TaskSearchRequestDto requestDto
     );
 }

@@ -22,7 +22,7 @@ public interface ProductCategoryRepository
             String name, Long productCategoryId
     );
 
-    // optional & clean
+
     List<ProductCategories> findByIsActiveTrue();
     @Query(
             "SELECT pc " +
@@ -35,6 +35,7 @@ public interface ProductCategoryRepository
             Pageable pageable
     );
 
-//    Page<ProductSubCategories> searchByProductSubCategoryId(Long productSubCategoryId, Pageable pageable);
+
+    Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive(String name, boolean b);
 }
 
