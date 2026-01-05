@@ -1,7 +1,6 @@
 package com.sipl.ticket.core.mapper;
 
 import com.sipl.ticket.core.dao.entity.TaskTag;
-import com.sipl.ticket.core.dto.response.TaskTagCustomResponseDTO;
 import com.sipl.ticket.core.dto.response.TaskTagDto;
 import org.mapstruct.Mapper;
 
@@ -22,6 +21,4 @@ public interface TaskTagMapper extends AuditEntityMapper{
     TaskTagDto toDto(TaskTag entity);
 
     List<TaskTagDto> mapToDtoList(List<TaskTag> entities);
-
-    TaskTagCustomResponseDTO toCustomDto(Object o);
 }

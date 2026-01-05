@@ -1,7 +1,7 @@
 package com.sipl.ticket.task.service;
 
-import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
-import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,9 +14,4 @@ public interface TaskService {
             String taskRequestDto,
             List<MultipartFile> files
     );
-
-    ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
-            TaskSearchRequestDto requestDto
-    );
-
 }
