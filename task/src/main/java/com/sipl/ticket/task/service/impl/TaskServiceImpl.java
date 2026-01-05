@@ -7,12 +7,16 @@ import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.TaskRequestDto;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
+import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -330,6 +334,109 @@ public class TaskServiceImpl implements TaskService {
             log.warn("Duplicate users found in assignee and follower list for Task with subject={}", dto.getSubject());
             throw new RuntimeException("Same user cannot be assignee and follower");
         }
+    }
+
+    @Override
+    public ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
+            TaskSearchRequestDto dto) {
+
+        log.info("Searching tasks with request: {}", dto);
+
+        String sortBy = dto.getSortBy();
+        
+        if ("ticketId".equalsIgnoreCase(sortBy)) {
+            sortBy = "ticket.ticketId";
+        } else if ("id".equalsIgnoreCase(sortBy)) {
+            sortBy = "taskId";
+        }
+
+        Sort sort = dto.getSortDir().equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(
+                dto.getPage(),
+                dto.getSize(),
+                sort
+        );
+        Page<Task> pageResult = taskRepository.searchTasks(
+                dto.getTicketId(),
+                dto.getQuery(),
+                pageable
+        );
+
+        if (pageResult.isEmpty()) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No tasks found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        List<TaskCombinedSearchResponseDTO> content =
+                pageResult.getContent().stream()
+                        .map(task -> {
+
+                            Long taskId = task.getTaskId();
+
+                            TaskCombinedSearchResponseDTO response =
+                                    new TaskCombinedSearchResponseDTO();
+
+                            // 🔹 Main task
+                            response.setTaskCustomResponseDTO(
+                                    taskMapper.toCustomDto(task)
+                            );
+
+                            // 🔹 Assignees
+                            response.setTaskAssigneeCustomResponseDTOS(
+                                    taskAssigneeRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskAssigneeMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Followers
+                            response.setTaskFollowerCustomResponseDTOS(
+                                    taskFollowerRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskFollowerMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Tags
+                            response.setTaskTagCustomResponseDTOS(
+                                    taskTagRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskTagMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            // 🔹 Attachments
+                            response.setTaskAttachmentCustomResponseDTOS(
+                                    taskAttachmentRepository.findByTaskTaskId(taskId)
+                                            .stream()
+                                            .map(taskAttachmentMapper::toCustomDto)
+                                            .collect(Collectors.toList())
+                            );
+
+                            return response;
+                        })
+                        .collect(Collectors.toList());
+
+        return new ApiResponseDTO<>(
+                new PagedResponse<>(
+                        content,
+                        pageResult.getNumber(),
+                        pageResult.getTotalElements(),
+                        pageResult.getTotalPages(),
+                        pageResult.getSize(),
+                        pageResult.isLast()
+                ),
+                "Tasks fetched successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
 }

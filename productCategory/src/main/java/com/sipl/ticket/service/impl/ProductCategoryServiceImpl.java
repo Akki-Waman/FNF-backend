@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,12 +48,34 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             String name = dto.getProductCategoryName().trim();
 
-            if (repository.existsByProductCategoryNameIgnoreCase(name)) {
+
+            Optional<ProductCategories> activeCategory =
+                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, true);
+
+            if (activeCategory.isPresent()) {
                 return new ApiResponseDTO<>(
                         null,
                         "Product category '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
+                );
+            }
+
+
+            Optional<ProductCategories> inactiveCategory =
+                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, false);
+
+            if (inactiveCategory.isPresent()) {
+                ProductCategories category = inactiveCategory.get();
+                category.setIsActive(true);
+
+                ProductCategories updatedCategory = repository.save(category);
+
+                return new ApiResponseDTO<>(
+                        mapper.toDto(updatedCategory),
+                        "Product category reactivated successfully",
+                        HttpStatus.OK,
+                        false
                 );
             }
 
@@ -79,6 +102,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             );
         }
     }
+
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
