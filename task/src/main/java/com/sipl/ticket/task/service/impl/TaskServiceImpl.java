@@ -439,4 +439,288 @@ public class TaskServiceImpl implements TaskService {
         );
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponseDTO<CombinedTaskResponseDto> updateTask(
+            String taskRequestDto,
+            List<MultipartFile> files) {
+
+        try {
+            TaskRequestDto dto =
+                    objectMapper.readValue(taskRequestDto, TaskRequestDto.class);
+
+            log.info("Updating task with taskId={}", dto.getTaskId());
+            Task task = getExistingTask(dto.getTaskId());
+
+            validateTaskRequest(dto);
+            //validateTaskDates(dto);
+            validateAssignee(dto);
+            validateNoDuplicateUsers(dto);
+
+            updateTaskFields(dto, task);
+
+            Task updatedTask = taskRepository.save(task);
+            log.info("Task updated successfully with id={}", updatedTask.getTaskId());
+
+            List<TaskAssignee> assignees = updateAssignees(dto.getAssigneeUserIds(), task);
+            List<TaskFollower> followers = updateFollowers(dto.getFollowerUserIds(), task);
+            List<TaskTag> tags = updateTags(dto.getTagIds(), task);
+            List<TaskAttachment> attachments = saveAttachments(files, task);
+
+            log.info("Relations updated for taskId={} | assignees={}, followers={}, tags={}, attachments={}",
+                    task.getTaskId(),
+                    assignees.size(),
+                    followers.size(),
+                    tags.size(),
+                    attachments.size());
+
+            CombinedTaskResponseDto responseDto =
+                    new CombinedTaskResponseDto(
+                            taskMapper.toDto(updatedTask),
+                            taskAssigneeMapper.mapToDtoList(assignees),
+                            taskFollowerMapper.mapToDtoList(followers),
+                            taskTagMapper.mapToDtoList(tags),
+                            taskAttachmentMapper.mapToDtoList(attachments)
+                    );
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    null,
+                    null,
+                    "Task updated successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Exception in updateTask service. ", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
+
+    private Task getExistingTask(Long taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> {
+                    log.warn("Task not found for update, taskId={}", taskId);
+                    return new RuntimeException("Task not found");
+                });
+    }
+
+    private void updateTaskFields(TaskRequestDto dto, Task task) {
+
+        if (dto.getSubject() != null) {
+            task.setSubject(dto.getSubject().trim());
+        }
+
+        if (dto.getDescription() != null) {
+            task.setDescription(dto.getDescription());
+        }
+
+        if (dto.getIsPublic() != null) {
+            task.setIsPublic(dto.getIsPublic());
+        }
+
+        if (dto.getIsBillable() != null) {
+            task.setIsBillable(dto.getIsBillable());
+        }
+
+        if (dto.getHourlyRate() != null) {
+            task.setHourlyRate(dto.getHourlyRate());
+        }
+
+        if (dto.getStartDate() != null) {
+            task.setStartDate(dto.getStartDate());
+        }
+
+        if (dto.getDueDate() != null) {
+            task.setDueDate(dto.getDueDate());
+        }
+
+        if (dto.getPriority() != null) {
+            task.setPriority(dto.getPriority());
+        }
+
+        if (dto.getRepeatType() != null) {
+            task.setRepeatType(dto.getRepeatType());
+        }
+
+        if (dto.getRelatedToType() != null) {
+            task.setRelatedToType(dto.getRelatedToType());
+        }
+
+        if (dto.getStatus() != null) {
+            task.setStatus(dto.getStatus());
+        }
+
+        if (dto.getBranchId() != null) {
+            task.setBranch(getBranch(dto.getBranchId()));
+        }
+
+        if (dto.getTicketId() != null) {
+            task.setTicket(getTicket(dto.getTicketId()));
+        }
+    }
+
+    private List<TaskAssignee> updateAssignees(
+            List<Long> incomingUserIds,
+            Task task) {
+
+        if (incomingUserIds == null) {
+            log.warn("No assignee list provided for taskId={}", task.getTaskId());
+            return taskAssigneeRepository.findByTask(task);
+        }
+
+        List<TaskAssignee> existingAssignees =
+                taskAssigneeRepository.findByTask(task);
+
+        Set<Long> existingUserIds = existingAssignees.stream()
+                .map(a -> a.getUser().getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> incomingSet = new HashSet<>(incomingUserIds);
+
+        /* -------- DELETE -------- */
+        List<TaskAssignee> toDelete = existingAssignees.stream()
+                .filter(a -> !incomingSet.contains(a.getUser().getId()))
+                .collect(Collectors.toList());
+
+        if (!toDelete.isEmpty()) {
+            taskAssigneeRepository.deleteAll(toDelete);
+            log.info("Deleted {} assignees for taskId={}",
+                    toDelete.size(), task.getTaskId());
+        }
+
+        /* -------- ADD -------- */
+        List<TaskAssignee> toAdd = incomingSet.stream()
+                .filter(id -> !existingUserIds.contains(id))
+                .map(id -> {
+                    Users user = usersRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    TaskAssignee assignee = new TaskAssignee();
+                    assignee.setTask(task);
+                    assignee.setUser(user);
+                    return assignee;
+                })
+                .collect(Collectors.toList());
+
+        if (!toAdd.isEmpty()) {
+            taskAssigneeRepository.saveAll(toAdd);
+            log.info("Added {} new assignees for taskId={}",
+                    toAdd.size(), task.getTaskId());
+        }
+
+        return taskAssigneeRepository.findByTask(task);
+    }
+
+
+    private List<TaskFollower> updateFollowers(
+            List<Long> incomingUserIds,
+            Task task) {
+
+        log.info("Updating followers for taskId={}", task.getTaskId());
+
+        if (incomingUserIds == null) {
+            log.warn("No follower list provided for taskId={}", task.getTaskId());
+            return taskFollowerRepository.findByTask(task);
+        }
+
+        List<TaskFollower> existingFollowers =
+                taskFollowerRepository.findByTask(task);
+
+        Set<Long> existingUserIds = existingFollowers.stream()
+                .map(f -> f.getUser().getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> incomingSet = new HashSet<>(incomingUserIds);
+
+        /* DELETE */
+        List<TaskFollower> toDelete = existingFollowers.stream()
+                .filter(f -> !incomingSet.contains(f.getUser().getId()))
+                .collect(Collectors.toList());
+
+        if (!toDelete.isEmpty()) {
+            taskFollowerRepository.deleteAll(toDelete);
+            log.info("Deleted {} followers for taskId={}",
+                    toDelete.size(), task.getTaskId());
+        }
+
+        /* ADD */
+        List<TaskFollower> toAdd = incomingSet.stream()
+                .filter(id -> !existingUserIds.contains(id))
+                .map(id -> {
+                    Users user = usersRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    TaskFollower follower = new TaskFollower();
+                    follower.setTask(task);
+                    follower.setUser(user);
+                    return follower;
+                })
+                .collect(Collectors.toList());
+
+        taskFollowerRepository.saveAll(toAdd);
+
+        return taskFollowerRepository.findByTask(task);
+    }
+
+
+    private List<TaskTag> updateTags(
+            List<Long> tagIds,
+            Task task) {
+
+        log.info("Updating tags for taskId={}", task.getTaskId());
+
+        if (tagIds == null) {
+            log.warn("No tag list provided for taskId={}", task.getTaskId());
+            return taskTagRepository.findByTask(task);
+        }
+
+        List<TaskTag> existingTags =
+                taskTagRepository.findByTask(task);
+
+        Set<Long> existingTagIds = existingTags.stream()
+                .map(t -> t.getTag().getTagId())
+                .collect(Collectors.toSet());
+
+        Set<Long> incomingSet = new HashSet<>(tagIds);
+
+        /* DELETE */
+        List<TaskTag> toDelete = existingTags.stream()
+                .filter(t -> !incomingSet.contains(t.getTag().getTagId()))
+                .collect(Collectors.toList());
+
+        if (!toDelete.isEmpty()) {
+            taskTagRepository.deleteAll(toDelete);
+            log.info("Deleted {} tags for taskId={}",
+                    toDelete.size(), task.getTaskId());
+        }
+
+        /* ADD */
+        List<TaskTag> toAdd = incomingSet.stream()
+                .filter(id -> !existingTagIds.contains(id))
+                .map(id -> {
+                    Tags tag = tagsRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Tag not found"));
+                    TaskTag taskTag = new TaskTag();
+                    taskTag.setTask(task);
+                    taskTag.setTag(tag);
+                    return taskTag;
+                })
+                .collect(Collectors.toList());
+
+        taskTagRepository.saveAll(toAdd);
+
+        return taskTagRepository.findByTask(task);
+    }
+
 }

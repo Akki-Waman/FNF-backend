@@ -30,4 +30,14 @@ public interface TaskController {
     ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
             @RequestBody TaskSearchRequestDto requestDto
     );
+
+    @ApiOperation(
+            value = "Update a existing task",
+            notes = "Provide task details to update a task"
+    )
+    @PutMapping("/update")
+    public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> updateTask(
+            @RequestParam("taskRequestDto") String taskRequestDto,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files);
+
 }
