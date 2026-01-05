@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
+import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
@@ -21,7 +22,7 @@ public interface ContactController {
             @Valid @RequestBody ContactRequestDto contactRequestDto
     );
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     ResponseEntity<ApiResponseDTO<ContactResponseDto>> updateContact(
             @Valid @RequestBody ContactRequestDto contactRequestDto
     );
@@ -39,13 +40,10 @@ public interface ContactController {
     @GetMapping("/getAll")
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts();
 
-    /*@GetMapping("/search")
+    @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
-            @RequestParam(required = false) String contactName,
-            @RequestParam(required = false) String emailAddress,
-            @RequestParam(required = false) String mobileNo,
-            @RequestParam(required = false) Long departmentId,
-            @RequestParam(required = false) Boolean isActive
-    );*/
+            @RequestBody ContactSearchRequestDto searchRequestDto
+    );
+
 
 }
