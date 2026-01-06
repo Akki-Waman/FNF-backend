@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Service
@@ -22,4 +23,7 @@ public interface TaskService {
     ApiResponseDTO<CombinedTaskResponseDto> updateTask(
             String taskRequestDto,
             List<MultipartFile> files);
+
+    ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(
+            HttpServletRequest servletRequest);
 }

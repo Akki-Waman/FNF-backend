@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.request.TaskRequestDto;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,8 @@ public class TaskServiceImpl implements TaskService {
     private final TaskAttachmentMapper taskAttachmentMapper;
     private final ObjectMapper objectMapper;
     private final DocumentClientService documentClientService;
+    private final UserRolesRepository userRolesRepository;
+    private final UserManager userManager;
 
 
     @Override
@@ -721,6 +726,130 @@ public class TaskServiceImpl implements TaskService {
         taskTagRepository.saveAll(toAdd);
 
         return taskTagRepository.findByTask(task);
+    }
+
+    @Override
+    public ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(
+            HttpServletRequest servletRequest) {
+
+        try {
+            ApiResponseDTO<TaskSummaryResponseDto> validation =
+                    validateUser(servletRequest);
+            if (validation != null) {
+                log.warn("Task summary request failed during user validation");
+                return validation;
+            }
+
+            Users user = userManager.getUser(servletRequest);
+            log.info("Fetching task summary for userId={}", user.getId());
+
+            List<Object[]> overallResults = taskRepository.getTaskSummary();
+            log.debug("Overall task summary fetched. Row count={}",
+                    overallResults != null ? overallResults.size() : 0);
+
+            List<Object[]> userResults =
+                    taskRepository.getUserTaskSummary(user.getId());
+            log.debug("User task summary fetched for userId={}, row count={}",
+                    user.getId(),
+                    userResults != null ? userResults.size() : 0);
+
+            TaskSummaryDto overallSummary = buildSummary(overallResults);
+            TaskSummaryDto userSummary = buildSummary(userResults);
+
+            TaskSummaryResponseDto responseDto = new TaskSummaryResponseDto();
+            responseDto.setTaskSummaryDto(overallSummary);
+            responseDto.setTaskUserSummaryDto(userSummary);
+
+            log.info("Task summary prepared successfully for userId={}", user.getId());
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    "SUCCESS",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("Exception occurred while fetching task summary", e);
+            return new ApiResponseDTO<>(
+                    "INTERNAL_SERVER_ERROR",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private TaskSummaryDto buildSummary(List<Object[]> results) {
+
+        TaskSummaryDto dto = new TaskSummaryDto();
+
+        dto.setNotStarted(0L);
+        dto.setInProgress(0L);
+        dto.setTesting(0L);
+        dto.setAwaitingFeedback(0L);
+        dto.setComplete(0L);
+
+        if (results == null || results.isEmpty()) {
+            log.debug("No task summary data found, returning default values");
+            return dto;
+        }
+
+        for (Object[] row : results) {
+            String status = row[0] != null ? row[0].toString() : null;
+            Long count = row[1] != null ? ((Number) row[1]).longValue() : 0L;
+
+            log.debug("Processing task status={} count={}", status, count);
+
+            if ("NOT_STARTED".equals(status)) {
+                dto.setNotStarted(count);
+            } else if ("IN_PROGRESS".equals(status)) {
+                dto.setInProgress(count);
+            } else if ("TESTING".equals(status)) {
+                dto.setTesting(count);
+            } else if ("AWAITING_FEEDBACK".equals(status)) {
+                dto.setAwaitingFeedback(count);
+            } else if ("COMPLETE".equals(status)) {
+                dto.setComplete(count);
+            } else {
+                log.warn("Unknown task status received: {}", status);
+            }
+        }
+        return dto;
+    }
+
+
+    private ApiResponseDTO<TaskSummaryResponseDto> validateUser(
+            HttpServletRequest servletRequest) {
+
+        Users user = userManager.getUser(servletRequest);
+
+        if (user == null) {
+            log.warn("Task summary request failed: user not found from request");
+            return new ApiResponseDTO<>(
+                    "User not found.",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        UserRoles userRole =
+                userRolesRepository.findSingleByUserId(user.getId());
+
+        if (userRole == null || !userRole.isActive()) {
+            log.warn("Task summary request failed: no active role for userId={}",
+                    user.getId());
+            return new ApiResponseDTO<>(
+                    "User role not found. Please contact administrator.",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        log.info("User validation successful for userId={} roleId={}",
+                user.getId(),
+                userRole.getRole().getId());
+
+        return null;
     }
 
 }

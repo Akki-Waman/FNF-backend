@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query(
@@ -27,4 +29,29 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("query") String query,
             Pageable pageable
     );
+
+    @Query(
+            value =
+                    "SELECT t.status, COUNT(t.task_id) " +
+                            "FROM tasks t " +
+                            "GROUP BY t.status",
+            nativeQuery = true
+    )
+    List<Object[]> getTaskSummary();
+
+
+    @Query(
+            value =
+                    "SELECT t.status, COUNT(t.task_id) " +
+                            "FROM tasks t " +
+                            "JOIN tickets tk ON t.ticket_id = tk.ticket_id " +
+                            "WHERE tk.assigned_to = :userId " +
+                            "GROUP BY t.status",
+            nativeQuery = true
+    )
+    List<Object[]> getUserTaskSummary(Long userId);
 }
+
+
+
+
