@@ -25,6 +25,7 @@ public interface TaskService {
             String taskRequestDto,
             List<MultipartFile> files);
 
-    ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(Users user);
+    ApiResponseDTO<List<TaskStatusCountDto>> getTaskSummary(Users user);
+
 
 }

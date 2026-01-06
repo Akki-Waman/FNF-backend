@@ -12,5 +12,6 @@ public class TaskStatusCountDto {
     private Integer statusId;
     private String statusName;
     private Long totalCount;
+    private Long assignedTaskCountForUser;
 
 }
