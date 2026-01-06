@@ -39,6 +39,7 @@
 		<module>city</module>
         <module>task</module>
 		<module>ticket</module>
+        <module>activityLog</module>
 
     </modules>
 
@@ -185,6 +186,11 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>master</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>activityLog</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
