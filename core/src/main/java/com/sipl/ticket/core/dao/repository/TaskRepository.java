@@ -3,6 +3,7 @@ package com.sipl.ticket.core.dao.repository;
 import com.sipl.ticket.core.dao.entity.Task;
 
 import com.sipl.ticket.core.dao.entity.Ticket;
+import com.sipl.ticket.core.dto.response.TaskStatusCountDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,24 +33,45 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query(
             value =
-                    "SELECT t.status, COUNT(t.task_id) " +
-                            "FROM tasks t " +
-                            "GROUP BY t.status",
+                    "SELECT " +
+                            "  m.column_value   AS statusId, " +
+                            "  m.value_desc     AS statusName, " +
+                            "  COUNT(t.task_id) AS totalCount " +
+                            "FROM masters m " +
+                            "LEFT JOIN tasks t " +
+                            "  ON t.status = m.column_value " +
+                            "WHERE m.column_code = 1 " +
+                            "  AND m.tbl_name = 'tasks' " +
+                            "  AND m.is_active = 1 " +
+                            "GROUP BY m.column_value, m.value_desc, m.sequence " +
+                            "ORDER BY m.sequence",
             nativeQuery = true
     )
-    List<Object[]> getTaskSummary();
-
+    List<TaskStatusCountDto> getOverallTaskSummary();
 
     @Query(
             value =
-                    "SELECT t.status, COUNT(t.task_id) " +
-                            "FROM tasks t " +
-                            "JOIN tickets tk ON t.ticket_id = tk.ticket_id " +
-                            "WHERE tk.assigned_to = :userId " +
-                            "GROUP BY t.status",
+                    "SELECT " +
+                            "  m.column_value   AS statusId, " +
+                            "  m.value_desc     AS statusName, " +
+                            "  COUNT(t.task_id) AS totalCount " +
+                            "FROM masters m " +
+                            "LEFT JOIN tasks t " +
+                            "  ON t.status = m.column_value " +
+                            "LEFT JOIN tickets tk " +
+                            "  ON tk.ticket_id = t.ticket_id " +
+                            " AND tk.assigned_to = :userId " +
+                            "WHERE m.column_code = 1 " +
+                            "  AND m.tbl_name = 'tasks' " +
+                            "  AND m.is_active = 1 " +
+                            "GROUP BY m.column_value, m.value_desc, m.sequence " +
+                            "ORDER BY m.sequence",
             nativeQuery = true
     )
-    List<Object[]> getUserTaskSummary(Long userId);
+    List<TaskStatusCountDto> getUserTaskSummary(
+            @Param("userId") Long userId
+    );
+
 }
 
 

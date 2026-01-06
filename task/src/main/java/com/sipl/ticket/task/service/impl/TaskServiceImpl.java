@@ -514,6 +514,7 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+
     private Task getExistingTask(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> {
@@ -729,36 +730,34 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(
-            HttpServletRequest servletRequest) {
+    public ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(Users user) {
 
         try {
             ApiResponseDTO<TaskSummaryResponseDto> validation =
-                    validateUser(servletRequest);
+                    validateUser(user);
+
             if (validation != null) {
-                log.warn("Task summary request failed during user validation");
+                log.warn("Task summary aborted due to validation failure");
                 return validation;
             }
 
-            Users user = userManager.getUser(servletRequest);
             log.info("Fetching task summary for userId={}", user.getId());
 
-            List<Object[]> overallResults = taskRepository.getTaskSummary();
-            log.debug("Overall task summary fetched. Row count={}",
-                    overallResults != null ? overallResults.size() : 0);
+            List<TaskStatusCountDto> overallSummary =
+                    taskRepository.getOverallTaskSummary();
 
-            List<Object[]> userResults =
+            log.debug("Overall summary count={}",
+                    overallSummary != null ? overallSummary.size() : 0);
+
+            List<TaskStatusCountDto> userSummary =
                     taskRepository.getUserTaskSummary(user.getId());
-            log.debug("User task summary fetched for userId={}, row count={}",
-                    user.getId(),
-                    userResults != null ? userResults.size() : 0);
 
-            TaskSummaryDto overallSummary = buildSummary(overallResults);
-            TaskSummaryDto userSummary = buildSummary(userResults);
+            log.debug("User summary count={} for userId={}",
+                    userSummary != null ? userSummary.size() : 0,
+                    user.getId());
 
-            TaskSummaryResponseDto responseDto = new TaskSummaryResponseDto();
-            responseDto.setTaskSummaryDto(overallSummary);
-            responseDto.setTaskUserSummaryDto(userSummary);
+            TaskSummaryResponseDto responseDto =
+                    new TaskSummaryResponseDto(overallSummary, userSummary);
 
             log.info("Task summary prepared successfully for userId={}", user.getId());
 
@@ -770,7 +769,7 @@ public class TaskServiceImpl implements TaskService {
             );
 
         } catch (Exception e) {
-            log.error("Exception occurred while fetching task summary", e);
+            log.error("Unexpected error while fetching task summary", e);
             return new ApiResponseDTO<>(
                     "INTERNAL_SERVER_ERROR",
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -779,52 +778,10 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private TaskSummaryDto buildSummary(List<Object[]> results) {
-
-        TaskSummaryDto dto = new TaskSummaryDto();
-
-        dto.setNotStarted(0L);
-        dto.setInProgress(0L);
-        dto.setTesting(0L);
-        dto.setAwaitingFeedback(0L);
-        dto.setComplete(0L);
-
-        if (results == null || results.isEmpty()) {
-            log.debug("No task summary data found, returning default values");
-            return dto;
-        }
-
-        for (Object[] row : results) {
-            String status = row[0] != null ? row[0].toString() : null;
-            Long count = row[1] != null ? ((Number) row[1]).longValue() : 0L;
-
-            log.debug("Processing task status={} count={}", status, count);
-
-            if ("NOT_STARTED".equals(status)) {
-                dto.setNotStarted(count);
-            } else if ("IN_PROGRESS".equals(status)) {
-                dto.setInProgress(count);
-            } else if ("TESTING".equals(status)) {
-                dto.setTesting(count);
-            } else if ("AWAITING_FEEDBACK".equals(status)) {
-                dto.setAwaitingFeedback(count);
-            } else if ("COMPLETE".equals(status)) {
-                dto.setComplete(count);
-            } else {
-                log.warn("Unknown task status received: {}", status);
-            }
-        }
-        return dto;
-    }
-
-
-    private ApiResponseDTO<TaskSummaryResponseDto> validateUser(
-            HttpServletRequest servletRequest) {
-
-        Users user = userManager.getUser(servletRequest);
+    private ApiResponseDTO<TaskSummaryResponseDto> validateUser(Users user) {
 
         if (user == null) {
-            log.warn("Task summary request failed: user not found from request");
+            log.warn("User validation failed: user not found");
             return new ApiResponseDTO<>(
                     "User not found.",
                     HttpStatus.NOT_FOUND,
@@ -836,8 +793,7 @@ public class TaskServiceImpl implements TaskService {
                 userRolesRepository.findSingleByUserId(user.getId());
 
         if (userRole == null || !userRole.isActive()) {
-            log.warn("Task summary request failed: no active role for userId={}",
-                    user.getId());
+            log.warn("User validation failed: inactive role, userId={}", user.getId());
             return new ApiResponseDTO<>(
                     "User role not found. Please contact administrator.",
                     HttpStatus.NOT_FOUND,
@@ -845,11 +801,12 @@ public class TaskServiceImpl implements TaskService {
             );
         }
 
-        log.info("User validation successful for userId={} roleId={}",
+        log.debug("User validation successful, userId={}, roleId={}",
                 user.getId(),
                 userRole.getRole().getId());
 
         return null;
     }
+
 
 }

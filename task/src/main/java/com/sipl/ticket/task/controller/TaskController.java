@@ -1,5 +1,6 @@
 package com.sipl.ticket.task.controller;
 
+import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
@@ -8,7 +9,6 @@ import io.swagger.annotations.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.sipl.ticket.core.dto.response.TaskSummaryDto;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -45,7 +45,10 @@ public interface TaskController {
     @GetMapping("/task-summary")
     @ApiOperation(value = "Get Task Summary by status")
     ResponseEntity<ApiResponseDTO<TaskSummaryResponseDto>> getTaskSummary(
-            HttpServletRequest servletRequest);
+            HttpServletRequest request
+    );
+
+
 
 
 }

@@ -7,12 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskSummaryDto {
+public class TaskStatusCountDto {
 
-    private Long notStarted;
-    private Long inProgress ;
-    private Long testing;
-    private Long awaitingFeedback;
-    private Long complete;
+    private Long statusId;
+    private String statusName;
+    private Long totalCount;
 
 }

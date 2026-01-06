@@ -1,12 +1,13 @@
 package com.sipl.ticket.task.controller.impl;
 
+import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.helper.UserManager;
 import com.sipl.ticket.task.controller.TaskController;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,8 @@ import java.util.List;
 public class TaskControllerImpl implements TaskController {
 
     private final TaskService taskService;
+    private final UserManager userManager;
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> addTask(String taskRequestDto, List<MultipartFile> files) {
@@ -55,15 +58,19 @@ public class TaskControllerImpl implements TaskController {
     public ResponseEntity<ApiResponseDTO<TaskSummaryResponseDto>> getTaskSummary(
             HttpServletRequest servletRequest) {
 
-        log.info("<<START>> getTaskSummary called <<START>>");
+        log.info("<<START>> getTaskSummary <<START>>");
+
+        Users user = userManager.getUser(servletRequest);
+        log.debug("Fetched user from request, userId={}", user != null ? user.getId() : null);
 
         ApiResponseDTO<TaskSummaryResponseDto> apiResponse =
-                taskService.getTaskSummary(servletRequest);
+                taskService.getTaskSummary(user);
 
         log.info("<<END>> getTaskSummary <<END>>");
 
         return ResponseEntity.ok(apiResponse);
     }
+
 
 
 }
