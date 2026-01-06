@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TaskStatusCountDto {
 
-    private Long statusId;
+    private Integer statusId;
     private String statusName;
     private Long totalCount;
 

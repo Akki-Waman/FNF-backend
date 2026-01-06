@@ -31,46 +31,42 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             Pageable pageable
     );
 
+
     @Query(
-            value =
-                    "SELECT " +
-                            "  m.column_value   AS statusId, " +
-                            "  m.value_desc     AS statusName, " +
-                            "  COUNT(t.task_id) AS totalCount " +
-                            "FROM masters m " +
-                            "LEFT JOIN tasks t " +
-                            "  ON t.status = m.column_value " +
-                            "WHERE m.column_code = 1 " +
-                            "  AND m.tbl_name = 'tasks' " +
-                            "  AND m.is_active = 1 " +
-                            "GROUP BY m.column_value, m.value_desc, m.sequence " +
-                            "ORDER BY m.sequence",
-            nativeQuery = true
+            "SELECT new com.sipl.ticket.core.dto.response.TaskStatusCountDto(" +
+                    "m.columnValue, m.valueDesc, COUNT(t)) " +
+                    "FROM Masters m " +
+                    "LEFT JOIN Task t ON t.status = m.columnValue " +
+                    "WHERE m.columnCode = 1 " +
+                    "AND m.tblName = 'tasks' " +
+                    "AND m.isActive = true " +
+                    "GROUP BY m.columnValue, m.valueDesc, m.sequence " +
+                    "ORDER BY m.sequence"
     )
     List<TaskStatusCountDto> getOverallTaskSummary();
 
+
     @Query(
-            value =
-                    "SELECT " +
-                            "  m.column_value   AS statusId, " +
-                            "  m.value_desc     AS statusName, " +
-                            "  COUNT(t.task_id) AS totalCount " +
-                            "FROM masters m " +
-                            "LEFT JOIN tasks t " +
-                            "  ON t.status = m.column_value " +
-                            "LEFT JOIN tickets tk " +
-                            "  ON tk.ticket_id = t.ticket_id " +
-                            " AND tk.assigned_to = :userId " +
-                            "WHERE m.column_code = 1 " +
-                            "  AND m.tbl_name = 'tasks' " +
-                            "  AND m.is_active = 1 " +
-                            "GROUP BY m.column_value, m.value_desc, m.sequence " +
-                            "ORDER BY m.sequence",
-            nativeQuery = true
+            "SELECT new com.sipl.ticket.core.dto.response.TaskStatusCountDto(" +
+                    "   m.columnValue, " +
+                    "   m.valueDesc, " +
+                    "   COUNT(DISTINCT t) " +
+                    ") " +
+                    "FROM Masters m " +
+                    "LEFT JOIN Task t " +
+                    "   ON t.status = m.columnValue " +
+                    "LEFT JOIN TaskAssignee ta " +
+                    "   ON ta.task = t AND ta.user.id = :userId " +
+                    "WHERE m.columnCode = 1 " +
+                    "  AND m.tblName = 'tasks' " +
+                    "  AND m.isActive = true " +
+                    "GROUP BY m.columnValue, m.valueDesc, m.sequence " +
+                    "ORDER BY m.sequence"
     )
     List<TaskStatusCountDto> getUserTaskSummary(
             @Param("userId") Long userId
     );
+
 
 }
 
