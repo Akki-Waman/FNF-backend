@@ -370,7 +370,7 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-		<finalName>ticket-app##${project.version}</finalName>
+		<finalName>ticket-app</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>

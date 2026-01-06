@@ -38,4 +38,14 @@ public interface TicketController {
     ResponseEntity<ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>>> searchTickets(
             @RequestBody TicketSearchRequestDto requestDto
     );
+
+    @ApiOperation(
+            value = "Update a existing ticket entry",
+            notes = "Provide the necessary ticket information to save a new entry")
+    @PutMapping("/update/{ticketId}")
+    public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> updateTickets(
+            @PathVariable Long ticketId,
+            @RequestPart(value = "ticketRequestDto") String ticketRequestDto,
+            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile);
+
 }
