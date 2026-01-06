@@ -34,39 +34,25 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query(
             "SELECT new com.sipl.ticket.core.dto.response.TaskStatusCountDto(" +
-                    "m.columnValue, m.valueDesc, COUNT(t)) " +
-                    "FROM Masters m " +
-                    "LEFT JOIN Task t ON t.status = m.columnValue " +
-                    "WHERE m.columnCode = 1 " +
-                    "AND m.tblName = 'tasks' " +
-                    "AND m.isActive = true " +
-                    "GROUP BY m.columnValue, m.valueDesc, m.sequence " +
-                    "ORDER BY m.sequence"
-    )
-    List<TaskStatusCountDto> getOverallTaskSummary();
-
-
-    @Query(
-            "SELECT new com.sipl.ticket.core.dto.response.TaskStatusCountDto(" +
                     "   m.columnValue, " +
                     "   m.valueDesc, " +
-                    "   COUNT(DISTINCT t) " +
+                    "   COUNT(DISTINCT t), " +
+                    "   COUNT(DISTINCT CASE WHEN ta.user.id = :userId THEN t END) " +
                     ") " +
                     "FROM Masters m " +
                     "LEFT JOIN Task t " +
                     "   ON t.status = m.columnValue " +
                     "LEFT JOIN TaskAssignee ta " +
-                    "   ON ta.task = t AND ta.user.id = :userId " +
+                    "   ON ta.task = t " +
                     "WHERE m.columnCode = 1 " +
                     "  AND m.tblName = 'tasks' " +
                     "  AND m.isActive = true " +
                     "GROUP BY m.columnValue, m.valueDesc, m.sequence " +
                     "ORDER BY m.sequence"
     )
-    List<TaskStatusCountDto> getUserTaskSummary(
+    List<TaskStatusCountDto> getTaskStatusSummaryWithUserAssignment(
             @Param("userId") Long userId
     );
-
 
 }
 

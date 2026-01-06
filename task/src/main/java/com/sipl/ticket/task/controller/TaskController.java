@@ -44,10 +44,9 @@ public interface TaskController {
 
     @GetMapping("/task-summary")
     @ApiOperation(value = "Get Task Summary by status")
-    ResponseEntity<ApiResponseDTO<TaskSummaryResponseDto>> getTaskSummary(
+    ResponseEntity<ApiResponseDTO<List<TaskStatusCountDto>>> getTaskSummary(
             HttpServletRequest request
     );
-
 
 
 

@@ -55,7 +55,7 @@ public class TaskControllerImpl implements TaskController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<TaskSummaryResponseDto>> getTaskSummary(
+    public ResponseEntity<ApiResponseDTO<List<TaskStatusCountDto>>> getTaskSummary(
             HttpServletRequest servletRequest) {
 
         log.info("<<START>> getTaskSummary <<START>>");
@@ -63,14 +63,13 @@ public class TaskControllerImpl implements TaskController {
         Users user = userManager.getUser(servletRequest);
         log.debug("Fetched user from request, userId={}", user != null ? user.getId() : null);
 
-        ApiResponseDTO<TaskSummaryResponseDto> apiResponse =
+        ApiResponseDTO<List<TaskStatusCountDto>> apiResponse =
                 taskService.getTaskSummary(user);
 
         log.info("<<END>> getTaskSummary <<END>>");
 
         return ResponseEntity.ok(apiResponse);
     }
-
 
 
 }

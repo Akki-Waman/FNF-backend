@@ -730,10 +730,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(Users user) {
-
+    public ApiResponseDTO<List<TaskStatusCountDto>> getTaskSummary(Users user) {
         try {
-            ApiResponseDTO<TaskSummaryResponseDto> validation =
+            ApiResponseDTO<List<TaskStatusCountDto>> validation =
                     validateUser(user);
 
             if (validation != null) {
@@ -741,28 +740,16 @@ public class TaskServiceImpl implements TaskService {
                 return validation;
             }
 
-            log.info("Fetching task summary for userId={}", user.getId());
+            log.info("Fetching unified task summary for userId={}", user.getId());
 
-            List<TaskStatusCountDto> overallSummary =
-                    taskRepository.getOverallTaskSummary();
+            List<TaskStatusCountDto> summary =
+                    taskRepository.getTaskStatusSummaryWithUserAssignment(user.getId());
 
-            log.debug("Overall summary count={}",
-                    overallSummary != null ? overallSummary.size() : 0);
+            log.debug("Unified task summary fetched, rowCount={}",
+                    summary != null ? summary.size() : 0);
 
-            List<TaskStatusCountDto> userSummary =
-                    taskRepository.getUserTaskSummary(user.getId());
-
-            log.debug("User summary count={} for userId={}",
-                    userSummary != null ? userSummary.size() : 0,
-                    user.getId());
-
-            TaskSummaryResponseDto responseDto =
-                    new TaskSummaryResponseDto(overallSummary, userSummary);
-
-            log.info("Task summary prepared successfully for userId={}", user.getId());
-
-            return new ApiResponseDTO<>(
-                    responseDto,
+            return new ApiResponseDTO<List<TaskStatusCountDto>>(
+                    summary,
                     "SUCCESS",
                     HttpStatus.OK,
                     false
@@ -778,7 +765,8 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    private ApiResponseDTO<TaskSummaryResponseDto> validateUser(Users user) {
+
+    private ApiResponseDTO<List<TaskStatusCountDto>> validateUser(Users user) {
 
         if (user == null) {
             log.warn("User validation failed: user not found");
