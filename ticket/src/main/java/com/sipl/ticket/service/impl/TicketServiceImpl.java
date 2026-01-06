@@ -454,6 +454,7 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+
     private void updateTicketCoreFields(
             Ticket ticket,
             TicketsResponseDTO dto,
@@ -588,6 +589,50 @@ public class TicketServiceImpl implements TicketService {
         return ticketCcRepository.findByTicket(ticket);
     }
 
+
+
+    @Override
+    public ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary() {
+        log.info("Fetching Ticket Summary KPI...");
+
+        try {
+            List<Object[]> result = ticketRepository.countTicketsByStatus();
+
+            List<SummaryKpiResponseDTO> summaryList =
+                    result.stream()
+                            .map(obj -> new SummaryKpiResponseDTO(
+                                    String.valueOf(obj[0]),   // status
+                                    obj[1]                    // count
+                            ))
+                            .collect(Collectors.toList());
+
+            log.info("Ticket summary fetched successfully. Total statuses: {}", summaryList.size());
+
+            return new ApiResponseDTO<>(
+                    null,
+                    summaryList,
+                    null,
+                    "Ticket summary fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Error fetching ticket summary KPI: {}", e.getMessage(), e);
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    "Failed to fetch ticket summary",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
 
 
 }

@@ -61,4 +61,12 @@ public class TicketControllerImpl implements TicketController {
         log.info("<<END>> updateTickets controller <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<SummaryKpiResponseDTO>> getTikctSummary() {
+        log.info("<<START>> getTikctSummary controller <<START>>");
+        ApiResponseDTO<SummaryKpiResponseDTO> apiResponse =
+                ticketService.getTikctSummary();
+        log.info("<<END>> getTikctSummary controller <<END>>");
+        return ResponseEntity.ok(apiResponse);    }
 }
