@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.request.TaskRequestDto;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,8 @@ public class TaskServiceImpl implements TaskService {
     private final TaskAttachmentMapper taskAttachmentMapper;
     private final ObjectMapper objectMapper;
     private final DocumentClientService documentClientService;
+    private final UserRolesRepository userRolesRepository;
+    private final UserManager userManager;
 
 
     @Override
@@ -509,6 +514,7 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
+
     private Task getExistingTask(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> {
@@ -722,5 +728,85 @@ public class TaskServiceImpl implements TaskService {
 
         return taskTagRepository.findByTask(task);
     }
+
+    @Override
+    public ApiResponseDTO<TaskSummaryResponseDto> getTaskSummary(Users user) {
+
+        try {
+            ApiResponseDTO<TaskSummaryResponseDto> validation =
+                    validateUser(user);
+
+            if (validation != null) {
+                log.warn("Task summary aborted due to validation failure");
+                return validation;
+            }
+
+            log.info("Fetching task summary for userId={}", user.getId());
+
+            List<TaskStatusCountDto> overallSummary =
+                    taskRepository.getOverallTaskSummary();
+
+            log.debug("Overall summary count={}",
+                    overallSummary != null ? overallSummary.size() : 0);
+
+            List<TaskStatusCountDto> userSummary =
+                    taskRepository.getUserTaskSummary(user.getId());
+
+            log.debug("User summary count={} for userId={}",
+                    userSummary != null ? userSummary.size() : 0,
+                    user.getId());
+
+            TaskSummaryResponseDto responseDto =
+                    new TaskSummaryResponseDto(overallSummary, userSummary);
+
+            log.info("Task summary prepared successfully for userId={}", user.getId());
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    "SUCCESS",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching task summary", e);
+            return new ApiResponseDTO<>(
+                    "INTERNAL_SERVER_ERROR",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private ApiResponseDTO<TaskSummaryResponseDto> validateUser(Users user) {
+
+        if (user == null) {
+            log.warn("User validation failed: user not found");
+            return new ApiResponseDTO<>(
+                    "User not found.",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        UserRoles userRole =
+                userRolesRepository.findSingleByUserId(user.getId());
+
+        if (userRole == null || !userRole.isActive()) {
+            log.warn("User validation failed: inactive role, userId={}", user.getId());
+            return new ApiResponseDTO<>(
+                    "User role not found. Please contact administrator.",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        log.debug("User validation successful, userId={}, roleId={}",
+                user.getId(),
+                userRole.getRole().getId());
+
+        return null;
+    }
+
 
 }
