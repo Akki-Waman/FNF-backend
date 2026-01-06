@@ -48,4 +48,8 @@ public interface TicketController {
             @RequestPart(value = "ticketRequestDto") String ticketRequestDto,
             @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile);
 
+
+    @GetMapping("/ticket-summary}")
+    ResponseEntity<ApiResponseDTO<SummaryKpiResponseDTO>> getTikctSummary();
+
 }

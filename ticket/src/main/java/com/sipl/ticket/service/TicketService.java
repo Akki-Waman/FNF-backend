@@ -2,10 +2,7 @@ package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
-import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.dto.response.TicketCombinedResponseDto;
+import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,4 +19,6 @@ public interface TicketService {
     );
 
     ApiResponseDTO<CombinedTicketResponseDto> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
+
+    ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary();
 }

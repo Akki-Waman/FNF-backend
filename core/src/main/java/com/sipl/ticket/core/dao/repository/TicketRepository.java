@@ -29,7 +29,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Optional<Ticket> findByIdWithAllDetails(@Param("ticketId") Long ticketId);
 
 
-
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE Ticket t SET t.isDeleted = true WHERE t.ticketId IN (:ids)")
@@ -77,5 +76,15 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     )
     Page<Ticket> searchTickets(@Param("query") String query, Pageable pageable);
 
+
+    @Query(
+            "SELECT sm.valueDesc, COUNT(t.id) " +
+                    "FROM Ticket t " +
+                    "JOIN Masters sm ON sm.columnValue = t.status " +
+                    "WHERE sm.columnCode = 2 " +
+                    "GROUP BY sm.valueDesc, sm.columnValue " +
+                    "ORDER BY sm.columnValue"
+    )
+    List<Object[]> countTicketsByStatus();
 
 }
