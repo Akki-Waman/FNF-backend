@@ -42,13 +42,8 @@ public class UserPrincipal implements UserDetails {
         return name.toString().trim();
     }
 
-    /* ======================
-       UserDetails methods
-       ====================== */
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Agar roles future me add karne ho to yahin se return karna
         return Collections.emptyList();
     }
 
