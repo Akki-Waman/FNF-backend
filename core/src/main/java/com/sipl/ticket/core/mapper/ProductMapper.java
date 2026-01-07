@@ -36,5 +36,7 @@ public interface ProductMapper extends AuditEntityMapper {
     Products updateEntity(@MappingTarget Products existingEntity, ProductDto productDto);
 
     List<ProductDto> mapProductsListToDtoList(List<Products> productsList);
+
+    List<ProductDto> toDtoList(List<Products> content);
 }
 
