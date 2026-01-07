@@ -7,16 +7,20 @@ import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.NewProductRequestDto;
+import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.CustomException;
 import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
 import com.sipl.ticket.core.mapper.ProductMapper;
 import com.sipl.ticket.core.util.FileUploadUtil;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.product.service.ProductService;
 import com.sipl.ticket.product.service.ProductUnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -537,7 +541,74 @@ public class ProductServiceImpl implements ProductService {
             );
         }
     }
+        @Override
+        public ApiResponseDTO<PagedResponse<ProductDto>> searchProducts(
+                ProductSearchRequestDto dto) {
 
+            try {
+                log.info("Searching products with request: {}", dto);
 
+                String sortBy = dto.getSortBy();
+                if ("productSubCategoryId".equalsIgnoreCase(sortBy)) {
+                    sortBy = "productSubCategory.productSubCategoryId";
+                } else if ("productCategoryId".equalsIgnoreCase(sortBy)) {
+                    sortBy = "productCategory.productCategoryId";
+                } else if ("brandId".equalsIgnoreCase(sortBy)) {
+                    sortBy = "brands.brandId";
+                } else if ("originId".equalsIgnoreCase(sortBy)) {
+                    sortBy = "origins.originId";
+                } else {
+                    sortBy = "productId"; // default safe fallback
+                }
 
-}
+                Pageable pageable = PaginationUtil.pageable(
+                        dto.getPage(),
+                        dto.getSize(),
+                        sortBy,
+                        dto.getSortDir()
+                );
+
+                Page<Products> pageResult = productRepository.searchProducts(
+                        dto.getProductId(),
+                        dto.getBrandId(),
+                        dto.getOriginId(),
+                        dto.getProductCategoryId(),
+                        dto.getProductSubCategoryId(),
+                        pageable
+                );
+
+                if (pageResult.isEmpty()) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            "No products found",
+                            HttpStatus.NOT_FOUND,
+                            true
+                    );
+                }
+
+                return new ApiResponseDTO<>(
+                        new PagedResponse<>(
+                                productMapper.toDtoList(pageResult.getContent()),
+                                pageResult.getNumber(),
+                                pageResult.getTotalElements(),
+                                pageResult.getTotalPages(),
+                                pageResult.getSize(),
+                                pageResult.isLast()
+                        ),
+                        "Products fetched successfully",
+                        HttpStatus.OK,
+                        false
+                );
+
+            } catch (Exception e) {
+                log.error("searchProducts error", e);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Internal server error",
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        true
+                );
+            }
+        }
+    }
+

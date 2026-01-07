@@ -1,9 +1,7 @@
 package com.sipl.ticket.product.controller;
 
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
-import com.sipl.ticket.core.dto.response.ProductDto;
-import com.sipl.ticket.core.dto.response.ProductGetCustomDto;
+import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -56,5 +54,13 @@ public interface ProductController {
     @GetMapping("")
     public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct();
 
-
+    @ApiOperation(
+            value = "Search products",
+            notes = "Search and filter products using optional criteria such as product ID, brand, origin, category, and sub-category with pagination and sorting support.",
+            response = ProductDto.class
+    )
+    @PostMapping("/search")
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductDto>>> searchProducts(
+            @RequestBody ProductSearchRequestDto requestDto
+    );
 }

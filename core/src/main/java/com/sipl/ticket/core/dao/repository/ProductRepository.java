@@ -29,4 +29,34 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
 
     @Query("from Products p where p.isActive=true")
     List<Products> findByIsActiveTrue();
+
+
+    @Query(
+            "SELECT p " +
+                    "FROM Products p " +
+                    "WHERE p.isActive = true " +
+
+                    "AND ( :#{#productIds == null || #productIds.isEmpty()} = true " +
+                    "      OR p.productId IN :productIds ) " +
+
+                    "AND ( :#{#brandIds == null || #brandIds.isEmpty()} = true " +
+                    "      OR p.brands.brandId IN :brandIds ) " +
+
+                    "AND ( :#{#originIds == null || #originIds.isEmpty()} = true " +
+                    "      OR p.origins.originId IN :originIds ) " +
+
+                    "AND ( :#{#categoryIds == null || #categoryIds.isEmpty()} = true " +
+                    "      OR p.productCategory.productCategoryId IN :categoryIds ) " +
+
+                    "AND ( :#{#subCategoryIds == null || #subCategoryIds.isEmpty()} = true " +
+                    "      OR p.productSubCategory.productSubCategoryId IN :subCategoryIds ) "
+    )
+    Page<Products> searchProducts(
+            @Param("productIds") List<Long> productIds,
+            @Param("brandIds") List<Long> brandIds,
+            @Param("originIds") List<Long> originIds,
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("subCategoryIds") List<Long> subCategoryIds,
+            Pageable pageable
+    );
 }

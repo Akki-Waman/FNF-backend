@@ -1,15 +1,14 @@
 package com.sipl.ticket.product.controller.impl;
 
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
-import com.sipl.ticket.core.dto.response.ProductDto;
-import com.sipl.ticket.core.dto.response.ProductGetCustomDto;
+import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.product.controller.ProductController;
 import com.sipl.ticket.product.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,5 +67,13 @@ public class ProductControllerImpl implements ProductController {
         log.info("<<END>> getAllProduct  <<END>>");
         return responseEntity;
     }
-
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductDto>>>
+    searchProducts(@RequestBody ProductSearchRequestDto requestDto) {
+        log.info("<<START>> searchProducts called <<START>>");
+        ApiResponseDTO<PagedResponse<ProductDto>> response =
+                productService.searchProducts(requestDto);
+        log.info("<<START>> searchProducts called <<START>>");
+        return ResponseEntity.ok(response);
+    }
 }
