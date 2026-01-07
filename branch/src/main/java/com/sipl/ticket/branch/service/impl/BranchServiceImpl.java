@@ -1,5 +1,6 @@
 package com.sipl.ticket.branch.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.branch.service.BranchService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
@@ -13,13 +14,12 @@ import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +38,7 @@ public class BranchServiceImpl implements BranchService {
     private final CompanyRepository companyRepository;
 
     @Override
+    @ActivityLoggable(action = "CREATE", module = "BRANCH")
     public ApiResponseDTO<BranchDto> saveBranch(BranchRequestDto dto) {
         try {
 
