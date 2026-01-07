@@ -1,0 +1,72 @@
+package com.sipl.ticket.product.controller.impl;
+
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.CombinedProductResponseDto;
+import com.sipl.ticket.core.dto.response.ProductDto;
+import com.sipl.ticket.core.dto.response.ProductGetCustomDto;
+import com.sipl.ticket.product.controller.ProductController;
+import com.sipl.ticket.product.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@Slf4j
+public class ProductControllerImpl implements ProductController {
+
+    @Autowired
+    private ProductService productService;
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<CombinedProductResponseDto>> addProduct(String productRequestDto, MultipartFile multipartFile) {
+        log.info("<<START>> addProduct controller <<START>>");
+        ApiResponseDTO<CombinedProductResponseDto> apiResponse =
+                productService.saveOrUpdateProduct(null, productRequestDto, multipartFile);
+        log.info("<<END>> addProduct controller <<END>>");
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<CombinedProductResponseDto>> updateProduct(Long productId, String productRequestDto, MultipartFile multipartFile) {
+        log.info("<<START>> updateProduct controller <<START>>");
+        ApiResponseDTO<CombinedProductResponseDto> apiResponse =
+                productService.saveOrUpdateProduct(productId, productRequestDto, multipartFile);
+        log.info("<<END>> updateProduct controller <<END>>");
+        return ResponseEntity.ok(apiResponse);
+    }
+
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<ProductDto>> deleteProduct(Long productId) {
+        log.info("<<START>> deleteProduct called <<START>>");
+        ApiResponseDTO<ProductDto> apiResponse = productService.deleteProduct(productId);
+        ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
+                new ResponseEntity<>(apiResponse, HttpStatus.OK);
+        log.info("<<END>> deleteProduct  <<END>>");
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<ProductDto>> getByProduct(Long productId) {
+        log.info("<<START>> getByProduct called <<START>>");
+        ApiResponseDTO<ProductDto> apiResponse = productService.getByProduct(productId);
+        ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
+                new ResponseEntity<>(apiResponse, HttpStatus.OK);
+        log.info("<<END>> getByProduct  <<END>>");
+        return responseEntity;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct() {
+        log.info("<<START>> getAllProduct called <<START>>");
+        ApiResponseDTO<ProductDto> apiResponse = productService.getAllProduct();
+        ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
+                new ResponseEntity<>(apiResponse, HttpStatus.OK);
+        log.info("<<END>> getAllProduct  <<END>>");
+        return responseEntity;
+    }
+
+}

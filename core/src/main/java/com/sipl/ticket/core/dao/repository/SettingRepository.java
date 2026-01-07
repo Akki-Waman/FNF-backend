@@ -13,4 +13,7 @@ public interface SettingRepository extends JpaRepository<Setting, Long> {
 
     @Query("SELECT s FROM Setting s WHERE LOWER(s.screen) = LOWER(:screen)")
     Optional<Setting> findByScreenIgnoreCase(@Param("screen") String screen);
+
+    @Query("SELECT s FROM Setting s WHERE s.screen = :screen")
+    Optional<Setting> findByScreen(@Param("screen") String screen);
 }

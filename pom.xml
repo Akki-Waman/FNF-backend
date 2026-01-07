@@ -18,6 +18,29 @@
         <module>faqCategory</module>
         <module>redisCache</module>
         <module>android</module>
+        <module>department</module>
+        <module>service</module>
+        <module>contact</module>
+        <module>client</module>
+		<module>product</module>
+        <module>origins</module>
+		<module>productCategory</module>
+        <module>productSubCategory</module>
+        <module>brand</module>
+        <module>unit</module>
+        <module>clientProducts</module>
+        <module>shift</module>
+        <module>company</module>
+        <module>location</module>
+        <module>tags</module>
+        <module>branch</module>
+        <module>state</module>
+        <module>country</module>
+		<module>city</module>
+        <module>task</module>
+		<module>ticket</module>
+        <module>activityLog</module>
+
     </modules>
 
 	<properties>
@@ -140,7 +163,21 @@
 				<artifactId>core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>shift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>state</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>clientProducts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>user</artifactId>
@@ -149,6 +186,11 @@
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>master</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>activityLog</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -180,11 +222,116 @@
                 <artifactId>movement</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>origins</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>city</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>ticket</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>state</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>country</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>android</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>department</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>location</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>tags</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>contact</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductCategory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ProductSubCategory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>unit</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>brand</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>product</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>company</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>branch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>task</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>
@@ -223,7 +370,7 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-		<finalName>ticket-app##${project.version}</finalName>
+		<finalName>ticket-app</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>

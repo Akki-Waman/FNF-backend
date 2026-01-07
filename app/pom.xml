@@ -84,12 +84,109 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>shift</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>activityLog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>branch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>unit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>country</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>faq</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>faqCategory</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>department</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>contact</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>product</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>tags</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>brand</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>origins</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>shift</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>company</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>location</artifactId>
+        </dependency>
+        <dependency>
+        <groupId>com.sipl.ticket</groupId>
+        <artifactId>clientProducts</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>city</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>state</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.sipl.ticket</groupId>-->
+<!--            <artifactId>clientProducts</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ProductCategory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ProductSubCategory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>task</artifactId>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
 <!--            <artifactId>redisCache</artifactId>-->
@@ -124,6 +221,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>2.2.4.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
         </dependency>
     </dependencies>
 

@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @Schema(description = "Location Request DTO")
 public class LocationRequestDTO {
 
+    private Long locationId;
+
     @NotBlank(message = "Location Name is required")
     @Size(max = 100, message = "Location Name must not exceed 100 characters")
     @Schema(description = "Location Name", example = "Warehouse A")
@@ -24,13 +26,13 @@ public class LocationRequestDTO {
     private String locationType;
 
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Location Capacity must be greater than 0")
-    @Digits(integer = 15, fraction = 2, message = "Location Capacity must be a valid decimal number")
-    @Schema(description = "Location Capacity", example = "5000.00")
-    private BigDecimal locationCapacity;
+//    @DecimalMin(value = "0.0", inclusive = false, message = "Location Capacity must be greater than 0")
+//    @Digits(integer = 15, fraction = 2, message = "Location Capacity must be a valid decimal number")
+//    @Schema(description = "Location Capacity", example = "5000.00")
+//    private BigDecimal locationCapacity;
 
     private Boolean isActive;
 
-    private Long plantId;
+    //private Long plantId;
 
 }
