@@ -65,4 +65,7 @@ public class Task extends AuditEntity {
     @JoinColumn(name = "ticket_id", nullable = false)
     @JsonIgnore
     private Ticket ticket;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 }

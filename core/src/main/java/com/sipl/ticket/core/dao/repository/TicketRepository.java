@@ -45,7 +45,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "LEFT JOIN t.clientProducts cp " +
                     "LEFT JOIN t.assignedTo u " +
 
-                    "WHERE ( " +
+                    "WHERE t.isDeleted = false AND ( " +
                     " :query IS NULL OR :query = '' OR " +
                     " STR(t.ticketId) LIKE CONCAT('%', :query, '%') OR " +
                     " LOWER(COALESCE(t.subject,'')) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
