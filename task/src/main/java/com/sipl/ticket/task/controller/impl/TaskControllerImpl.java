@@ -1,6 +1,7 @@
 package com.sipl.ticket.task.controller.impl;
 
 import com.sipl.ticket.core.dao.entity.Users;
+import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.helper.UserManager;
@@ -71,5 +72,18 @@ public class TaskControllerImpl implements TaskController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<Void>> deleteTasks(
+            DeleteTasksRequestDTO requestDTO) {
+
+        log.info("<<START>> deleteTasks controller");
+
+        ApiResponseDTO<Void> response =
+                taskService.deleteTasks(requestDTO);
+
+        log.info("<<END>> deleteTasks controller");
+
+        return ResponseEntity.ok(response);
+    }
 
 }

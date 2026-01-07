@@ -6,6 +6,7 @@ import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskRequestDto;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
@@ -796,5 +797,57 @@ public class TaskServiceImpl implements TaskService {
         return null;
     }
 
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO) {
+
+        try {
+            List<Long> taskIds = requestDTO.getTaskIds();
+
+            if (taskIds == null || taskIds.isEmpty()) {
+                log.warn("deleteTasks | empty or null taskIds");
+
+                return new ApiResponseDTO<>(
+                        null, null, null,
+                        "Please select at least one task to delete.",
+                        HttpStatus.BAD_REQUEST,
+                        true, null, null
+                );
+            }
+
+            log.info("deleteTasks | taskIds count: {}", taskIds.size());
+
+            int updatedCount = taskRepository.softDeleteByIds(taskIds);
+
+            log.info("deleteTasks | rows affected: {}", updatedCount);
+
+            if (updatedCount == 0) {
+                return new ApiResponseDTO<>(
+                        null, null, null,
+                        "Selected tasks not found or already deleted.",
+                        HttpStatus.NOT_FOUND,
+                        true, null, null
+                );
+            }
+
+            return new ApiResponseDTO<>(
+                    null, null, null,
+                    "Selected tasks deleted successfully.",
+                    HttpStatus.OK,
+                    false, null, null
+            );
+
+        } catch (Exception e) {
+            log.error("deleteTasks unexpected error", e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
 
 }
