@@ -22,7 +22,7 @@ public interface ShiftController {
             @RequestBody ShiftRequestDto shiftRequestDto
     );
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> updateShift(
             @RequestBody ShiftRequestDto shiftRequestDto
     );
