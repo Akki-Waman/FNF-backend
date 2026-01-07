@@ -106,4 +106,7 @@ public class Ticket extends AuditEntity{
     )
     private List<TicketAttachment> attachments = new ArrayList<>();
 
+    @Column(name = "search_text", columnDefinition = "TEXT")
+    private String searchText;
+
 }
