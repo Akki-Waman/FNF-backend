@@ -5,6 +5,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.notification.dto.request.EmailNotificationRequest;
+import com.sipl.notification.enums.NotificationPriority;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
@@ -12,6 +14,7 @@ import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.TicketFileUploadUtil;
 import com.sipl.ticket.service.TicketService;
@@ -53,6 +56,9 @@ public class TicketServiceImpl implements TicketService {
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchesRepository;
     private final DocumentClientService documentClientService;
+    private final EmailUtil emailUtil;
+    private final SettingRepository settingRepository;
+
 
 
     @Override
@@ -76,6 +82,9 @@ public class TicketServiceImpl implements TicketService {
                         saveTicketAttachments(multipartFiles, savedTicket, assignedUser);
                 Ticket fullTicket = ticketRepository.findByIdWithAllDetails(savedTicket.getTicketId())
                         .orElseThrow(() -> new RuntimeException("Ticket not found after save"));
+
+                sendTicketCreationEmail(fullTicket);
+
                 CombinedTicketResponseDto responseDto = buildResponse(
                         fullTicket, ticketTags, ticketCcs, attachments
                 );
@@ -247,6 +256,116 @@ public class TicketServiceImpl implements TicketService {
                     ticketAttachmentMapper.mapTagsListToDtoList(attachments)
             );
         }
+
+    private void sendTicketCreationEmail(Ticket ticket) {
+
+        List<String> toEmails = new ArrayList<>();
+        String subject = null;
+        String body = null;
+        boolean emailSent = false;
+        String senderEmail = null;
+        try {
+            EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+
+            // ---------------- TO ----------------
+             toEmails = new ArrayList<>();
+
+            // Assigned user email
+            if (ticket.getAssignedTo() != null &&
+                    ticket.getAssignedTo().getEmailId() != null) {
+                toEmails.add(ticket.getEmailAddress());
+            }
+
+            // Customer email
+            if (ticket.getEmailAddress() != null) {
+                toEmails.add(ticket.getEmailAddress());
+            }
+
+            emailRequest.setTo(toEmails);
+
+            // ---------------- CC ----------------
+            List<String> ccEmails =
+                    ticketCcRepository.findCcEmailsByTicketId(ticket.getTicketId());
+
+            log.info("CC emails from DB: {}", ccEmails);
+
+            emailRequest.setCc(ccEmails);
+            // ---------------- SUBJECT ----------------
+            subject = "New Ticket Created | Ticket ID : " + ticket.getTicketId();
+            emailRequest.setSubject(subject);
+
+            // ---------------- BODY ----------------
+             body = String.format(
+                    "Dear Customer,\n\n" +
+                            "Thank you for contacting the IT Support Team.\n\n" +
+                            "We have successfully created your support ticket with the following details:\n\n" +
+                            "--------------------------------------------------\n" +
+                            "Ticket ID     : %s\n" +
+                            "Issue Subject : %s\n" +
+                            "Description   : %s\n" +
+                            "Priority      : %s\n" +
+                            "Department    : %s\n" +
+                            "Assigned To   : %s\n" +
+                            "--------------------------------------------------\n\n" +
+                            "Our team is currently working on your request and will keep you informed of the progress.\n\n" +
+                            "Please mention the Ticket ID in all future communications.\n\n" +
+                            "Warm Regards,\n" +
+                            "Ticket Management System\n" +
+                            "IT Support Team",
+                    ticket.getTicketId(),
+                    ticket.getSubject(),
+                    ticket.getDescription(),
+                    getPriorityLabel(ticket.getPriority()),
+                    ticket.getDepartment().getDepartmentName(),
+                    ticket.getAssignedTo().getFirstName() + " " +
+                            Objects.toString(ticket.getAssignedTo().getLastName(), "")
+            );
+
+
+            emailRequest.setBody(body);
+            Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
+             senderEmail = setting.get().getSettingValue();
+            emailRequest.setSender(senderEmail);
+            emailRequest.setPriority(NotificationPriority.DEFAULT);
+
+            emailUtil.sendEmail(
+                    emailRequest,
+                    "TICKET_CREATE_" + ticket.getTicketId()
+            );
+            emailSent = true;
+
+        } catch (Exception e) {
+            log.error("Failed to send ticket creation email for ticketId={}",
+                    ticket.getTicketId(), e);
+        } finally {
+            emailUtil.saveEmailLog(
+                    toEmails != null ? toEmails : Collections.emptyList(),
+                    subject != null ? subject : "N/A",
+                    body != null ? body : "N/A",
+                    senderEmail,
+                    emailSent ? "SUCCESS" : "FAILED",
+                    emailSent ? "Email sent successfully" : "Email sending failed"
+            );
+        }
+    }
+
+
+    private String getPriorityLabel(Integer priority) {
+        if (priority == null) {
+            return "N/A";
+        }
+        switch (priority) {
+            case 1:
+                return "Low";
+            case 2:
+                return "Medium";
+            case 3:
+                return "High";
+            default:
+                return "Unknown";
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO) {
