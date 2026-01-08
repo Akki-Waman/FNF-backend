@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.CompanyExcelGenerator;
 import com.sipl.ticket.core.mapper.CompanyMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -318,6 +320,31 @@ public class CompanyServiceImpl implements CompanyService {
                     true
             );
         }
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public void exportCompanies(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCompaniesExcel <<Start>>");
+
+        try {
+            List<CompanyDto> companies = repository.findAll(
+                            Sort.by(Sort.Direction.DESC, "companyId"))
+                    .stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            CompanyExcelGenerator.generateExcel(companies, response);
+
+            log.info("<<Success>> exportCompaniesExcel <<Success>>");
+
+        } catch (Exception e) {
+            log.error("<<Error>> exportCompaniesExcel failed", e);
+            throw new RuntimeException("Failed to export companies excel", e);
+        }
+
+        log.info("<<End>> exportCompaniesExcel <<End>>");
     }
 
 }
