@@ -15,9 +15,9 @@ public class SlaRuleDetailsDto extends AuditDto {
 
     private ServiceResponseDTO service;
 
-    private MastersResponseDTO severity;
+    private Long severityMasterId;
 
-    private MastersResponseDTO slaType;
+    private Long slaTypeMasterId;
 
     private Integer slaHours;
 
