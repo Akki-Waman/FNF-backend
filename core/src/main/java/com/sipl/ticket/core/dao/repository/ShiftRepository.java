@@ -13,6 +13,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
     @Query(
             "FROM Shift s WHERE "
+                    + "s.isDeleted = false AND "
                     + "s.isActive = true AND "
                     + "(:shiftName IS NULL OR LOWER(s.shiftName) LIKE LOWER(CONCAT('%', :shiftName, '%'))) AND "
                     + "(:startTime IS NULL OR s.startTime >= :startTime) AND "
@@ -25,10 +26,13 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
             Pageable pageable
     );
 
+    boolean existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(String shiftName);
 
-    boolean existsByShiftNameIgnoreCaseAndIsActiveTrue(String shiftname);
-
-    @Query("SELECT s FROM Shift s WHERE (:shiftId IS NULL OR s.shiftId = :shiftId)")
+    @Query(
+            "SELECT s FROM Shift s WHERE "
+                    + "s.isDeleted = false AND "
+                    + "(:shiftId IS NULL OR s.shiftId = :shiftId)"
+    )
     Page<Shift> findByShiftId(
             @Param("shiftId") Long shiftId,
             Pageable pageable
