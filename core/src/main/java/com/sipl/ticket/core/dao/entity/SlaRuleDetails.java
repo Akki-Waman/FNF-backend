@@ -31,14 +31,16 @@ public class SlaRuleDetails extends AuditEntity {
     private ServiceEntity service;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "severity_id", nullable = false)
+    @JoinColumn(name = "severity_master_id", nullable = false)
     @JsonIgnore
-    private Severity severity;
+    @Audited(targetAuditMode = org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED)
+    private Masters severity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sla_type_id", nullable = false)
+    @JoinColumn(name = "sla_type_master_id", nullable = false)
     @JsonIgnore
-    private SlaType slaType;
+    @Audited(targetAuditMode = org.hibernate.envers.RelationTargetAuditMode.NOT_AUDITED)
+    private Masters slaType;
 
     @Column(nullable = false)
     private Integer slaHours;
