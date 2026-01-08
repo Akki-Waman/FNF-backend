@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Tags;
 import com.sipl.ticket.core.dao.repository.TagsRepository;
 import com.sipl.ticket.core.dto.request.TagsRequestDto;
@@ -39,6 +40,7 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "TAG")
     public ApiResponseDTO<TagResponseDto> saveTag(TagsRequestDto dto) {
 
         try {
@@ -79,6 +81,7 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "TAG")
     public ApiResponseDTO<TagResponseDto> updateTag(TagsRequestDto dto) {
 
         try {
@@ -180,6 +183,7 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "TAG")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

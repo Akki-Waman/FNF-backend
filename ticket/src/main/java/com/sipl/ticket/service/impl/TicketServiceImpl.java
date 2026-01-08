@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
@@ -57,6 +58,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
         @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "ADD", module = "TICKET")
         public ApiResponseDTO<CombinedTicketResponseDto> addTickets(
                 Long ticketId,
                 String ticketRequestDto,
@@ -97,6 +99,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Transactional
+        @ActivityLoggable(action = "CREATE", module = "TICKET")
         private Ticket saveTicket(TicketsResponseDTO dto, Users assignedUser) {
             Ticket ticket = ticketMapper.toEntity(dto);
             ticket.setAssignedTo(assignedUser);
@@ -249,6 +252,7 @@ public class TicketServiceImpl implements TicketService {
         }
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "DELETE", module = "TICKET")
     public ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO) {
 
         try {
@@ -381,6 +385,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "UPDATE", module = "TICKET")
     public ApiResponseDTO<CombinedTicketResponseDto> updateTickets(
             Long ticketId,
             String ticketRequestDto,

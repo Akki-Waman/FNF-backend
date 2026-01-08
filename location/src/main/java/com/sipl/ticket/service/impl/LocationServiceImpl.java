@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Locations;
 import com.sipl.ticket.core.dao.repository.LocationRepository;
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
@@ -38,6 +39,7 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @CacheEvict(value = "locations", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "LOCATION")
     public ApiResponseDTO<LocationResponseDTO> saveLocation(LocationRequestDTO dto) {
 
         try {
@@ -80,6 +82,7 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @CacheEvict(value = "locations", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "LOCATION")
     public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO locationRequestDTO)  {
 
         try {
@@ -187,6 +190,7 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @CacheEvict(value = "locations", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "LOCATION")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

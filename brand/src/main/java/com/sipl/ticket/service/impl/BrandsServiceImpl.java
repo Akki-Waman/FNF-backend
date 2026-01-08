@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Brands;
 import com.sipl.ticket.core.dao.repository.BrandRepository;
 import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
@@ -39,6 +40,7 @@ public class BrandsServiceImpl implements BrandsService {
 
     @Override
     @CacheEvict(value = "brands", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "BRAND")
     public ApiResponseDTO<BrandDto> saveBrand(BrandsRequestDto dto) {
 
         log.info("Saving brand with name: {}", dto.getBrandName());
@@ -81,6 +83,7 @@ public class BrandsServiceImpl implements BrandsService {
 
     @Override
     @CacheEvict(value = "brands", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "BRAND")
     public ApiResponseDTO<BrandDto> updateBrand(BrandsRequestDto dto) {
 
         log.info("Updating brand, id={}, name={}", dto.getBrandId(), dto.getBrandName());
@@ -185,6 +188,7 @@ public class BrandsServiceImpl implements BrandsService {
 
     @Override
     @CacheEvict(value = "brands", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "BRAND")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating brand, id={}", id);

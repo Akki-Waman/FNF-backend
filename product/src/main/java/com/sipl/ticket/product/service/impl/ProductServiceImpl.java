@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.NewProductRequestDto;
@@ -54,6 +55,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "PRODUCT")
     public ApiResponseDTO<CombinedProductResponseDto> saveOrUpdateProduct(
             Long productId, String productRequestDtoString, MultipartFile multipartFile) {
         try {
@@ -407,6 +409,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @ActivityLoggable(action = "DELETE", module = "PRODUCT")
     public ApiResponseDTO<ProductDto> deleteProduct(Long productId) {
         try {
 
