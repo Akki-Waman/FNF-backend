@@ -40,9 +40,6 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     public ApiResponseDTO<SlaProfileResponseDto> saveSlaProfile(
             SlaProfileRequestDto dto) {
 
-        log.info("saveSlaProfile started | branchId={}, profileName={}",
-                dto.getBranchId(), dto.getProfileName());
-
         try {
 
             if (repository.existsByProfileNameIgnoreCaseAndBranch_BranchId(
@@ -101,7 +98,6 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             SlaProfile slaProfile,
             SlaProfileRequestDto dto) {
 
-        log.debug("Validating branch for SLA Profile | branchId={}", dto.getBranchId());
 
         Branches branch = branchRepository.findById(dto.getBranchId()).orElse(null);
 
@@ -124,8 +120,6 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     @ActivityLoggable(action = "UPDATE", module = "SLA_PROFILE")
     public ApiResponseDTO<SlaProfileResponseDto> updateSlaProfile(
             SlaProfileRequestDto dto) {
-
-        log.info("updateSlaProfile started | slaProfileId={}", dto.getSlaProfileId());
 
         SlaProfile slaProfile =
                 repository.findById(dto.getSlaProfileId()).orElse(null);
