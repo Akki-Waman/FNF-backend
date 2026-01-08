@@ -122,6 +122,7 @@ public class BranchServiceImpl implements BranchService {
     }
 
     @Override
+    @ActivityLoggable(action = "UPDATE", module = "BRANCH")
     public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
         Branches branch = repository.findById(dto.getBranchId()).orElse(null);
@@ -184,6 +185,7 @@ public class BranchServiceImpl implements BranchService {
     }
 
     @Override
+    @ActivityLoggable(action = "DELETE", module = "BRANCH")
     public ApiResponseDTO<String> deleteById(Integer branchId) {
 
         Branches branch = repository.findById(branchId).orElse(null);
