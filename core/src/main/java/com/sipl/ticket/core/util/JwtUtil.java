@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Slf4j
 @Component
 public class JwtUtil {
-    public static final String SECRET = "wn0GSOkq62sJ4IgnX8W1nNLpqpJ8apFOIX2Wv3ZszQETj1R2Zq";
+    public static final String SECRET = "n8Xq2lF0wJ7vH5pQ9yDkRmZ4Lb7GtK2QhP6rVsJ9bTxYfN3CvL8sH1wMjAzQpRfVdGzNhUkXmYtBqWnFJpLkSw==";
     private final int TOKEN_TIMEOUT = (1000 * 60 * 30);
 
 
