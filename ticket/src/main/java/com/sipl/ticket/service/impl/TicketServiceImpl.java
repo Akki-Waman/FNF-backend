@@ -64,6 +64,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
         @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "ADD", module = "TICKET")
         public ApiResponseDTO<CombinedTicketResponseDto> addTickets(
                 Long ticketId,
                 String ticketRequestDto,
@@ -107,6 +108,7 @@ public class TicketServiceImpl implements TicketService {
         }
 
         @Transactional
+        @ActivityLoggable(action = "CREATE", module = "TICKET")
         private Ticket saveTicket(TicketsResponseDTO dto, Users assignedUser) {
             Ticket ticket = ticketMapper.toEntity(dto);
             ticket.setAssignedTo(assignedUser);
@@ -369,6 +371,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "DELETE", module = "TICKET")
     public ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO) {
 
         try {
@@ -501,6 +504,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "UPDATE", module = "TICKET")
     public ApiResponseDTO<CombinedTicketResponseDto> updateTickets(
             Long ticketId,
             String ticketRequestDto,

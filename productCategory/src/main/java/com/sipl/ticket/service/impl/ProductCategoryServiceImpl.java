@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.ProductCategories;
 import com.sipl.ticket.core.dao.repository.ProductCategoryRepository;
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
@@ -40,6 +41,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "PRODUCT CATEGORY")
     public ApiResponseDTO<ProductCategoryDto> saveProductCategory(
             ProductCategoryRequestDto dto) {
 
@@ -106,6 +108,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "PRODUCT CATEGORY")
     public ApiResponseDTO<ProductCategoryDto> updateProductCategory(
             ProductCategoryRequestDto dto) {
 
@@ -217,6 +220,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "PRODUCT CATEGORY")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating product category, id={}", id);

@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Origins;
 import com.sipl.ticket.core.dao.repository.OriginsRepository;
 import com.sipl.ticket.core.dto.request.OriginsRequestDto;
@@ -40,6 +41,7 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "ORIGIN")
     public ApiResponseDTO<OriginDto> saveOrigin(OriginsRequestDto dto) {
 
         log.info("Request received to save Origin");
@@ -105,6 +107,7 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "ORIGIN")
     public ApiResponseDTO<OriginDto> updateOrigin(OriginsRequestDto dto) {
 
         log.info("Updating origin, id={}, name={}", dto.getOriginId(), dto.getOriginName());
@@ -214,6 +217,7 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "ORIGIN")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating origin, id={}", id);
