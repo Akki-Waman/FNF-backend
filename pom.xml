@@ -40,6 +40,7 @@
         <module>task</module>
 		<module>ticket</module>
         <module>activityLog</module>
+        <module>slaprofile</module>
 
     </modules>
 
@@ -248,6 +249,12 @@
 				<artifactId>state</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>slaprofile</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
