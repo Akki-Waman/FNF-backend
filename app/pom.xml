@@ -186,6 +186,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>task</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>slaprofile</artifactId>
+        </dependency>
 
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
