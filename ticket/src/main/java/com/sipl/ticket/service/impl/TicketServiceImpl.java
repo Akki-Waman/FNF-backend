@@ -7,6 +7,7 @@ import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.notification.dto.request.EmailNotificationRequest;
 import com.sipl.notification.enums.NotificationPriority;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
