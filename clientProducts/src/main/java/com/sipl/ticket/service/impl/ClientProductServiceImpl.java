@@ -1,6 +1,7 @@
 package com.sipl.ticket.service.impl;
 
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
@@ -33,6 +34,7 @@ public class ClientProductServiceImpl implements ClientProductService {
     private final DivisionsRepository divisionsRepository;
 
     @Override
+    @ActivityLoggable(action = "CREATE", module = "CLIENT PRODUCT")
     public ApiResponseDTO<ClientProductsResponseDTO> saveClientProducts(ClientProductsRequestDTO dto) {
         log.info("Saving client product with serialNo: {}, imeiNo: {}",
                 dto.getSerialNumber(), dto.getImeiNo());
@@ -141,6 +143,7 @@ public class ClientProductServiceImpl implements ClientProductService {
 
 
     @Override
+    @ActivityLoggable(action = "UPDATE", module = "CLIENT PRODUCT")
     public ApiResponseDTO<ClientProductsResponseDTO> updateClientProducts(Long clientProductId,ClientProductsRequestDTO dto) {
         log.info("Updating client product with serialNo: {}, imeiNo: {}", dto.getSerialNumber(), dto.getImeiNo());
         try {
@@ -204,6 +207,7 @@ public class ClientProductServiceImpl implements ClientProductService {
     }
 
     @Override
+    @ActivityLoggable(action = "DELETE", module = "CLIENT PRODUCT")
     public ApiResponseDTO<ClientProductsResponseDTO> deleteClientProducts(Long clientProductId) {
         try {
             Optional<ClientProducts> optionalClientProduct =

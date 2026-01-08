@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Department;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
@@ -36,6 +37,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "DEPARTMENT")
     public ApiResponseDTO<DepartmentResponseDTO> saveDepartment(DepartmentRequestDto dto) {
 
         log.info("Saving department with name: {}", dto.getDepartmentName());
@@ -77,6 +79,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "DEPARTMENT")
     public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(DepartmentRequestDto dto) {
 
         log.info("Updating department, id={}, name={}",
@@ -183,6 +186,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "DEPARTMENT")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating department, id={}", id);

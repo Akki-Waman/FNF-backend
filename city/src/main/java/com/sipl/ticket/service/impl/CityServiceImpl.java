@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CityService;
 import com.sipl.ticket.core.dao.entity.City;
@@ -40,6 +41,7 @@ public class CityServiceImpl implements CityService {
 
     @Override
     @CacheEvict(value = "cities", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "CITY")
     public ApiResponseDTO<CityResponseDto> saveCity(CityRequestDto dto) {
 
         try {
@@ -120,6 +122,7 @@ public class CityServiceImpl implements CityService {
 
     @Override
     @CacheEvict(value = "cities", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "CITY")
     public ApiResponseDTO<CityResponseDto> updateCity(CityRequestDto dto) {
 
         try {
@@ -251,6 +254,7 @@ public class CityServiceImpl implements CityService {
 
     @Override
     @CacheEvict(value = "cities", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "CITY")
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

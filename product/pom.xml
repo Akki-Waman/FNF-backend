@@ -59,6 +59,10 @@
             <artifactId>dms</artifactId>
             <version>1.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>activityLog</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

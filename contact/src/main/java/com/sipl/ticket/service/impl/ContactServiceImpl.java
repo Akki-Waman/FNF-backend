@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Contact;
 import com.sipl.ticket.core.dao.entity.Department;
 import com.sipl.ticket.core.dao.repository.ContactRepository;
@@ -37,6 +38,7 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
+    @ActivityLoggable(action = "CREATE", module = "CONTACT")
     public ApiResponseDTO<ContactResponseDto> saveContact(ContactRequestDto dto) {
 
         log.info(
@@ -105,6 +107,7 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
+    @ActivityLoggable(action = "UPDATE", module = "CONTACT")
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
         log.info(
@@ -227,6 +230,7 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
+    @ActivityLoggable(action = "DELETE", module = "CONTACT")
     public ApiResponseDTO<String> deleteById(Long contactId) {
 
         log.info("Deactivating contact [id={}]", contactId);

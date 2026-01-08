@@ -48,6 +48,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>activityLog</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

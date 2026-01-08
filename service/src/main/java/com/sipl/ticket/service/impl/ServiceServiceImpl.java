@@ -1,6 +1,7 @@
 package com.sipl.ticket.service.impl;
 
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.ServiceEntity;
 import com.sipl.ticket.core.dao.repository.ServiceRepository;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
@@ -40,6 +41,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "SERVICE")
     public ApiResponseDTO<ServiceResponseDTO> saveService(ServiceRequestDto dto) {
 
         try {
@@ -77,6 +79,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "SERVICE")
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
         ServiceEntity service =
@@ -135,6 +138,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "SERVICE")
     public ApiResponseDTO<String> deleteById(Long serviceId) {
 
         ServiceEntity service = repository.findById(serviceId).orElse(null);

@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Country;
 import com.sipl.ticket.core.dao.repository.CountryRepository;
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
@@ -36,6 +37,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "COUNTRY")
     public ApiResponseDTO<CountryResponseDto> createCountry(CountryRequestDto dto) {
 
         log.info("Creating country={}", dto);
@@ -76,6 +78,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "COUNTRY")
     public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
 
         log.info("Updating country, id={}, payload={}", id, dto);
@@ -222,6 +225,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "COUNTRY")
     public ApiResponseDTO<String> deleteCountry(Long countryId) {
 
         log.info("Deleting country, id={}", countryId);

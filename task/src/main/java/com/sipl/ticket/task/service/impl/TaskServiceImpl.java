@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
@@ -57,6 +58,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "ADD", module = "TASK")
     public ApiResponseDTO<CombinedTaskResponseDto> addTask(
             String taskRequestDto,
             List<MultipartFile> files) {
@@ -108,6 +110,7 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
+    @ActivityLoggable(action = "CREATE", module = "TASK")
     private Task saveTask(TaskRequestDto dto) {
 
         validateTaskRequest(dto);
@@ -447,6 +450,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "UPDATE", module = "TASK")
     public ApiResponseDTO<CombinedTaskResponseDto> updateTask(
             String taskRequestDto,
             List<MultipartFile> files) {
@@ -800,6 +804,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(action = "DELETE", module = "TASK")
     public ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO) {
 
         try {

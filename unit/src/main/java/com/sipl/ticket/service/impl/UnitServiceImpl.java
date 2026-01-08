@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Unit;
 import com.sipl.ticket.core.dao.repository.UnitRepository;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
@@ -39,6 +40,7 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "UNIT")
     public ApiResponseDTO<UnitDto> createUnit(UnitRequestDto dto) {
         try {
             String name = dto.getUnitName().trim();
@@ -78,6 +80,7 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "UNIT")
     public ApiResponseDTO<UnitDto> updateUnit(Long unitId, UnitRequestDto dto) {
         try {
             if (unitId == null || dto.getUnitName() == null || dto.getUnitName().trim().isEmpty()) {
@@ -171,6 +174,7 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "UNIT")
     public ApiResponseDTO<String> deleteUnit(Long unitId) {
         try {
             Unit unit = repository.findById(unitId).orElse(null);

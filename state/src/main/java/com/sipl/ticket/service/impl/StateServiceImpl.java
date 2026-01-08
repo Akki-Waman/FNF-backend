@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Country;
 import com.sipl.ticket.core.dao.entity.State;
 import com.sipl.ticket.core.dao.repository.CountryRepository;
@@ -43,6 +44,7 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
+    @ActivityLoggable(action = "CREATE", module = "STATE")
     public ApiResponseDTO<StateResponseDto> saveState(StateRequestDto dto) {
         log.info("Request received to save State");
         try {
@@ -80,6 +82,7 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
+    @ActivityLoggable(action = "UPDATE", module = "STATE")
     public ApiResponseDTO<StateResponseDto> updateState(StateRequestDto dto) {
         log.info("Request received to update State, id={}", dto.getStateId());
         try {
@@ -130,6 +133,7 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
+    @ActivityLoggable(action = "DELETE", module = "STATE")
     public ApiResponseDTO<String> deleteById(Long stateId) {
         log.info("Request received to delete state, id={}", stateId);
         try {

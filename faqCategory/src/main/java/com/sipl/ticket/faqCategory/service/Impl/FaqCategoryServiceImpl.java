@@ -1,5 +1,6 @@
 package com.sipl.ticket.faqCategory.service.Impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.FaqCategory;
 import com.sipl.ticket.core.dao.repository.FaqCategoryRepository;
 import com.sipl.ticket.core.dto.request.FaqCategorySearchRequestDto;
@@ -29,6 +30,7 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
     private final FaqCategoryRepository faqCategoryRepository;
     private final FaqCategoryMapper faqCategoryMapper;
 
+    @ActivityLoggable(action = "CREATE", module = "FAQ CATEGORY")
     public ApiResponseDTO<FaqCategoryDto> saveFaqCategoryDetails(FaqCategoryDto faqCategoryDto) {
         try {
             validateFaqCategoryDto(faqCategoryDto);
@@ -160,7 +162,7 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
             );
         }
     }
-
+    @ActivityLoggable(action = "DELETE", module = "FAQ CATEGORY")
     public ApiResponseDTO<String> deleteById(Integer faqCategoryId) {
         try {
             Optional<FaqCategory> faqCategory = faqCategoryRepository.findById(faqCategoryId);
@@ -226,6 +228,7 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
         }
     }
 
+    @ActivityLoggable(action = "UPDATE", module = "FAQ CATEGORY")
     public ApiResponseDTO<FaqCategoryDto> updateFaqCategoryDetails(FaqCategoryDto faqCategoryDto) {
         try {
             validateFaqCategoryDto(faqCategoryDto);
