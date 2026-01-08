@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/shifts")
 @CrossOrigin("*")
@@ -50,5 +52,10 @@ public interface ShiftController {
     ResponseEntity<ApiResponseDTO<PagedResponse<ShiftResponseDTO>>> searchShifts(
             @RequestBody ShiftSearchRequestDto requestDto
     );
-
+    @ApiOperation(
+            value = "Export shifts to Excel",
+            notes = "Download all active shifts in Excel format"
+    )
+    @GetMapping("/export")
+    void downloadExcel(HttpServletResponse response);
 }

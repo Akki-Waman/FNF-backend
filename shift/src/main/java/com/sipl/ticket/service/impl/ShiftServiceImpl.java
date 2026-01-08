@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
+import com.sipl.ticket.core.helper.ShiftExcelGenerator;
 import com.sipl.ticket.core.mapper.ShiftMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ShiftService;
@@ -22,6 +23,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +48,7 @@ public class ShiftServiceImpl implements ShiftService {
 
             String shiftname = dto.getShiftName().trim();
 
-            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrue(shiftname)) {
+            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(shiftname)) {
                 return new ApiResponseDTO<>(
                         null,
                         "Shift '" + shiftname + "' already exists.",
@@ -111,7 +114,7 @@ public class ShiftServiceImpl implements ShiftService {
 
             String name = dto.getShiftName().trim();
 
-            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrue(
+            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(
                     name)) {
 
                 return new ApiResponseDTO<>(
@@ -183,7 +186,7 @@ public class ShiftServiceImpl implements ShiftService {
     @CacheEvict(value = "shifts", allEntries = true)
     public ApiResponseDTO<String> deleteById(Long id) {
 
-        log.info("Deactivating shift, id={}", id);
+        log.info("Deleting shift logically, id={}", id);
 
         try {
             Shift shift = repository.findById(id).orElse(null);
@@ -197,15 +200,18 @@ public class ShiftServiceImpl implements ShiftService {
                 );
             }
 
-            if (Boolean.FALSE.equals(shift.getIsActive())) {
+
+            if (Boolean.TRUE.equals(shift.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Shift is already inactive",
+                        "Shift is already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
+
+            shift.setIsDeleted(true);
             shift.setIsActive(false);
             repository.save(shift);
 
@@ -226,6 +232,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+
 
     @Override
     @Cacheable("shifts")
@@ -326,6 +333,70 @@ public class ShiftServiceImpl implements ShiftService {
                     true
             );
         }
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public void downloadShiftsExcel(HttpServletResponse response) {
+
+        log.info("<<START>> Download Shifts Excel service");
+
+        try {
+
+            List<ShiftResponseDTO> dtoList = repository.findAll()
+                    .stream()
+                    .filter(shift ->
+                            Boolean.TRUE.equals(shift.getIsActive())
+                                    && Boolean.FALSE.equals(shift.getIsDeleted())
+                    )
+                    .map(shift -> {
+
+                        ShiftResponseDTO dto = new ShiftResponseDTO();
+
+                        dto.setShiftId(shift.getShiftId());
+                        dto.setShiftName(shift.getShiftName());
+
+                        dto.setStartTime(shift.getStartTime());
+                        dto.setEndTime(shift.getEndTime());
+                        dto.setIsActive(shift.getIsActive());
+
+
+                        dto.setCreatedBy(
+                                shift.getCreatedBy() != null
+                                        ? shift.getCreatedBy().getUserName()
+                                        : null
+                        );
+                        dto.setCreatedTime(shift.getCreatedTime());
+
+                        dto.setModifiedBy(
+                                shift.getModifiedBy() != null
+                                        ? shift.getModifiedBy().getUserName()
+                                        : null
+                        );
+                        dto.setModifiedTime(shift.getModifiedTime());
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("Total active shifts fetched for Excel download: {}",
+                    dtoList.size());
+
+            ShiftExcelGenerator.generateExcel(dtoList, response);
+
+            log.info("Shifts Excel generated successfully");
+
+        } catch (IOException ex) {
+
+            log.error("IOException occurred while downloading Shifts Excel", ex);
+            throw new RuntimeException("Failed to download Shifts Excel", ex);
+
+        } catch (Exception ex) {
+
+            log.error("Unexpected error occurred while downloading Shifts Excel", ex);
+            throw new RuntimeException("Failed to download Shifts Excel", ex);
+        }
+
+        log.info("<<END>> Download Shifts Excel service");
     }
 
 }

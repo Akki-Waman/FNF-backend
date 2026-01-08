@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -99,6 +100,23 @@ public class ShiftControllerImpl implements ShiftController {
         return response;
     }
 
+    @Override
+    public void downloadExcel(HttpServletResponse response) {
+        log.info("<<Start>> downloadExcel endpoint called <<Start>>");
+
+        try {
+
+            shiftService.downloadShiftsExcel(response);
+            log.info("Excel download successfully generated");
+
+        } catch (Exception e) {
+            log.error("Error occurred while generating Excel", e);
+
+            throw new RuntimeException("Failed to generate Excel file", e);
+        }
+
+        log.info("<<End>> downloadExcel endpoint called <<End>>");
+    }
 
 }
 
