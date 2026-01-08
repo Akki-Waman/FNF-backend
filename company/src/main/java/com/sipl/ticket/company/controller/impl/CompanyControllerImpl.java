@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -94,4 +95,20 @@ public class CompanyControllerImpl implements CompanyController {
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    @Override
+    public void downloadExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCompaniesExcel <<Start>>");
+
+        try {
+            companiesService.exportCompanies(response);
+            log.info("<<Success>> exportCompaniesExcel <<Success>>");
+        } catch (Exception e) {
+            log.error("<<Error>> exportCompaniesExcel failed", e);
+            throw new RuntimeException("Error while exporting companies excel", e);
+        }
+
+        log.info("<<End>> exportCompaniesExcel <<End>>");
+    }
+
 }

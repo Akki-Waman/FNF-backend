@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RequestMapping("/api/v1/companies")
@@ -75,5 +76,10 @@ public interface CompanyController {
     ResponseEntity<ApiResponseDTO<PagedResponse<CompanyDto>>> searchCompanies(
             @RequestBody CompanySearchRequestDto requestDto
     );
-
+    @ApiOperation(
+            value = "Export companies to Excel",
+            notes = "Download companies data in Excel format"
+    )
+    @GetMapping("/export")
+    void downloadExcel(HttpServletResponse response);
 }
