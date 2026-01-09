@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RequestMapping("/api/v1/tickets")
@@ -51,5 +52,14 @@ public interface TicketController {
 
     @GetMapping("/ticket-summary}")
     ResponseEntity<ApiResponseDTO<SummaryKpiResponseDTO>> getTikctSummary();
+
+    @ApiOperation("Export tickets in Excel / CSV / PDF")
+    @GetMapping("/export")
+    ResponseEntity<Void> exportTickets(
+            @RequestParam String format,
+            @RequestParam(required = false) String query,
+            HttpServletResponse response
+    );
+
 
 }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -69,4 +70,23 @@ public class TicketControllerImpl implements TicketController {
                 ticketService.getTikctSummary();
         log.info("<<END>> getTikctSummary controller <<END>>");
         return ResponseEntity.ok(apiResponse);    }
+
+    @Override
+    public ResponseEntity<Void> exportTickets(
+            String format,
+            String query,
+            HttpServletResponse response
+    ) {
+
+        log.info("<<Start>> exportTickets endpoint called <<Start>>");
+
+        ticketService.exportTickets(format, query, response);
+
+        log.info("<<End>> exportTickets endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
 }
