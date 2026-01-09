@@ -25,9 +25,9 @@ public interface CountryController {
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> createCountry(
             @RequestBody CountryRequestDto requestDto);
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update/{countryId}")
     ResponseEntity<ApiResponseDTO<CountryResponseDto>> updateCountry(
-            @PathVariable Long id,
+            @PathVariable("countryId") Long countryId,
             @RequestBody CountryRequestDto requestDto);
 
     @ApiOperation(
