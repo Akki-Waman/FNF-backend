@@ -31,7 +31,6 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
             "SELECT u FROM Unit u " +
                     "WHERE u.isActive = true " +
                     "AND ( :search IS NULL " +
-                    "   OR CAST(u.unitId AS string) LIKE CONCAT('%', :search, '%') " +
                     "   OR LOWER(u.unitName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
     Page<Unit> searchUnits(

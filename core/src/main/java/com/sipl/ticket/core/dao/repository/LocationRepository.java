@@ -27,7 +27,6 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             "SELECT l FROM Locations l " +
                     "WHERE l.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(l.locationId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Locations> searchLocations(

@@ -27,7 +27,6 @@ public interface OriginsRepository extends JpaRepository<Origins, Long> {
             "SELECT o FROM Origins o " +
                     "WHERE o.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(o.originId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(o.originName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Origins> searchOrigins(

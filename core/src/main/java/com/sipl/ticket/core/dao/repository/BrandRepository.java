@@ -29,7 +29,6 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
             "SELECT b FROM Brands b " +
                     "WHERE b.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(b.brandId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(b.brandName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Brands> searchBrands(

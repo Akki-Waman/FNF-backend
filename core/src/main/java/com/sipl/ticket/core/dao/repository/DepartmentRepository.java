@@ -21,7 +21,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
             "SELECT d FROM Department d " +
                     "WHERE d.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(d.departmentId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(d.departmentName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Department> searchDepartments(

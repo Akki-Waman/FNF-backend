@@ -33,7 +33,6 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
                     "WHERE s.isDeleted = false " +
                     "AND s.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(s.shiftId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(s.shiftName) LIKE CONCAT('%', LOWER(:query), '%') " +
                     "      OR LOWER(s.description) LIKE CONCAT('%', LOWER(:query), '%') " +
                     "      OR CAST(s.startTime AS string) LIKE CONCAT('%', :query, '%') " +
