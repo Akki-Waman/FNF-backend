@@ -41,6 +41,7 @@
 		<module>ticket</module>
         <module>activityLog</module>
         <module>slaprofile</module>
+        <module>ticketResponse</module>
 
     </modules>
 
@@ -339,6 +340,11 @@
 				<artifactId>task</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticketResponse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.opencsv</groupId>
 				<artifactId>opencsv</artifactId>

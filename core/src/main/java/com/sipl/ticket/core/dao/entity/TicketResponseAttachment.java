@@ -40,4 +40,8 @@ public class TicketResponseAttachment extends AuditEntity{
     @Column(name = "uploaded_on", nullable = false)
     private LocalDateTime uploadedOn;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false)
+    private DmsDocument dmsDocument;
+
 }
