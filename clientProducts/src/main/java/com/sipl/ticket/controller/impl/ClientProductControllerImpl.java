@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ClientProductController;
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
@@ -54,4 +55,20 @@ public class ClientProductControllerImpl implements ClientProductController {
         log.info("<<End>>getAllClientProducts endpoint called<<End>>");
         return response;
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> searchClientProducts(
+            ClientProductSearchRequestDto requestDto) {
+
+        log.info("<<Start>> searchClientProducts endpoint called <<Start>>");
+
+        ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> response =
+                ResponseEntity.ok(clientProductService.searchClientProducts(requestDto));
+
+        log.info("<<End>> searchClientProducts endpoint called <<End>>");
+        return response;
+    }
+
+
+
 }

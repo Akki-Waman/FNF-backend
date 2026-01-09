@@ -1,19 +1,61 @@
 package com.sipl.ticket.core.dao.repository;
+
 import com.sipl.ticket.core.dao.entity.ClientProducts;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface ClientProductsRepository extends JpaRepository<ClientProducts, Long> {
+
     boolean existsBySerialNumberIgnoreCase(String serialNumber);
 
     boolean existsByImeiNoIgnoreCase(String imeiNo);
 
-    boolean existsBySerialNumberIgnoreCaseAndClientProductIdNot(String trim, Long clientProductId);
+    boolean existsBySerialNumberIgnoreCaseAndClientProductIdNot(
+            String serialNumber,
+            Long clientProductId
+    );
 
-    boolean existsByImeiNoIgnoreCaseAndClientProductIdNot(String trim, Long clientProductId);
+    boolean existsByImeiNoIgnoreCaseAndClientProductIdNot(
+            String imeiNo,
+            Long clientProductId
+    );
 
     List<ClientProducts> findByIsActiveTrue();
+
+    @Query(
+            "SELECT cp FROM ClientProducts cp " +
+                    "LEFT JOIN cp.products p " +
+                    "LEFT JOIN cp.region r " +
+                    "LEFT JOIN cp.zone z " +
+                    "LEFT JOIN cp.division d " +
+                    "LEFT JOIN cp.unit u " +
+                    "WHERE cp.isActive = :isActive " +
+                    "AND ( " +
+                    "LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.serialNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.imeiNo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.platformModel) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.mdmAssetNo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.partNo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.workingStatus) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.deviceStatus) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(r.regionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(z.zoneName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(d.divisionName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(u.operationalUnitName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                    ")"
+    )
+    Page<ClientProducts> searchClientProducts(
+            @Param("keyword") String keyword,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable
+    );
 }

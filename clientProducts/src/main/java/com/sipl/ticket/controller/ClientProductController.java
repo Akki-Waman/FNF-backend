@@ -2,6 +2,7 @@ package com.sipl.ticket.controller;
 
 
 
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
@@ -38,4 +39,11 @@ public interface ClientProductController {
 
     @GetMapping(" ")
     ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts();
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> searchClientProducts(
+            @RequestBody ClientProductSearchRequestDto requestDto
+    );
+
+
 }
