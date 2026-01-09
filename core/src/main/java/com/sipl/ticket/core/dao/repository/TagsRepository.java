@@ -21,7 +21,6 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
             "SELECT t FROM Tags t " +
                     "WHERE t.isActive = true " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR CAST(t.tagId AS string) LIKE CONCAT('%', :query, '%') " +
                     "      OR LOWER(t.tagName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Tags> searchTags(
