@@ -4,20 +4,25 @@ package com.sipl.ticket.service.impl;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.mapper.ClientProductMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ClientProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -280,6 +285,102 @@ public class ClientProductServiceImpl implements ClientProductService {
             log.info("<<End>> getAllClientProducts endpoint called <<End>>");
         }
     }
+
+    @Override
+    public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(
+            ClientProductSearchRequestDto requestDto) {
+
+        log.info(
+                "ClientProduct search started | query='{}', page={}, size={}, sortBy={}, sortDir={}, isActive={}",
+                requestDto.getQuery(),
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getSortBy(),
+                requestDto.getSortDir(),
+                requestDto.getIsActive()
+        );
+
+        try {
+            Pageable pageable = PaginationUtil.pageable(
+                    requestDto.getPage(),
+                    requestDto.getSize(),
+                    requestDto.getSortBy(),
+                    requestDto.getSortDir()
+            );
+
+            String keyword = StringUtils.hasText(requestDto.getQuery())
+                    ? requestDto.getQuery().trim()
+                    : "";
+
+            Page<ClientProducts> pageResult =
+                    clientProductsRepository.searchClientProducts(
+                            keyword,
+                            requestDto.getIsActive(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                log.warn(
+                        "No client products found for search | query='{}'",
+                        requestDto.getQuery()
+                );
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "No client products matched your search criteria",
+                        HttpStatus.NOT_FOUND,
+                        false
+                );
+            }
+
+            List<ClientProductsResponseDTO> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(clientProductMapper::toDto)
+                            .collect(Collectors.toList());
+
+            log.info(
+                    "ClientProduct search success | query='{}', results={}, page={}/{}",
+                    requestDto.getQuery(),
+                    content.size(),
+                    pageResult.getNumber() + 1,
+                    pageResult.getTotalPages()
+            );
+
+            PagedResponse<ClientProductsResponseDTO> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Client products fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "Error while searching client products | query='{}'",
+                    requestDto.getQuery(),
+                    e
+            );
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Something went wrong while searching client products. Please try again later.",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 
 
 

@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
@@ -17,4 +18,7 @@ public interface ClientProductService {
     ApiResponseDTO<ClientProductsResponseDTO> deleteClientProducts(Long clientProductId);
 
     ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts();
+
+    ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(
+            ClientProductSearchRequestDto requestDto);
 }
