@@ -8,7 +8,7 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "ticket_response")
+@Table(name = "ticket_responses")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
