@@ -212,7 +212,7 @@ public class StateServiceImpl implements StateService {
                     dto.getSortDir()
             );
 
-            Page<State> pageResult = stateRepository.searchStates(dto.getStateId(), pageable);
+            Page<State> pageResult = stateRepository.searchStates(dto.getQuery(), dto.getIsActive(),  pageable);
 
             if (pageResult.isEmpty()) {
                 log.info("<<End>> search State service called <<End>>");

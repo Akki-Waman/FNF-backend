@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class DepartmentSearchRequestDto extends SearchRequestDto{
 
-    private Long departmentId;
+    private String query;
 
 }

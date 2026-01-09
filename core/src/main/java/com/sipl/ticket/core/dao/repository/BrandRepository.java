@@ -25,13 +25,17 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
     @Query("From Brands b where b.brandId = :brandId")
     Optional<Brands> findByBrandId(@Param("brandId") Long brandId);
 
-    @Query("SELECT b " +
-            "FROM Brands b " +
-            "WHERE b.isActive = true " +
-            "AND (:brandId IS NULL OR b.brandId = :brandId)")
-    Page<Brands> searchByBrandId(
-            @Param("brandId") Long brandId,
+    @Query(
+            "SELECT b FROM Brands b " +
+                    "WHERE  ( :isActive IS NULL OR b.isActive = :isActive ) " +
+                    "AND ( :query IS NULL OR :query = '' " +
+                    "      OR LOWER(b.brandName) LIKE CONCAT('%', LOWER(:query), '%') )"
+    )
+    Page<Brands> searchBrands(
+            @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }

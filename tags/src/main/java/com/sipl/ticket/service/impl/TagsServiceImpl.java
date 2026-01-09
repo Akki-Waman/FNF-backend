@@ -281,8 +281,9 @@ public class TagsServiceImpl implements TagsService {
             );
 
             Page<Tags> pageResult =
-                    repository.searchByTagId(
-                            dto.getTagId(),
+                    repository.searchTags(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

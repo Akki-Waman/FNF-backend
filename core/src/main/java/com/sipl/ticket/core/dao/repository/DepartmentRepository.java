@@ -18,13 +18,16 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     );
 
     @Query(
-            " SELECT d " +
-                    " FROM Department d " +
-                    " WHERE (:departmentId IS NULL OR d.departmentId = :departmentId) " +
-                    " AND d.isActive = true "
+            "SELECT d FROM Department d " +
+                    "WHERE ( :isActive IS NULL OR d.isActive = :isActive ) " +
+                    "AND ( :query IS NULL OR :query = '' " +
+                    "      OR LOWER(d.departmentName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
-    Page<Department> searchByDepartmentId(
-            @Param("departmentId") Long departmentId,
+    Page<Department> searchDepartments(
+            @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+
 }

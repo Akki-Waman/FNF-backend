@@ -350,8 +350,9 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                     dto.getSortDir()
             );
             Page<ProductCategories> pageResult =
-                    repository.searchByProductCategoryId(
-                            dto.getProductCategoryId(),
+                    repository.searchProductCategories(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

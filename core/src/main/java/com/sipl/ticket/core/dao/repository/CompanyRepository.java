@@ -17,13 +17,18 @@ public interface CompanyRepository extends JpaRepository<Companies, Long> {
             String companyName, Long companyId
     );
 
-    @Query("SELECT c "+
-       "FROM Companies c "+
-       "WHERE c.isActive = true "+
-            "AND (:companyId IS NULL OR c.companyId = :companyId) ")
-    Page<Companies> searchByCompanyId(
-            @Param("companyId") Long companyId,
+    @Query(
+            "SELECT c " +
+                    "FROM Companies c " +
+                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+    )
+    Page<Companies> searchCompanies(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }

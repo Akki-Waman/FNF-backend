@@ -287,8 +287,9 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
 
             Page<Department> pageResult =
-                    repository.searchByDepartmentId(
-                            dto.getDepartmentId(),
+                    repository.searchDepartments(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

@@ -28,13 +28,16 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
     );
 
     @Query(
-            "SELECT u " +
-                    "FROM Unit u " +
-                    "WHERE u.isActive = true " +
-                    "AND (:unitId IS NULL OR u.unitId = :unitId) ")
-    Page<Unit> searchByUnitId(
-            @Param("unitId") Long unitId,
+            "SELECT u FROM Unit u " +
+                    "WHERE ( :isActive IS NULL OR u.isActive = :isActive ) " +
+                    "AND ( :search IS NULL " +
+                    "   OR LOWER(u.unitName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+    )
+    Page<Unit> searchUnits(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }

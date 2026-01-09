@@ -305,10 +305,7 @@ public class CountryServiceImpl implements CountryService {
             );
 
             Page<Country> countryPage = repository.searchCountries(
-                    requestDto.getCountryId(),
-                    requestDto.getCountryName(),
-                    requestDto.getTaxType(),
-                    requestDto.getIsForeign(),
+                    requestDto.getQuery(),
                     requestDto.getIsActive(),
                     pageable
             );

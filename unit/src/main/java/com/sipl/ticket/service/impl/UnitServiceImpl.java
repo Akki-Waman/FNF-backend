@@ -301,8 +301,9 @@ public class UnitServiceImpl implements UnitService {
 
 
             Page<Unit> pageResult =
-                    repository.searchByUnitId(
-                            dto.getUnitId(),
+                    repository.searchUnits(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

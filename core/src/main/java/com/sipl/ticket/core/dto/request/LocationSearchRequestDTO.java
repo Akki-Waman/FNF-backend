@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LocationSearchRequestDTO extends SearchRequestDto{
-    private Long locationId;
+    private String query;
 }

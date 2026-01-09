@@ -290,8 +290,9 @@ public class BrandsServiceImpl implements BrandsService {
 
 
             Page<Brands> pageResult =
-                    repository.searchByBrandId(
-                            dto.getBrandId(),
+                    repository.searchBrands(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

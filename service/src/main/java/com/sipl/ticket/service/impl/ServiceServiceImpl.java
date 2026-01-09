@@ -176,7 +176,7 @@ public class ServiceServiceImpl implements ServiceService {
 
         Page<ServiceEntity> pageResult =
                 repository.searchServices(
-                        dto.getServiceId(),
+                        dto.getQuery(),
                         dto.getIsActive(),
                         pageable
                 );

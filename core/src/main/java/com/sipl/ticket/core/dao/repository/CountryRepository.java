@@ -24,18 +24,18 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
     Country findActiveById(@Param("id") Long id);
 
 
-    @Query("SELECT c FROM Country c " +
-            "WHERE (:countryId IS NULL OR c.countryId = :countryId) " +
-            "AND (:countryName IS NULL OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :countryName, '%'))) " +
-            "AND (:taxType IS NULL OR c.taxType = :taxType) " +
-            "AND (:isForeign IS NULL OR c.isForeign = :isForeign) " +
-            "AND (:isActive IS NULL OR c.isActive = :isActive) ")
+    @Query(
+            "SELECT c " +
+                    "FROM Country c " +
+                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(c.taxType) LIKE LOWER(CONCAT('%', :search, '%')) ) "
+    )
     Page<Country> searchCountries(
-            @Param("countryId") Long countryId,
-            @Param("countryName") String countryName,
-            @Param("taxType") String taxType,
-            @Param("isForeign") Boolean isForeign,
+            @Param("search") String search,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }
