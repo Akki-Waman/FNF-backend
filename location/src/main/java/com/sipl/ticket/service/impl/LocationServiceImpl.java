@@ -296,6 +296,7 @@ public class LocationServiceImpl implements LocationService {
             Page<Locations> pageResult =
                     repository.searchLocations(
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

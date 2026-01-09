@@ -27,12 +27,13 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
 
     @Query(
             "SELECT b FROM Brands b " +
-                    "WHERE b.isActive = true " +
+                    "WHERE  ( :isActive IS NULL OR b.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(b.brandName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Brands> searchBrands(
             @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
 

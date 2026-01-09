@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class BranchSearchRequestDto extends SearchRequestDto{
-    private Integer branchId;
-    private Long companyId;
+    private String query;
 }

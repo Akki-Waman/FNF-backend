@@ -221,8 +221,7 @@ public class BranchServiceImpl implements BranchService {
                 dto.getSortDir()
         );
         Page<Branches> pageResult = repository.searchBranches(
-                dto.getBranchId(),
-                dto.getCompanyId(),
+                dto.getQuery(),
                 dto.getIsActive(),
                 pageable
         );

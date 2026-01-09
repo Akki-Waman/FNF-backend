@@ -325,6 +325,7 @@ public class OriginsServiceImpl implements OriginsService {
 
             Page<Origins> pageResult = repository.searchOrigins(
                     dto.getQuery(),
+                    dto.getIsActive(),
                     pageable
             );
 

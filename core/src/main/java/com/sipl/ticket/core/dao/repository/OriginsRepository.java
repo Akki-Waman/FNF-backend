@@ -25,12 +25,13 @@ public interface OriginsRepository extends JpaRepository<Origins, Long> {
 
     @Query(
             "SELECT o FROM Origins o " +
-                    "WHERE o.isActive = true " +
+                    "WHERE ( :isActive IS NULL OR o.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(o.originName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Origins> searchOrigins(
             @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
 

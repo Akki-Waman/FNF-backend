@@ -292,6 +292,7 @@ public class BrandsServiceImpl implements BrandsService {
             Page<Brands> pageResult =
                     repository.searchBrands(
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

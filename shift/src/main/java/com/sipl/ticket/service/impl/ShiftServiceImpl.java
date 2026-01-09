@@ -290,6 +290,7 @@ public class ShiftServiceImpl implements ShiftService {
             Page<Shift> pageResult =
                     repository.findByShiftId(
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

@@ -29,12 +29,16 @@ public interface ProductSubCategoryRepository
     @Query(
             "SELECT psc " +
                     "FROM ProductSubCategories psc " +
-                    "WHERE psc.isActive = true " +
-                    "AND (:productSubCategoryId IS NULL OR psc.productSubCategoryId = :productSubCategoryId) "
+                    "WHERE ( :isActive IS NULL OR psc.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(psc.productSubCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(psc.productCategories.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
-    Page<ProductSubCategories> searchByProductSubCategoryId(
-            @Param("productSubCategoryId") Long productSubCategoryId,
+    Page<ProductSubCategories> searchProductSubCategories(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }
 

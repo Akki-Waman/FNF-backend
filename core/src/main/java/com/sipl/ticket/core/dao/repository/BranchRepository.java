@@ -15,15 +15,24 @@ public interface BranchRepository extends JpaRepository<Branches, Integer> {
 
     boolean existsByEmailIgnoreCaseAndBranchIdNot(String email, Integer branchId);
 
-    @Query(" SELECT b " +
-           " FROM Branches b " +
-           " WHERE (:isActive IS NULL OR b.isActive = :isActive) "+
-           " AND (:companyId IS NULL OR b.company.companyId = :companyId) "+
-             " AND (:branchId IS NULL OR b.branchId = :branchId) ")
+    @Query(
+            "SELECT b " +
+                    "FROM Branches b " +
+                    "WHERE ( :isActive IS NULL OR b.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR CAST(b.branchId AS string) LIKE CONCAT('%', :search, '%') " +
+                    "   OR LOWER(b.branchName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.email) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.address) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.company.companyName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.country.countryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.state.stateName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(b.city.cityName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+    )
     Page<Branches> searchBranches(
-            @Param("branchId") Integer branchId,
-            @Param("companyId") Long companyId,
+            @Param("search") String search,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }

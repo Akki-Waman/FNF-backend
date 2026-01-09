@@ -410,9 +410,8 @@ public class CityServiceImpl implements CityService {
 
             Page<City> pageResult =
                     repository.searchCities(
-                            dto.getCityId(),
-                            dto.getStateId(),
-                            dto.getCityName(),
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

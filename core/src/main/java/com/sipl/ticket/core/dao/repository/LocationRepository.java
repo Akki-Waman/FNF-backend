@@ -25,12 +25,13 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
 
     @Query(
             "SELECT l FROM Locations l " +
-                    "WHERE l.isActive = true " +
+                    "WHERE ( :isActive IS NULL OR l.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Locations> searchLocations(
             @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
 

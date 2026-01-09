@@ -303,6 +303,7 @@ public class UnitServiceImpl implements UnitService {
             Page<Unit> pageResult =
                     repository.searchUnits(
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

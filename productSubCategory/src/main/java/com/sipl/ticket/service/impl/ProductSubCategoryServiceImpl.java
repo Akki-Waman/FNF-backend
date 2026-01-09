@@ -342,8 +342,9 @@ public class ProductSubCategoryServiceImpl
                 );
 
                 Page<ProductSubCategories> pageResult =
-                        repository.searchByProductSubCategoryId(
-                                dto.getProductSubCategoryId(),
+                        repository.searchProductSubCategories(
+                                dto.getQuery(),
+                                dto.getIsActive(),
                                 pageable
                         );
 

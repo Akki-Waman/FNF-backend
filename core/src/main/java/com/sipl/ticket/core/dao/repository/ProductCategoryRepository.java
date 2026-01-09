@@ -27,13 +27,16 @@ public interface ProductCategoryRepository
     @Query(
             "SELECT pc " +
                     "FROM ProductCategories pc " +
-                    "WHERE pc.isActive = true " +
-                    "AND (:productCategoryId IS NULL OR pc.productCategoryId = :productCategoryId) "
+                    "WHERE ( :isActive IS NULL OR pc.isActive = :isActive ) " +
+                    "AND ( :search IS NULL " +
+                    "   OR LOWER(pc.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
-    Page<ProductCategories> searchByProductCategoryId(
-            @Param("productCategoryId") Long productCategoryId,
+    Page<ProductCategories> searchProductCategories(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 
     Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive(String name, boolean b);

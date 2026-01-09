@@ -26,11 +26,15 @@ public interface StateRepository extends JpaRepository<State, Long> {
     @Query(
             "SELECT s " +
                     "FROM State s " +
-                    "WHERE s.isActive = true " +
-                    "AND (:stateId IS NULL OR s.stateId = :stateId) "
+                    "WHERE ( :isActive IS NULL OR s.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(s.stateName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(s.country.countryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
     Page<State> searchStates(
-            @Param("stateId") Long stateId,
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }

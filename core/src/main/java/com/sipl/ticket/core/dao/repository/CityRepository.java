@@ -23,18 +23,20 @@ public interface CityRepository extends JpaRepository<City, Long> {
 
     List<City> findByState_StateIdAndIsActiveTrue(Long stateId);
 
-    @Query("SELECT c " +
-            "FROM City c " +
-            "WHERE c.isActive = true " +
-            "AND (:cityId IS NULL OR c.cityId = :cityId) " +
-            "AND (:stateId IS NULL OR c.state.stateId = :stateId) " +
-            "AND (:cityName IS NULL OR LOWER(c.cityName) LIKE LOWER(CONCAT('%', :cityName, '%'))) ")
+    @Query(
+            "SELECT c " +
+                    "FROM City c " +
+                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(c.cityName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(c.state.stateName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+    )
     Page<City> searchCities(
-            @Param("cityId") Long cityId,
-            @Param("stateId") Long stateId,
-            @Param("cityName") String cityName,
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }
 
