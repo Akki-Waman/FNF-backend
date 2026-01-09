@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
@@ -21,4 +22,11 @@ public interface TicketService {
     ApiResponseDTO<CombinedTicketResponseDto> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
 
     ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary();
+
+    void exportTickets(
+            String format,
+            String query,
+            HttpServletResponse response
+    );
+
 }

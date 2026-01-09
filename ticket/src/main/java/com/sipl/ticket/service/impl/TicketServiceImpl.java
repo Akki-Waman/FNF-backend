@@ -14,6 +14,7 @@ import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.helper.TicketExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -757,6 +759,50 @@ public class TicketServiceImpl implements TicketService {
             );
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportTickets(
+            String format,
+            String query,
+            HttpServletResponse response
+    ) {
+
+        log.info("Exporting tickets | format={}, query={}", format, query);
+
+        if (format == null ||
+                !List.of("excel", "csv", "pdf").contains(format.toLowerCase())) {
+
+            log.error("Unsupported export format received: {}", format);
+            throw new IllegalArgumentException("Unsupported export format");
+        }
+
+        try {
+            List<Ticket> tickets =
+                    ticketRepository
+                            .searchTickets(query, Pageable.unpaged())
+                            .getContent();
+
+            List<TicketsResponseDTO> ticketDtos =
+                    tickets.stream()
+                            .map(ticketMapper::toDto)
+                            .collect(Collectors.toList());
+
+            if (ticketDtos.isEmpty()) {
+                log.warn("No tickets found for export | query={}", query);
+            }
+
+            TicketExcelExportHelper.export(ticketDtos, format, response);
+
+            log.info("Tickets export completed successfully | totalRecords={}",
+                    ticketDtos.size());
+
+        } catch (Exception e) {
+            log.error("exportTickets unexpected error", e);
+            throw new RuntimeException("Failed to export tickets", e);
+        }
+    }
+
 
 
 }
