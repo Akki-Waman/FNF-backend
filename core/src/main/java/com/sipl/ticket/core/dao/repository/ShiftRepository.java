@@ -29,14 +29,22 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     boolean existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(String shiftName);
 
     @Query(
-            "SELECT s FROM Shift s WHERE "
-                    + "s.isDeleted = false AND "
-                    + "(:shiftId IS NULL OR s.shiftId = :shiftId)"
+            "SELECT s FROM Shift s " +
+                    "WHERE s.isDeleted = false " +
+                    "AND s.isActive = true " +
+                    "AND ( :query IS NULL OR :query = '' " +
+                    "      OR CAST(s.shiftId AS string) LIKE CONCAT('%', :query, '%') " +
+                    "      OR LOWER(s.shiftName) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "      OR LOWER(s.description) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "      OR CAST(s.startTime AS string) LIKE CONCAT('%', :query, '%') " +
+                    "      OR CAST(s.endTime AS string) LIKE CONCAT('%', :query, '%') " +
+                    ")"
     )
     Page<Shift> findByShiftId(
-            @Param("shiftId") Long shiftId,
+            @Param("query") String query,
             Pageable pageable
     );
+
 
 }
 

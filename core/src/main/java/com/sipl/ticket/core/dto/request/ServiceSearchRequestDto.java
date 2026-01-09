@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ServiceSearchRequestDto extends SearchRequestDto {
 
-    private Long serviceId;
+    private String query;
 }

@@ -312,8 +312,7 @@ public class OriginsServiceImpl implements OriginsService {
             OriginSearchRequestDto dto) {
 
         log.info("<<START>> searchOrigins service called");
-        log.info("Search params | originId={}, page={}, size={}",
-                dto.getOriginId(), dto.getPage(), dto.getSize());
+
 
         try {
 
@@ -324,8 +323,8 @@ public class OriginsServiceImpl implements OriginsService {
                     dto.getSortDir()
             );
 
-            Page<Origins> pageResult = repository.searchByOriginId(
-                    dto.getOriginId(),
+            Page<Origins> pageResult = repository.searchOrigins(
+                    dto.getQuery(),
                     pageable
             );
 
@@ -334,7 +333,7 @@ public class OriginsServiceImpl implements OriginsService {
                     pageResult.getTotalPages());
 
             if (pageResult.isEmpty()) {
-                log.warn("No origins found for originId={}", dto.getOriginId());
+                log.warn("No origins found for originId");
 
                 return new ApiResponseDTO<>(
                         null,
@@ -371,8 +370,7 @@ public class OriginsServiceImpl implements OriginsService {
             );
 
         } catch (Exception e) {
-            log.error("Error in searchOrigins | originId={}",
-                    dto.getOriginId(), e);
+            log.error("Error in searchOrigins ", e);
 
             return new ApiResponseDTO<>(
                     null,

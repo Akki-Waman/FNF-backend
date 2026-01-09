@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class TagsSearchRequestDto extends SearchRequestDto{
-    private Long tagId;
+    private String query;
 
 }
