@@ -27,5 +27,9 @@ public class TicketsResponseDTO extends AuditDto {
     private Integer status;
     private BranchDto branch;
     private List<Long> tagIds;
+    private String tags;
     private List<String> ccEmails;
+    private String statusLabel;
+    private String priorityLabel;
+
 }

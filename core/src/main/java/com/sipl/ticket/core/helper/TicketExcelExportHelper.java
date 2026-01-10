@@ -2,8 +2,10 @@ package com.sipl.ticket.core.helper;
 
 import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
 import com.lowagie.text.Document;
+import com.lowagie.text.Element;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +14,16 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.http.HttpServletResponse;
+import java.awt.Color;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class TicketExcelExportHelper {
+
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     private static final String[] HEADERS = {
             "Ticket ID",
@@ -39,41 +46,30 @@ public class TicketExcelExportHelper {
             HttpServletResponse response
     ) throws Exception {
 
-        log.info("Ticket export started | format={} | totalRecords={}",
-                format, tickets != null ? tickets.size() : 0);
-
-        Workbook workbook = createExcelWorkbook(tickets);
-
-        switch (format.toLowerCase()) {
-            case "excel":
-                writeExcel(workbook, response);
-                break;
-            case "csv":
-                writeCsv(tickets, response);
-                break;
-
-            case "pdf":
-                writePdf(tickets, response);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid export format");
+        if ("excel".equalsIgnoreCase(format)) {
+            writeExcel(tickets, response);
+        } else if ("csv".equalsIgnoreCase(format)) {
+            writeCsv(tickets, response);
+        } else if ("pdf".equalsIgnoreCase(format)) {
+            writePdf(tickets, response);
+        } else {
+            throw new IllegalArgumentException("Invalid export format");
         }
-
-        log.info("Ticket export completed | format={}", format);
     }
 
-    private static Workbook createExcelWorkbook(List<TicketsResponseDTO> tickets) {
+    private static void writeExcel(
+            List<TicketsResponseDTO> tickets,
+            HttpServletResponse response
+    ) throws Exception {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Tickets");
+
+        CellStyle headerStyle = excelHeaderStyle(workbook);
+        CellStyle dataStyle = excelDataStyle(workbook);
+
         int rowIndex = 0;
-
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, HEADERS.length - 1));
-        Row titleRow = sheet.createRow(rowIndex++);
-        titleRow.createCell(0).setCellValue("Tickets Export");
-
         Row headerRow = sheet.createRow(rowIndex++);
-        CellStyle headerStyle = createHeaderStyle(workbook);
 
         for (int i = 0; i < HEADERS.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -81,52 +77,30 @@ public class TicketExcelExportHelper {
             cell.setCellStyle(headerStyle);
         }
 
-        CellStyle dataStyle = createDataStyle(workbook);
+        for (TicketsResponseDTO d : tickets) {
+            Row r = sheet.createRow(rowIndex++);
 
-        for (TicketsResponseDTO dto : tickets) {
-            Row row = sheet.createRow(rowIndex++);
-
-            createCell(row, 0, dto.getTicketId(), dataStyle);
-            createCell(row, 1, dto.getSubject(), dataStyle);
-            createCell(row, 2,
-                    dto.getTagIds() != null
-                            ? dto.getTagIds().stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(", "))
-                            : "",
-                    dataStyle);
-            createCell(row, 3,
-                    dto.getDepartment() != null
-                            ? dto.getDepartment().getDepartmentName()
-                            : "",
-                    dataStyle);
-            createCell(row, 4,
-                    dto.getService() != null
-                            ? dto.getService().getServiceName()
-                            : "",
-                    dataStyle);
-            createCell(row, 5,
-                    dto.getContact() != null
-                            ? dto.getContact().getContactName()
-                            : "",
-                    dataStyle);
-            createCell(row, 6, dto.getStatus(), dataStyle);
-            createCell(row, 7, dto.getPriority(), dataStyle);
-            createCell(row, 8, dto.getModifiedTime(), dataStyle);
-            createCell(row, 9, dto.getCreatedTime(), dataStyle);
-            createCell(row, 10, dto.getComplaintName(), dataStyle);
-            createCell(row, 11, dto.getComplaintMobileNo(), dataStyle);
+            setCell(r, 0, d.getTicketId(), dataStyle);
+            setCell(r, 1, d.getSubject(), dataStyle);
+            setCell(r, 2, d.getTags(), dataStyle);
+            setCell(r, 3, dept(d), dataStyle);
+            setCell(r, 4, service(d), dataStyle);
+            setCell(r, 5, contact(d), dataStyle);
+            setCell(r, 6, d.getStatusLabel(), dataStyle);
+            setCell(r, 7, d.getPriorityLabel(), dataStyle);
+            setCell(r, 8, format(d.getModifiedTime()), dataStyle);
+            setCell(r, 9, format(d.getCreatedTime()), dataStyle);
+            setCell(r, 10, d.getComplaintName(), dataStyle);
+            setCell(r, 11, d.getComplaintMobileNo(), dataStyle);
         }
+
+        sheet.setAutoFilter(
+                new CellRangeAddress(0, rowIndex - 1, 0, HEADERS.length - 1)
+        );
 
         for (int i = 0; i < HEADERS.length; i++) {
             sheet.autoSizeColumn(i);
         }
-
-        return workbook;
-    }
-
-    private static void writeExcel(Workbook workbook, HttpServletResponse response)
-            throws Exception {
 
         response.setContentType(
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -147,30 +121,22 @@ public class TicketExcelExportHelper {
                 "Content-Disposition", "attachment; filename=tickets.csv");
 
         StringBuilder csv = new StringBuilder();
-
-        // Header
         csv.append(String.join(",", HEADERS)).append("\n");
 
-        for (TicketsResponseDTO dto : tickets) {
-            csv.append(dto.getTicketId()).append(",");
-            csv.append(dto.getSubject()).append(",");
-            csv.append(dto.getTagIds() != null
-                    ? dto.getTagIds().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining("|"))
-                    : "").append(",");
-            csv.append(dto.getDepartment() != null
-                    ? dto.getDepartment().getDepartmentName() : "").append(",");
-            csv.append(dto.getService() != null
-                    ? dto.getService().getServiceName() : "").append(",");
-            csv.append(dto.getContact() != null
-                    ? dto.getContact().getContactName() : "").append(",");
-            csv.append(dto.getStatus()).append(",");
-            csv.append(dto.getPriority()).append(",");
-            csv.append(dto.getModifiedTime()).append(",");
-            csv.append(dto.getCreatedTime()).append(",");
-            csv.append(dto.getComplaintName()).append(",");
-            csv.append(dto.getComplaintMobileNo()).append("\n");
+        for (TicketsResponseDTO d : tickets) {
+            csv.append(d.getTicketId()).append(",");
+            csv.append(q(d.getSubject())).append(",");
+            csv.append(q(d.getTags())).append(",");
+            csv.append(q(dept(d))).append(",");
+            csv.append(q(service(d))).append(",");
+            csv.append(q(contact(d))).append(",");
+            csv.append(q(d.getStatusLabel())).append(",");
+            csv.append(q(d.getPriorityLabel())).append(",");
+            csv.append(csvDate(d.getModifiedTime())).append(",");
+            csv.append(csvDate(d.getCreatedTime())).append(",");
+            csv.append(q(d.getComplaintName())).append(",");
+            csv.append("'").append(safe(d.getComplaintMobileNo())).append("'")
+                    .append("\n");
         }
 
         response.getWriter().write(csv.toString());
@@ -190,60 +156,111 @@ public class TicketExcelExportHelper {
         document.open();
 
         PdfPTable table = new PdfPTable(HEADERS.length);
+        table.setWidthPercentage(100);
 
-        // Header
-        for (String header : HEADERS) {
-            table.addCell(new Phrase(header));
+        com.lowagie.text.Font headerFont =
+                new com.lowagie.text.Font(
+                        com.lowagie.text.Font.HELVETICA, 10,
+                        com.lowagie.text.Font.BOLD
+                );
+
+        com.lowagie.text.Font dataFont =
+                new com.lowagie.text.Font(
+                        com.lowagie.text.Font.HELVETICA, 9
+                );
+
+        for (String h : HEADERS) {
+            PdfPCell c = new PdfPCell(new Phrase(h, headerFont));
+            c.setBackgroundColor(Color.LIGHT_GRAY);
+            c.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(c);
         }
 
-        // Data
-        for (TicketsResponseDTO dto : tickets) {
-            table.addCell(String.valueOf(dto.getTicketId()));
-            table.addCell(dto.getSubject());
-            table.addCell(dto.getTagIds() != null
-                    ? dto.getTagIds().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.joining(", "))
-                    : "");
-            table.addCell(dto.getDepartment() != null
-                    ? dto.getDepartment().getDepartmentName() : "");
-            table.addCell(dto.getService() != null
-                    ? dto.getService().getServiceName() : "");
-            table.addCell(dto.getContact() != null
-                    ? dto.getContact().getContactName() : "");
-            table.addCell(String.valueOf(dto.getStatus()));
-            table.addCell(String.valueOf(dto.getPriority()));
-            table.addCell(String.valueOf(dto.getModifiedTime()));
-            table.addCell(String.valueOf(dto.getCreatedTime()));
-            table.addCell(dto.getComplaintName());
-            table.addCell(dto.getComplaintMobileNo());
+        for (TicketsResponseDTO d : tickets) {
+            table.addCell(new Phrase(String.valueOf(d.getTicketId()), dataFont));
+            table.addCell(new Phrase(safe(d.getSubject()), dataFont));
+            table.addCell(new Phrase(safe(d.getTags()), dataFont));
+            table.addCell(new Phrase(dept(d), dataFont));
+            table.addCell(new Phrase(service(d), dataFont));
+            table.addCell(new Phrase(contact(d), dataFont));
+            table.addCell(new Phrase(safe(d.getStatusLabel()), dataFont));
+            table.addCell(new Phrase(safe(d.getPriorityLabel()), dataFont));
+            table.addCell(new Phrase(format(d.getModifiedTime()), dataFont));
+            table.addCell(new Phrase(format(d.getCreatedTime()), dataFont));
+            table.addCell(new Phrase(safe(d.getComplaintName()), dataFont));
+            table.addCell(new Phrase(safe(d.getComplaintMobileNo()), dataFont));
         }
 
         document.add(table);
         document.close();
     }
 
-
-    private static CellStyle createHeaderStyle(Workbook workbook) {
-        Font font = workbook.createFont();
-        font.setBold(true);
-
-        CellStyle style = workbook.createCellStyle();
-        style.setFont(font);
-        style.setAlignment(HorizontalAlignment.CENTER);
-        return style;
+    private static String dept(TicketsResponseDTO d) {
+        return d.getDepartment() != null
+                ? d.getDepartment().getDepartmentName()
+                : "";
     }
 
-    private static CellStyle createDataStyle(Workbook workbook) {
-        CellStyle style = workbook.createCellStyle();
-        style.setAlignment(HorizontalAlignment.LEFT);
-        return style;
+    private static String service(TicketsResponseDTO d) {
+        return d.getService() != null
+                ? d.getService().getServiceName()
+                : "";
     }
 
-    private static void createCell(Row row, int index, Object value, CellStyle style) {
-        Cell cell = row.createCell(index);
-        if (value != null) cell.setCellValue(value.toString());
-        cell.setCellStyle(style);
+    private static String contact(TicketsResponseDTO d) {
+        return d.getContact() != null
+                ? d.getContact().getContactName()
+                : "";
+    }
+
+    private static String format(LocalDateTime dt) {
+        return dt == null ? "" : dt.format(DATE_FMT);
+    }
+
+    private static String csvDate(LocalDateTime dt) {
+        return dt == null ? "" : "'" + dt.format(DATE_FMT);
+    }
+
+    private static String safe(Object v) {
+        return v != null ? v.toString() : "";
+    }
+
+    private static String q(String v) {
+        if (v == null) return "\"\"";
+        return "\"" + v.replace("\"", "\"\"") + "\"";
+    }
+
+    private static void setCell(
+            Row r, int idx, Object val, CellStyle style
+    ) {
+        Cell c = r.createCell(idx);
+        if (val != null) c.setCellValue(val.toString());
+        c.setCellStyle(style);
+    }
+
+    private static CellStyle excelHeaderStyle(Workbook wb) {
+        Font f = wb.createFont();
+        f.setBold(true);
+
+        CellStyle s = wb.createCellStyle();
+        s.setFont(f);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.setBorderTop(BorderStyle.THIN);
+        s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN);
+        return s;
+    }
+
+    private static CellStyle excelDataStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        s.setAlignment(HorizontalAlignment.LEFT);
+        s.setBorderTop(BorderStyle.THIN);
+        s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN);
+        return s;
     }
 }
-

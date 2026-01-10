@@ -19,6 +19,7 @@ import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.TicketFileUploadUtil;
+import com.sipl.ticket.master.service.MasterService;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,8 +62,7 @@ public class TicketServiceImpl implements TicketService {
     private final DocumentClientService documentClientService;
     private final EmailUtil emailUtil;
     private final SettingRepository settingRepository;
-
-
+    private final MasterService masterService;
 
     @Override
         @Transactional(rollbackFor = Exception.class)
@@ -772,8 +772,6 @@ public class TicketServiceImpl implements TicketService {
 
         if (format == null ||
                 !List.of("excel", "csv", "pdf").contains(format.toLowerCase())) {
-
-            log.error("Unsupported export format received: {}", format);
             throw new IllegalArgumentException("Unsupported export format");
         }
 
@@ -783,25 +781,63 @@ public class TicketServiceImpl implements TicketService {
                             .searchTickets(query, Pageable.unpaged())
                             .getContent();
 
-            List<TicketsResponseDTO> ticketDtos =
-                    tickets.stream()
-                            .map(ticketMapper::toDto)
-                            .collect(Collectors.toList());
+            Map<Integer, String> priorityMap =
+                    masterService.getTicketPriorityMap();
 
-            if (ticketDtos.isEmpty()) {
-                log.warn("No tickets found for export | query={}", query);
+            Map<Integer, String> statusMap =
+                    masterService.getTicketStatusMap();
+
+            List<TicketsResponseDTO> dtos =
+                    ticketMapper.toDtoList(tickets);
+
+            Map<Long, Ticket> ticketMap =
+                    tickets.stream()
+                            .collect(Collectors.toMap(
+                                    Ticket::getTicketId,
+                                    t -> t
+                            ));
+
+            for (TicketsResponseDTO dto : dtos) {
+
+                if (dto.getStatus() != null) {
+                    dto.setStatusLabel(
+                            statusMap.get(dto.getStatus())
+                    );
+                } else {
+                    dto.setStatusLabel("");
+                }
+                if (dto.getPriority() != null) {
+                    dto.setPriorityLabel(
+                            priorityMap.get(dto.getPriority())
+                    );
+                } else {
+                    dto.setPriorityLabel("");
+                }
+                Ticket ticket = ticketMap.get(dto.getTicketId());
+                if (ticket != null && ticket.getTicketTags() != null) {
+                    String tags =
+                            ticket.getTicketTags()
+                                    .stream()
+                                    .map(tt -> tt.getTags().getTagName())
+                                    .collect(Collectors.joining(", "));
+                    dto.setTags(tags);
+                } else {
+                    dto.setTags("");
+                }
             }
 
-            TicketExcelExportHelper.export(ticketDtos, format, response);
 
-            log.info("Tickets export completed successfully | totalRecords={}",
-                    ticketDtos.size());
+            TicketExcelExportHelper.export(dtos, format, response);
+
+            log.info("Tickets export completed | totalRecords={}", dtos.size());
 
         } catch (Exception e) {
             log.error("exportTickets unexpected error", e);
             throw new RuntimeException("Failed to export tickets", e);
         }
     }
+
+
 
 
 

@@ -11,8 +11,10 @@ import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskRequestDto;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.helper.TaskExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.UserManager;
+import com.sipl.ticket.master.service.MasterService;
 import com.sipl.ticket.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -54,6 +57,7 @@ public class TaskServiceImpl implements TaskService {
     private final DocumentClientService documentClientService;
     private final UserRolesRepository userRolesRepository;
     private final UserManager userManager;
+    private final MasterService masterService;
 
 
     @Override
@@ -854,5 +858,94 @@ public class TaskServiceImpl implements TaskService {
             );
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportTasks(
+            String format,
+            String query,
+            HttpServletResponse response
+    ) {
+
+        log.info("Exporting tasks | format={}, query={}", format, query);
+
+        if (format == null ||
+                !List.of("excel", "csv", "pdf").contains(format.toLowerCase())) {
+            throw new IllegalArgumentException("Unsupported export format");
+        }
+
+        try {
+
+            List<Task> tasks =
+                    taskRepository
+                            .searchTasks(null, query, Pageable.unpaged())
+                            .getContent();
+
+            Map<Integer, String> statusMap =
+                    masterService.getTaskStatusMap();
+
+            Map<Integer, String> priorityMap =
+                    masterService.getTaskPriorityMap();
+
+            List<TaskExportDTO> dtos = new ArrayList<>();
+
+            for (Task task : tasks) {
+
+                TaskExportDTO dto = new TaskExportDTO();
+
+                dto.setTaskId(task.getTaskId());
+                dto.setTaskName(task.getSubject());
+                dto.setStartDate(task.getStartDate());
+                dto.setDueDate(task.getDueDate());
+
+                dto.setStatus(
+                        task.getStatus() != null
+                                ? statusMap.getOrDefault(task.getStatus(), "")
+                                : ""
+                );
+
+                dto.setPriority(
+                        task.getPriority() != null
+                                ? priorityMap.getOrDefault(task.getPriority(), "")
+                                : ""
+                );
+
+                List<TaskAssignee> assignees =
+                        taskAssigneeRepository.findByTask(task);
+
+                String assignedTo =
+                        assignees.stream()
+                                .map(a ->
+                                        a.getUser().getFirstName() + " " +
+                                                a.getUser().getLastName()
+                                )
+                                .collect(Collectors.joining(", "));
+
+                dto.setAssignedTo(assignedTo);
+
+                List<TaskTag> taskTags =
+                        taskTagRepository.findByTask(task);
+
+                String tags =
+                        taskTags.stream()
+                                .map(tt -> tt.getTag().getTagName())
+                                .collect(Collectors.joining(", "));
+
+                dto.setTags(tags);
+
+                dtos.add(dto);
+            }
+
+            TaskExcelExportHelper.export(dtos, format, response);
+
+            log.info("Tasks export completed | totalRecords={}", dtos.size());
+
+        } catch (Exception e) {
+            log.error("exportTasks unexpected error", e);
+            throw new RuntimeException("Failed to export tasks", e);
+        }
+    }
+
+
 
 }
