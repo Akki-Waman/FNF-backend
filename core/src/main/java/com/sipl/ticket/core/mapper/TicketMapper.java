@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.mapper;
 
+import com.sipl.ticket.core.dao.entity.MasterContext;
 import com.sipl.ticket.core.dao.entity.Tags;
 import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(
         componentModel = "spring",
@@ -27,16 +29,18 @@ import java.util.List;
         }
 )
 public interface TicketMapper extends AuditEntityMapper {
+
     @InheritConfiguration(name = "toEntity")
     Ticket toEntity(TicketsResponseDTO ticketsResponseDTO);
 
-    @InheritConfiguration(name = "toDto")
     TicketsResponseDTO toDto(Ticket ticket);
 
-    List<TicketsResponseDTO> mapTagsListToDtoList(List<Ticket> tickets);
+    List<TicketsResponseDTO> toDtoList(List<Ticket> tickets);
 
     TicketCombinedResponseDto toCombinedDto(Ticket ticket);
-
 }
+
+
+
 
 

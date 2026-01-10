@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RequestMapping("/api/v1/tasks")
@@ -53,6 +54,14 @@ public interface TaskController {
     @DeleteMapping("/delete")
     ResponseEntity<ApiResponseDTO<Void>> deleteTasks(
             @RequestBody DeleteTasksRequestDTO requestDTO
+    );
+
+    @ApiOperation("Export tasks in Excel / CSV / PDF")
+    @GetMapping("/tasks/export")
+    ResponseEntity<Void> exportTasks(
+            @RequestParam String format,
+            @RequestParam(required = false) String query,
+            HttpServletResponse response
     );
 
 

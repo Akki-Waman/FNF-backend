@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -84,6 +85,21 @@ public class TaskControllerImpl implements TaskController {
         log.info("<<END>> deleteTasks controller");
 
         return ResponseEntity.ok(response);
+    }
+    @Override
+    public ResponseEntity<Void> exportTasks(
+            String format,
+            String query,
+            HttpServletResponse response
+    ) {
+
+        log.info("<<Start>> exportTasks endpoint called");
+
+        taskService.exportTasks(format, query, response);
+
+        log.info("<<End>> exportTasks endpoint called");
+
+        return ResponseEntity.ok().build();
     }
 
 }
