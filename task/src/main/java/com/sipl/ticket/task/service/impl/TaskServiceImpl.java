@@ -877,10 +877,6 @@ public class TaskServiceImpl implements TaskService {
         }
 
         try {
-
-            /* =========================
-               STATUS FILTER
-               ========================= */
             List<Integer> statusIds = null;
             if (filters != null &&
                     filters.getStatus() != null &&
@@ -894,9 +890,7 @@ public class TaskServiceImpl implements TaskService {
                 log.info("Status filter applied | statusIds={}", statusIds);
             }
 
-            /* =========================
-               DATE FILTER
-               ========================= */
+
             LocalDateTime from =
                     filters != null && filters.getCreatedFrom() != null
                             ? filters.getCreatedFrom().atStartOfDay()
@@ -915,9 +909,7 @@ public class TaskServiceImpl implements TaskService {
                     to
             );
 
-            /* =========================
-               FETCH TASKS (NO Pageable)
-               ========================= */
+
             List<Task> tasks =
                     taskRepository.searchTasksWithFilters(
                             filters != null ? filters.getSearch() : null,
@@ -929,18 +921,14 @@ public class TaskServiceImpl implements TaskService {
 
             log.info("Tasks fetched successfully | count={}", tasks.size());
 
-            /* =========================
-               MASTER DATA MAPS
-               ========================= */
+
             Map<Integer, String> statusMap =
                     masterService.getTaskStatusMap();
 
             Map<Integer, String> priorityMap =
                     masterService.getTaskPriorityMap();
 
-            /* =========================
-               MAP TO EXPORT DTO
-               ========================= */
+
             List<TaskExportDTO> dtos = new ArrayList<>();
 
             for (Task task : tasks) {
@@ -964,9 +952,7 @@ public class TaskServiceImpl implements TaskService {
                                 : ""
                 );
 
-                /* =========================
-                   ASSIGNEES
-                   ========================= */
+
                 List<TaskAssignee> assignees =
                         taskAssigneeRepository.findByTask(task);
 
@@ -980,9 +966,6 @@ public class TaskServiceImpl implements TaskService {
 
                 dto.setAssignedTo(assignedTo);
 
-                /* =========================
-                   TAGS
-                   ========================= */
                 List<TaskTag> taskTags =
                         taskTagRepository.findByTask(task);
 
@@ -996,9 +979,6 @@ public class TaskServiceImpl implements TaskService {
                 dtos.add(dto);
             }
 
-            /* =========================
-               EXPORT
-               ========================= */
             TaskExcelExportHelper.export(dtos, format, response);
 
             log.info(
