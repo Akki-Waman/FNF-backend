@@ -84,14 +84,30 @@ public class MasterServiceImpl implements MasterService {
     @Override
     @Cacheable("ticketStatusMap")
     public Map<Integer, String> getTicketStatusMap() {
-        log.debug("Loading Ticket Status master data");
+        log.info("Loading Ticket Status master data");
         return getMasterMap("ticket", 2);
     }
 
+    @Override
+    @Cacheable("taskStatusMap")
+    public Map<Integer, String> getTaskStatusMap() {
+        log.info("Loading Task Status master data");
+        return getMasterMap("tasks", 1);
+    }
+
+    @Override
+    @Cacheable("taskPriorityMap")
+    public Map<Integer, String> getTaskPriorityMap() {
+        log.info("Loading Task Priority master data");
+        return getMasterMap("tasks", 6);
+    }
+
     private Map<Integer, String> getMasterMap(String tblName, Integer columnCode) {
+
         return mastersRepository
                 .findActiveMasters(tblName, columnCode)
                 .stream()
+                .filter(r -> r[0] != null && r[1] != null)
                 .collect(Collectors.toMap(
                         r -> (Integer) r[0],
                         r -> (String) r[1],
@@ -99,17 +115,7 @@ public class MasterServiceImpl implements MasterService {
                         LinkedHashMap::new
                 ));
     }
-    @Override
-    @Cacheable("taskStatusMap")
-    public Map<Integer, String> getTaskStatusMap() {
-        return getMasterMap("tasks", 1);
-    }
 
-    @Override
-    @Cacheable("taskPriorityMap")
-    public Map<Integer, String> getTaskPriorityMap() {
-        return getMasterMap("tasks", 6);
-    }
 
 }
 

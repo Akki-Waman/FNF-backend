@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
 import com.sipl.ticket.core.dto.response.TicketCombinedResponseDto;
 import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
+import org.mapstruct.Context;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -33,12 +34,42 @@ public interface TicketMapper extends AuditEntityMapper {
     @InheritConfiguration(name = "toEntity")
     Ticket toEntity(TicketsResponseDTO ticketsResponseDTO);
 
-    TicketsResponseDTO toDto(Ticket ticket);
+    @Mapping(
+            target = "priorityLabel",
+            expression = "java(context.resolvePriority(ticket.getPriority()))"
+    )
+    @Mapping(
+            target = "statusLabel",
+            expression = "java(context.resolveStatus(ticket.getStatus()))"
+    )
+    @Mapping(
+            target = "tags",
+            expression = "java(mapTags(ticket))"
+    )
+    TicketsResponseDTO toTicketDto(
+            Ticket ticket,
+            @Context MasterContext context
+    );
 
-    List<TicketsResponseDTO> toDtoList(List<Ticket> tickets);
+    List<TicketsResponseDTO> toTicketDtoList(
+            List<Ticket> tickets,
+            @Context MasterContext context
+    );
 
     TicketCombinedResponseDto toCombinedDto(Ticket ticket);
+
+    default String mapTags(Ticket ticket) {
+        if (ticket.getTicketTags() == null) {
+            return "";
+        }
+        return ticket.getTicketTags()
+                .stream()
+                .map(tt -> tt.getTags().getTagName())
+                .collect(Collectors.joining(", "));
+    }
 }
+
+
 
 
 
