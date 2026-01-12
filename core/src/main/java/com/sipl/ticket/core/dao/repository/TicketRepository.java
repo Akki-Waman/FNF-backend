@@ -55,25 +55,4 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     )
     List<Object[]> countTicketsByStatus();
 
-    @Query(
-            "SELECT t FROM Ticket t " +
-                    "WHERE t.isDeleted = false " +
-                    "AND ( :search IS NULL OR :search = '' " +
-                    "      OR t.searchText LIKE CONCAT('%', :search, '%') ) " +
-                    "AND ( :statuses IS NULL OR t.status IN (:statuses) ) " +
-                    "AND ( :priorities IS NULL OR t.priority IN (:priorities) ) " +
-                    "AND ( :from IS NULL OR t.createdTime >= :from ) " +
-                    "AND ( :to IS NULL OR t.createdTime <= :to ) "
-    )
-    List<Ticket> searchTicketsWithFilters(
-            @Param("search") String search,
-            @Param("statuses") List<Integer> statuses,
-            @Param("priorities") List<Integer> priorities,
-            @Param("from") LocalDateTime from,
-            @Param("to") LocalDateTime to
-    );
-
-
-
-
 }

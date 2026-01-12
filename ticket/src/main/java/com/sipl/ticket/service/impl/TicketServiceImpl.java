@@ -767,8 +767,9 @@ public class TicketServiceImpl implements TicketService {
 
         String format = request.getFormat();
         ExportFilterDTO filters = request.getFilters();
+        String search = filters != null ? filters.getSearch() : null;
 
-        log.info("Ticket export requested | format={} | filters={}", format, filters);
+        log.info("Ticket export requested | format={} | search={}", format, search);
 
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
@@ -780,42 +781,12 @@ public class TicketServiceImpl implements TicketService {
 
         try {
 
-            List<Integer> statusIds = null;
-            if (filters != null && filters.getStatus() != null && !filters.getStatus().isEmpty()) {
-                statusIds = filters.getStatus()
-                        .stream()
-                        .map(Integer::valueOf)
-                        .collect(Collectors.toList());
-
-                log.info("Status filter applied | statusIds={}", statusIds);
-            }
-
-            LocalDateTime from =
-                    filters != null && filters.getCreatedFrom() != null
-                            ? filters.getCreatedFrom().atStartOfDay()
-                            : null;
-
-            LocalDateTime to =
-                    filters != null && filters.getCreatedTo() != null
-                            ? filters.getCreatedTo().atTime(23, 59, 59)
-                            : null;
-
-            log.info(
-                    "Fetching tickets | search={} | priority={} | from={} | to={}",
-                    filters != null ? filters.getSearch() : null,
-                    filters != null ? filters.getPriority() : null,
-                    from,
-                    to
-            );
+            log.info("Fetching tickets for export | search={}", search);
 
             List<Ticket> tickets =
-                    ticketRepository.searchTicketsWithFilters(
-                            filters != null ? filters.getSearch() : null,
-                            statusIds,
-                            filters != null ? filters.getPriority() : null,
-                            from,
-                            to
-                    );
+                    ticketRepository
+                            .searchTickets(search, Pageable.unpaged())
+                            .getContent();
 
             log.info("Tickets fetched successfully | count={}", tickets.size());
 
@@ -869,15 +840,12 @@ public class TicketServiceImpl implements TicketService {
                     format, dtos.size()
             );
 
-        } catch (NumberFormatException e) {
-            log.error("Invalid status filter value provided", e);
-            throw new IllegalArgumentException("Invalid status filter value", e);
-
         } catch (Exception e) {
             log.error("Ticket export failed due to unexpected error", e);
             throw new RuntimeException("Failed to export tickets", e);
         }
     }
+
 }
 
 
