@@ -4,31 +4,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.notification.dto.request.EmailNotificationRequest;
+import com.sipl.notification.enums.NotificationPriority;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
-import com.sipl.ticket.core.dao.repository.TicketRepository;
-import com.sipl.ticket.core.dao.repository.TicketResponseAttachmentRepository;
-import com.sipl.ticket.core.dao.repository.TicketResponseCcRepository;
-import com.sipl.ticket.core.dao.repository.TicketResponseRepository;
+import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.TicketResponseRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.TicketResponseCombinedDto;
 import com.sipl.ticket.core.mapper.TicketResponseAttachmentMapper;
 import com.sipl.ticket.core.mapper.TicketResponseCcMapper;
 import com.sipl.ticket.core.mapper.TicketResponseMapper;
+import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.service.TicketResponseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +45,8 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final DocumentClientService documentClientService;
     private final TicketResponseCcRepository ticketResponseCcRepository;
     private final TicketResponseAttachmentRepository ticketResponseAttachmentRepository;
-
+    private final EmailUtil emailUtil;
+    private final SettingRepository settingRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -78,6 +79,10 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                     ticketResponseCcMapper.mapToDtoList(ccs),
                     ticketResponseAttachmentMapper.mapToDtoList(attachments)
             );
+            TicketResponse fullTicketResponse = ticketResponseRepository.findByIdWithAllDetails(ticketResponse.getTicketResponseId())
+                    .orElseThrow(() -> new RuntimeException("Ticket not found after save"));
+            sendTicketResponseEmail(fullTicketResponse);
+
 
             return new ApiResponseDTO<>(
                     responseDto,
@@ -220,6 +225,109 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                 .orElseThrow(() -> new RuntimeException("Ticket not found for id=" + ticketId));
     }
 
+
+    @Async
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    private void sendTicketResponseEmail(TicketResponse ticketResponse) {
+
+        List<String> toEmails = new ArrayList<>();
+        String subject = null;
+        String body = null;
+        boolean emailSent = false;
+        String senderEmail = null;
+
+        try {
+            EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+            Ticket ticket = ticketResponse.getTicket();
+
+            // ---------------- TO ----------------
+            if (ticket.getAssignedTo() != null &&
+                    ticket.getAssignedTo().getEmailId() != null) {
+                toEmails.add(ticket.getAssignedTo().getEmailId());
+            }
+
+            if (ticket.getEmailAddress() != null) {
+                toEmails.add(ticket.getEmailAddress());
+            }
+
+            emailRequest.setTo(toEmails);
+
+            // ---------------- CC ----------------
+            List<String> ccEmails =
+                    ticketResponseCcRepository
+                            .findCcEmailsByTicketResponseId(
+                                    ticketResponse.getTicketResponseId()
+                            );
+
+
+
+            log.info("Ticket Response CC emails: {}", ccEmails);
+            emailRequest.setCc(ccEmails);
+
+            // ---------------- SUBJECT ----------------
+            subject = "Ticket Updated | Ticket ID : " + ticket.getTicketId();
+            emailRequest.setSubject(subject);
+
+            // ---------------- BODY (TEMPLATE) ----------------
+            body = String.format(
+                    "Dear Customer,\n\n" +
+                            "Thank you for your patience.\n\n" +
+                            "We would like to inform you that there has been an update on your support ticket. " +
+                            "Please find the response details below:\n\n" +
+                            "--------------------------------------------------\n" +
+                            "Ticket ID     : %s\n" +
+                            "Issue Subject : %s\n" +
+                            "Response Type : %s\n" +
+                            "Status        : %s → %s\n\n" +
+                            "Response:\n" +
+                            "%s\n" +
+                            "--------------------------------------------------\n\n" +
+                            "If you require any further assistance or have additional queries, " +
+                            "please feel free to reply to this email.\n\n" +
+                            "Please mention the Ticket ID in all future communications.\n\n" +
+                            "Warm Regards,\n" +
+                            "Ticket Management System\n" +
+                            "IT Support Team",
+                    ticket.getTicketId(),
+                    ticket.getSubject(),
+                    ticketResponse.getResponseType(),
+                    ticketResponse.getStatusBefore(),
+                    ticketResponse.getStatusAfter(),
+                    ticketResponse.getResponseBody()
+            );
+
+            emailRequest.setBody(body);
+
+            Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
+            senderEmail = setting.map(Setting::getSettingValue).orElse(null);
+            log.info("senderEmail: " + senderEmail);
+
+            emailRequest.setSender(senderEmail);
+            log.info("senderEmail set in email request");
+
+            emailRequest.setPriority(NotificationPriority.DEFAULT);
+
+            emailUtil.sendEmail(
+                    emailRequest,
+                    "TICKET_RESPONSE_" + ticketResponse.getTicketResponseId()
+            );
+
+            emailSent = true;
+
+        } catch (Exception e) {
+            log.error("Failed to send ticket response email. ticketResponseId={}",
+                    ticketResponse.getTicketResponseId(), e);
+        } finally {
+            emailUtil.saveEmailLog(
+                    toEmails != null ? toEmails : Collections.emptyList(),
+                    subject != null ? subject : "N/A",
+                    body != null ? body : "N/A",
+                    senderEmail,
+                    emailSent ? "SUCCESS" : "FAILED",
+                    emailSent ? "Email sent successfully" : "Email sending failed"
+            );
+        }
+    }
 
 
 }
