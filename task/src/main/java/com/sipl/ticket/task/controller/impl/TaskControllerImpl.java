@@ -2,14 +2,17 @@ package com.sipl.ticket.task.controller.impl;
 
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.helper.UserManager;
 import com.sipl.ticket.task.controller.TaskController;
 import com.sipl.ticket.task.service.TaskService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -86,20 +89,19 @@ public class TaskControllerImpl implements TaskController {
 
         return ResponseEntity.ok(response);
     }
+
     @Override
     public ResponseEntity<Void> exportTasks(
-            String format,
-            String query,
+            ExportSearchRequestDTO request,
             HttpServletResponse response
     ) {
 
         log.info("<<Start>> exportTasks endpoint called");
 
-        taskService.exportTasks(format, query, response);
+        taskService.exportTasks(request, response);
 
         log.info("<<End>> exportTasks endpoint called");
 
         return ResponseEntity.ok().build();
     }
-
 }
