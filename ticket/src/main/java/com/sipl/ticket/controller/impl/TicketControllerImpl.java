@@ -2,6 +2,7 @@ package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.TicketController;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.service.TicketService;
@@ -73,19 +74,19 @@ public class TicketControllerImpl implements TicketController {
 
     @Override
     public ResponseEntity<Void> exportTickets(
-            String format,
-            String query,
+            ExportSearchRequestDTO request,
             HttpServletResponse response
     ) {
 
         log.info("<<Start>> exportTickets endpoint called <<Start>>");
 
-        ticketService.exportTickets(format, query, response);
+        ticketService.exportTickets(request, response);
 
         log.info("<<End>> exportTickets endpoint called <<End>>");
 
         return ResponseEntity.ok().build();
     }
+
 
 
 

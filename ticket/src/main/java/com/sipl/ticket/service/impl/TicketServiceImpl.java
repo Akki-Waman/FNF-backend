@@ -10,9 +10,7 @@ import com.sipl.notification.enums.NotificationPriority;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
-import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.request.NewTicketsRequestDTO;
-import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.helper.TicketExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
@@ -763,23 +761,34 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional(readOnly = true)
     public void exportTickets(
-            String format,
-            String query,
+            ExportSearchRequestDTO request,
             HttpServletResponse response
     ) {
 
-        log.info("Exporting tickets | format={}, query={}", format, query);
+        String format = request.getFormat();
+        ExportFilterDTO filters = request.getFilters();
+        String search = filters != null ? filters.getSearch() : null;
+
+        log.info("Ticket export requested | format={} | search={}", format, search);
 
         if (format == null ||
-                !List.of("excel", "csv", "pdf").contains(format.toLowerCase())) {
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+
+            log.warn("Ticket export rejected | unsupported format={}", format);
             throw new IllegalArgumentException("Unsupported export format");
         }
 
         try {
+
+            log.info("Fetching tickets for export | search={}", search);
+
             List<Ticket> tickets =
                     ticketRepository
-                            .searchTickets(query, Pageable.unpaged())
+                            .searchTickets(search, Pageable.unpaged())
                             .getContent();
+
+            log.info("Tickets fetched successfully | count={}", tickets.size());
 
             Map<Integer, String> priorityMap =
                     masterService.getTicketPriorityMap();
@@ -799,48 +808,46 @@ public class TicketServiceImpl implements TicketService {
 
             for (TicketsResponseDTO dto : dtos) {
 
-                if (dto.getStatus() != null) {
-                    dto.setStatusLabel(
-                            statusMap.get(dto.getStatus())
-                    );
-                } else {
-                    dto.setStatusLabel("");
-                }
-                if (dto.getPriority() != null) {
-                    dto.setPriorityLabel(
-                            priorityMap.get(dto.getPriority())
-                    );
-                } else {
-                    dto.setPriorityLabel("");
-                }
+                dto.setStatusLabel(
+                        dto.getStatus() != null
+                                ? statusMap.get(dto.getStatus())
+                                : ""
+                );
+
+                dto.setPriorityLabel(
+                        dto.getPriority() != null
+                                ? priorityMap.get(dto.getPriority())
+                                : ""
+                );
+
                 Ticket ticket = ticketMap.get(dto.getTicketId());
                 if (ticket != null && ticket.getTicketTags() != null) {
-                    String tags =
+                    dto.setTags(
                             ticket.getTicketTags()
                                     .stream()
                                     .map(tt -> tt.getTags().getTagName())
-                                    .collect(Collectors.joining(", "));
-                    dto.setTags(tags);
+                                    .collect(Collectors.joining(", "))
+                    );
                 } else {
                     dto.setTags("");
                 }
             }
 
-
             TicketExcelExportHelper.export(dtos, format, response);
 
-            log.info("Tickets export completed | totalRecords={}", dtos.size());
+            log.info(
+                    "Ticket export completed successfully | format={} | records={}",
+                    format, dtos.size()
+            );
 
         } catch (Exception e) {
-            log.error("exportTickets unexpected error", e);
+            log.error("Ticket export failed due to unexpected error", e);
             throw new RuntimeException("Failed to export tickets", e);
         }
     }
 
-
-
-
-
 }
+
+
 
 

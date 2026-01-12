@@ -15,13 +15,4 @@ public class ExportFilterDTO {
 
     private String search;
 
-    private List<String> status;
-
-    private List<Integer> priority;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdFrom;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdTo;
 }
