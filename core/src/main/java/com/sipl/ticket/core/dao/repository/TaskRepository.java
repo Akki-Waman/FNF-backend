@@ -62,25 +62,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("UPDATE Task t SET t.isDeleted = true WHERE t.id IN (:ids)")
     int softDeleteByIds(@Param("ids") List<Long> ids);
 
-    @Query(
-            "SELECT t FROM Task t " +
-                    "WHERE (t.isDeleted = false OR t.isDeleted IS NULL) " +
-                    "AND ( :search IS NULL OR :search = '' " +
-                    "   OR LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) " +
-                    "   OR STR(t.taskId) LIKE CONCAT('%', :search, '%') " +
-                    ") " +
-                    "AND ( :statuses IS NULL OR t.status IN (:statuses) ) " +
-                    "AND ( :priorities IS NULL OR t.priority IN (:priorities) ) " +
-                    "AND ( :from IS NULL OR t.createdTime IS NULL OR t.createdTime >= :from ) " +
-                    "AND ( :to IS NULL OR t.createdTime IS NULL OR t.createdTime <= :to ) "
-    )
-    List<Task> searchTasksWithFilters(
-            @Param("search") String search,
-            @Param("statuses") List<Integer> statuses,
-            @Param("priorities") List<Integer> priorities,
-            @Param("from") LocalDateTime from,
-            @Param("to") LocalDateTime to
-    );
+
 }
 
 

@@ -865,8 +865,9 @@ public class TaskServiceImpl implements TaskService {
 
         String format = request.getFormat();
         ExportFilterDTO filters = request.getFilters();
+        String search = filters != null ? filters.getSearch() : null;
 
-        log.info("Task export requested | format={} | filters={}", format, filters);
+        log.info("Task export requested | format={} | search={}", format, search);
 
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
@@ -877,57 +878,21 @@ public class TaskServiceImpl implements TaskService {
         }
 
         try {
-            List<Integer> statusIds = null;
-            if (filters != null &&
-                    filters.getStatus() != null &&
-                    !filters.getStatus().isEmpty()) {
 
-                statusIds = filters.getStatus()
-                        .stream()
-                        .map(Integer::valueOf)
-                        .collect(Collectors.toList());
-
-                log.info("Status filter applied | statusIds={}", statusIds);
-            }
-
-
-            LocalDateTime from =
-                    filters != null && filters.getCreatedFrom() != null
-                            ? filters.getCreatedFrom().atStartOfDay()
-                            : null;
-
-            LocalDateTime to =
-                    filters != null && filters.getCreatedTo() != null
-                            ? filters.getCreatedTo().atTime(23, 59, 59)
-                            : null;
-
-            log.info(
-                    "Fetching tasks | search={} | priority={} | from={} | to={}",
-                    filters != null ? filters.getSearch() : null,
-                    filters != null ? filters.getPriority() : null,
-                    from,
-                    to
-            );
-
+            log.info("Fetching tasks for export | search={}", search);
 
             List<Task> tasks =
-                    taskRepository.searchTasksWithFilters(
-                            filters != null ? filters.getSearch() : null,
-                            statusIds,
-                            filters != null ? filters.getPriority() : null,
-                            from,
-                            to
-                    );
+                    taskRepository
+                            .searchTasks(null, search, Pageable.unpaged())
+                            .getContent();
 
             log.info("Tasks fetched successfully | count={}", tasks.size());
-
 
             Map<Integer, String> statusMap =
                     masterService.getTaskStatusMap();
 
             Map<Integer, String> priorityMap =
                     masterService.getTaskPriorityMap();
-
 
             List<TaskExportDTO> dtos = new ArrayList<>();
 
@@ -952,12 +917,9 @@ public class TaskServiceImpl implements TaskService {
                                 : ""
                 );
 
-
-                List<TaskAssignee> assignees =
-                        taskAssigneeRepository.findByTask(task);
-
                 String assignedTo =
-                        assignees.stream()
+                        taskAssigneeRepository.findByTask(task)
+                                .stream()
                                 .map(a ->
                                         a.getUser().getFirstName() + " " +
                                                 a.getUser().getLastName()
@@ -966,11 +928,9 @@ public class TaskServiceImpl implements TaskService {
 
                 dto.setAssignedTo(assignedTo);
 
-                List<TaskTag> taskTags =
-                        taskTagRepository.findByTask(task);
-
                 String tags =
-                        taskTags.stream()
+                        taskTagRepository.findByTask(task)
+                                .stream()
                                 .map(tt -> tt.getTag().getTagName())
                                 .collect(Collectors.joining(", "));
 
@@ -985,10 +945,6 @@ public class TaskServiceImpl implements TaskService {
                     "Task export completed successfully | format={} | records={}",
                     format, dtos.size()
             );
-
-        } catch (NumberFormatException e) {
-            log.error("Invalid status filter value provided", e);
-            throw new IllegalArgumentException("Invalid status filter value", e);
 
         } catch (Exception e) {
             log.error("Task export failed due to unexpected error", e);
