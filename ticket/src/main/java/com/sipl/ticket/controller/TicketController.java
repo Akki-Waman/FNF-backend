@@ -2,6 +2,7 @@ package com.sipl.ticket.controller;
 
 
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
@@ -54,12 +55,12 @@ public interface TicketController {
     ResponseEntity<ApiResponseDTO<SummaryKpiResponseDTO>> getTikctSummary();
 
     @ApiOperation("Export tickets in Excel / CSV / PDF")
-    @GetMapping("/export")
+    @PostMapping("/export")
     ResponseEntity<Void> exportTickets(
-            @RequestParam String format,
-            @RequestParam(required = false) String query,
+            @RequestBody ExportSearchRequestDTO request,
             HttpServletResponse response
     );
+
 
 
 }
