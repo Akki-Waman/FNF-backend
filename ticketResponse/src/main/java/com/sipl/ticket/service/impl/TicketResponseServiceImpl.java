@@ -230,36 +230,34 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     private void sendTicketResponseEmail(TicketResponse ticketResponse) {
 
+        Ticket ticket = ticketResponse.getTicket();
+
         List<String> toEmails = new ArrayList<>();
-        String subject = null;
-        String body = null;
-        boolean emailSent = false;
+        List<String> ccEmails = Collections.emptyList();
+
+        String subject = "N/A";
+        String body = "N/A";
         String senderEmail = null;
+        boolean emailSent = false;
 
         try {
             EmailNotificationRequest emailRequest = new EmailNotificationRequest();
-            Ticket ticket = ticketResponse.getTicket();
 
             // ---------------- TO ----------------
-            if (ticket.getAssignedTo() != null &&
-                    ticket.getAssignedTo().getEmailId() != null) {
-                toEmails.add(ticket.getAssignedTo().getEmailId());
-            }
+            Optional.ofNullable(ticket.getAssignedTo())
+                    .map(Users::getEmailId)
+                    .ifPresent(toEmails::add);
 
-            if (ticket.getEmailAddress() != null) {
-                toEmails.add(ticket.getEmailAddress());
-            }
+            Optional.ofNullable(ticket.getEmailAddress())
+                    .ifPresent(toEmails::add);
 
             emailRequest.setTo(toEmails);
 
             // ---------------- CC ----------------
-            List<String> ccEmails =
-                    ticketResponseCcRepository
-                            .findCcEmailsByTicketResponseId(
-                                    ticketResponse.getTicketResponseId()
-                            );
-
-
+            ccEmails = ticketResponseCcRepository
+                    .findCcEmailsByTicketResponseId(
+                            ticketResponse.getTicketResponseId()
+                    );
 
             log.info("Ticket Response CC emails: {}", ccEmails);
             emailRequest.setCc(ccEmails);
@@ -268,45 +266,20 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             subject = "Ticket Updated | Ticket ID : " + ticket.getTicketId();
             emailRequest.setSubject(subject);
 
-            // ---------------- BODY (TEMPLATE) ----------------
-            body = String.format(
-                    "Dear Customer,\n\n" +
-                            "Thank you for your patience.\n\n" +
-                            "We would like to inform you that there has been an update on your support ticket. " +
-                            "Please find the response details below:\n\n" +
-                            "--------------------------------------------------\n" +
-                            "Ticket ID     : %s\n" +
-                            "Issue Subject : %s\n" +
-                            "Response Type : %s\n" +
-                            "Status        : %s → %s\n\n" +
-                            "Response:\n" +
-                            "%s\n" +
-                            "--------------------------------------------------\n\n" +
-                            "If you require any further assistance or have additional queries, " +
-                            "please feel free to reply to this email.\n\n" +
-                            "Please mention the Ticket ID in all future communications.\n\n" +
-                            "Warm Regards,\n" +
-                            "Ticket Management System\n" +
-                            "IT Support Team",
-                    ticket.getTicketId(),
-                    ticket.getSubject(),
-                    ticketResponse.getResponseType(),
-                    ticketResponse.getStatusBefore(),
-                    ticketResponse.getStatusAfter(),
-                    ticketResponse.getResponseBody()
-            );
-
+            // ---------------- BODY ----------------
+            body = buildEmailBody(ticket, ticketResponse);
             emailRequest.setBody(body);
 
-            Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
-            senderEmail = setting.map(Setting::getSettingValue).orElse(null);
-            log.info("senderEmail: " + senderEmail);
+            // ---------------- SENDER ----------------
+            senderEmail = settingRepository.findByScreen("EMAIL")
+                    .map(Setting::getSettingValue)
+                    .orElseThrow(() ->
+                            new IllegalStateException("Sender email not configured"));
 
             emailRequest.setSender(senderEmail);
-            log.info("senderEmail set in email request");
-
             emailRequest.setPriority(NotificationPriority.DEFAULT);
 
+            // ---------------- SEND ----------------
             emailUtil.sendEmail(
                     emailRequest,
                     "TICKET_RESPONSE_" + ticketResponse.getTicketResponseId()
@@ -317,11 +290,12 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         } catch (Exception e) {
             log.error("Failed to send ticket response email. ticketResponseId={}",
                     ticketResponse.getTicketResponseId(), e);
+
         } finally {
             emailUtil.saveEmailLog(
-                    toEmails != null ? toEmails : Collections.emptyList(),
-                    subject != null ? subject : "N/A",
-                    body != null ? body : "N/A",
+                    toEmails,
+                    subject,
+                    body,
                     senderEmail,
                     emailSent ? "SUCCESS" : "FAILED",
                     emailSent ? "Email sent successfully" : "Email sending failed"
@@ -329,6 +303,32 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         }
     }
 
+
+    private String buildEmailBody(Ticket ticket, TicketResponse ticketResponse) {
+        return String.format(
+                "Dear Customer,\n\n" +
+                        "Thank you for your patience.\n\n" +
+                        "We would like to inform you that there has been an update on your support ticket.\n\n" +
+                        "--------------------------------------------------\n" +
+                        "Ticket ID     : %s\n" +
+                        "Issue Subject : %s\n" +
+                        "Response Type : %s\n" +
+                        "Status        : %s → %s\n\n" +
+                        "Response:\n" +
+                        "%s\n" +
+                        "--------------------------------------------------\n\n" +
+                        "If you require any further assistance, please reply to this email.\n\n" +
+                        "Warm Regards,\n" +
+                        "Ticket Management System\n" +
+                        "IT Support Team",
+                ticket.getTicketId(),
+                ticket.getSubject(),
+                ticketResponse.getResponseType(),
+                ticketResponse.getStatusBefore(),
+                ticketResponse.getStatusAfter(),
+                ticketResponse.getResponseBody()
+        );
+    }
 
 }
 
