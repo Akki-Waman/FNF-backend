@@ -247,18 +247,29 @@ public class TicketServiceImpl implements TicketService {
                     .orElseThrow(() -> new RuntimeException("Branch not found"));
         }
 
-        private CombinedTicketResponseDto buildResponse(
-                Ticket ticket,
-                List<TicketTag> tags,
-                List<TicketCc> ccs,
-                List<TicketAttachment> attachments) {
-            return new CombinedTicketResponseDto(
-                    ticketMapper.toDto(ticket),
-                    ticketTagMapper.mapTagsListToDtoList(tags),
-                    ticketCcMapper.mapTagsListToDtoList(ccs),
-                    ticketAttachmentMapper.mapTagsListToDtoList(attachments)
-            );
-        }
+    private CombinedTicketResponseDto buildResponse(
+            Ticket ticket,
+            List<TicketTag> tags,
+            List<TicketCc> ccs,
+            List<TicketAttachment> attachments) {
+
+        Map<Integer, String> priorityMap =
+                masterService.getTicketPriorityMap();
+
+        Map<Integer, String> statusMap =
+                masterService.getTicketStatusMap();
+
+        MasterContext masterContext =
+                new MasterContext(priorityMap, statusMap);
+
+        return new CombinedTicketResponseDto(
+                ticketMapper.toTicketDto(ticket, masterContext),
+                ticketTagMapper.mapTagsListToDtoList(tags),
+                ticketCcMapper.mapTagsListToDtoList(ccs),
+                ticketAttachmentMapper.mapTagsListToDtoList(attachments)
+        );
+    }
+
 
     private void sendTicketCreationEmail(Ticket ticket) {
 
@@ -796,43 +807,11 @@ public class TicketServiceImpl implements TicketService {
             Map<Integer, String> statusMap =
                     masterService.getTicketStatusMap();
 
+            MasterContext masterContext =
+                    new MasterContext(priorityMap, statusMap);
+
             List<TicketsResponseDTO> dtos =
-                    ticketMapper.toDtoList(tickets);
-
-            Map<Long, Ticket> ticketMap =
-                    tickets.stream()
-                            .collect(Collectors.toMap(
-                                    Ticket::getTicketId,
-                                    t -> t
-                            ));
-
-            for (TicketsResponseDTO dto : dtos) {
-
-                dto.setStatusLabel(
-                        dto.getStatus() != null
-                                ? statusMap.get(dto.getStatus())
-                                : ""
-                );
-
-                dto.setPriorityLabel(
-                        dto.getPriority() != null
-                                ? priorityMap.get(dto.getPriority())
-                                : ""
-                );
-
-                Ticket ticket = ticketMap.get(dto.getTicketId());
-                if (ticket != null && ticket.getTicketTags() != null) {
-                    dto.setTags(
-                            ticket.getTicketTags()
-                                    .stream()
-                                    .map(tt -> tt.getTags().getTagName())
-                                    .collect(Collectors.joining(", "))
-                    );
-                } else {
-                    dto.setTags("");
-                }
-            }
-
+                    ticketMapper.toTicketDtoList(tickets, masterContext);
             TicketExcelExportHelper.export(dtos, format, response);
 
             log.info(
