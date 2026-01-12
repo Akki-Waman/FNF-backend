@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -60,6 +61,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Transactional
     @Query("UPDATE Task t SET t.isDeleted = true WHERE t.id IN (:ids)")
     int softDeleteByIds(@Param("ids") List<Long> ids);
+
 
 }
 

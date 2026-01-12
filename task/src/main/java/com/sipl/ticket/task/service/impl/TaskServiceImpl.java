@@ -7,9 +7,7 @@ import com.sipl.client.dms.impl.DocumentClientService;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
-import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
-import com.sipl.ticket.core.dto.request.TaskRequestDto;
-import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.helper.TaskExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -356,7 +353,7 @@ public class TaskServiceImpl implements TaskService {
         log.info("Searching tasks with request: {}", dto);
 
         String sortBy = dto.getSortBy();
-        
+
         if ("ticketId".equalsIgnoreCase(sortBy)) {
             sortBy = "ticket.ticketId";
         } else if ("id".equalsIgnoreCase(sortBy)) {
@@ -862,24 +859,34 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(readOnly = true)
     public void exportTasks(
-            String format,
-            String query,
+            ExportSearchRequestDTO request,
             HttpServletResponse response
     ) {
 
-        log.info("Exporting tasks | format={}, query={}", format, query);
+        String format = request.getFormat();
+        ExportFilterDTO filters = request.getFilters();
+        String search = filters != null ? filters.getSearch() : null;
+
+        log.info("Task export requested | format={} | search={}", format, search);
 
         if (format == null ||
-                !List.of("excel", "csv", "pdf").contains(format.toLowerCase())) {
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+
+            log.warn("Task export rejected | unsupported format={}", format);
             throw new IllegalArgumentException("Unsupported export format");
         }
 
         try {
 
+            log.info("Fetching tasks for export | search={}", search);
+
             List<Task> tasks =
                     taskRepository
-                            .searchTasks(null, query, Pageable.unpaged())
+                            .searchTasks(null, search, Pageable.unpaged())
                             .getContent();
+
+            log.info("Tasks fetched successfully | count={}", tasks.size());
 
             Map<Integer, String> statusMap =
                     masterService.getTaskStatusMap();
@@ -910,11 +917,9 @@ public class TaskServiceImpl implements TaskService {
                                 : ""
                 );
 
-                List<TaskAssignee> assignees =
-                        taskAssigneeRepository.findByTask(task);
-
                 String assignedTo =
-                        assignees.stream()
+                        taskAssigneeRepository.findByTask(task)
+                                .stream()
                                 .map(a ->
                                         a.getUser().getFirstName() + " " +
                                                 a.getUser().getLastName()
@@ -923,11 +928,9 @@ public class TaskServiceImpl implements TaskService {
 
                 dto.setAssignedTo(assignedTo);
 
-                List<TaskTag> taskTags =
-                        taskTagRepository.findByTask(task);
-
                 String tags =
-                        taskTags.stream()
+                        taskTagRepository.findByTask(task)
+                                .stream()
                                 .map(tt -> tt.getTag().getTagName())
                                 .collect(Collectors.joining(", "));
 
@@ -938,14 +941,14 @@ public class TaskServiceImpl implements TaskService {
 
             TaskExcelExportHelper.export(dtos, format, response);
 
-            log.info("Tasks export completed | totalRecords={}", dtos.size());
+            log.info(
+                    "Task export completed successfully | format={} | records={}",
+                    format, dtos.size()
+            );
 
         } catch (Exception e) {
-            log.error("exportTasks unexpected error", e);
+            log.error("Task export failed due to unexpected error", e);
             throw new RuntimeException("Failed to export tasks", e);
         }
     }
-
-
-
 }

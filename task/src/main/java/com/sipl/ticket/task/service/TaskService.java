@@ -2,9 +2,11 @@ package com.sipl.ticket.task.service;
 
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +34,7 @@ public interface TaskService {
     ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO);
 
     void exportTasks(
-            String format,
-            String query,
+            ExportSearchRequestDTO request,
             HttpServletResponse response
     );
-
-
 }

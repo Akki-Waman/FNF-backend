@@ -2,6 +2,7 @@ package com.sipl.ticket.task.controller;
 
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
@@ -57,12 +58,9 @@ public interface TaskController {
     );
 
     @ApiOperation("Export tasks in Excel / CSV / PDF")
-    @GetMapping("/tasks/export")
+    @PostMapping("/tasks/export")
     ResponseEntity<Void> exportTasks(
-            @RequestParam String format,
-            @RequestParam(required = false) String query,
+            @RequestBody ExportSearchRequestDTO request,
             HttpServletResponse response
     );
-
-
 }
