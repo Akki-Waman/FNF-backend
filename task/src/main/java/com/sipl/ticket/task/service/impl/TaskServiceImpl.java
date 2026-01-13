@@ -888,14 +888,10 @@ public class TaskServiceImpl implements TaskService {
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
                         .contains(format.toLowerCase())) {
-
-            log.warn("Task export rejected | unsupported format={}", format);
             throw new IllegalArgumentException("Unsupported export format");
         }
 
         try {
-
-            log.info("Fetching tasks for export | search={}", search);
 
             List<Task> tasks =
                     taskRepository
@@ -910,50 +906,37 @@ public class TaskServiceImpl implements TaskService {
             Map<Integer, String> priorityMap =
                     masterService.getTaskPriorityMap();
 
-            List<TaskExportDTO> dtos = new ArrayList<>();
+            MasterContext masterContext =
+                    new MasterContext(priorityMap, statusMap);
 
-            for (Task task : tasks) {
+            List<TaskExportDTO> dtos =
+                    tasks.stream()
+                            .map(task -> {
 
-                TaskExportDTO dto = new TaskExportDTO();
+                                TaskExportDTO dto =
+                                        taskMapper.toExportDto(task, masterContext);
 
-                dto.setTaskId(task.getTaskId());
-                dto.setTaskName(task.getSubject());
-                dto.setStartDate(task.getStartDate());
-                dto.setDueDate(task.getDueDate());
 
-                dto.setStatus(
-                        task.getStatus() != null
-                                ? statusMap.getOrDefault(task.getStatus(), "")
-                                : ""
-                );
+                                String assignedTo =
+                                        taskAssigneeRepository.findByTask(task)
+                                                .stream()
+                                                .map(a ->
+                                                        a.getUser().getFirstName() + " " +
+                                                                a.getUser().getLastName()
+                                                )
+                                                .collect(Collectors.joining(", "));
+                                dto.setAssignedTo(assignedTo);
 
-                dto.setPriority(
-                        task.getPriority() != null
-                                ? priorityMap.getOrDefault(task.getPriority(), "")
-                                : ""
-                );
+                                String tags =
+                                        taskTagRepository.findByTask(task)
+                                                .stream()
+                                                .map(tt -> tt.getTag().getTagName())
+                                                .collect(Collectors.joining(", "));
+                                dto.setTags(tags);
 
-                String assignedTo =
-                        taskAssigneeRepository.findByTask(task)
-                                .stream()
-                                .map(a ->
-                                        a.getUser().getFirstName() + " " +
-                                                a.getUser().getLastName()
-                                )
-                                .collect(Collectors.joining(", "));
-
-                dto.setAssignedTo(assignedTo);
-
-                String tags =
-                        taskTagRepository.findByTask(task)
-                                .stream()
-                                .map(tt -> tt.getTag().getTagName())
-                                .collect(Collectors.joining(", "));
-
-                dto.setTags(tags);
-
-                dtos.add(dto);
-            }
+                                return dto;
+                            })
+                            .collect(Collectors.toList());
 
             TaskExcelExportHelper.export(dtos, format, response);
 
@@ -963,7 +946,7 @@ public class TaskServiceImpl implements TaskService {
             );
 
         } catch (Exception e) {
-            log.error("Task export failed due to unexpected error", e);
+            log.error("Task export failed", e);
             throw new RuntimeException("Failed to export tasks", e);
         }
     }
