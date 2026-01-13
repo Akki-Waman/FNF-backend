@@ -51,7 +51,7 @@ public interface TicketController {
             @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile);
 
 
-    @GetMapping("/ticket-summary}")
+    @GetMapping("/ticket-summary")
     ResponseEntity<ApiResponseDTO<SummaryKpiResponseDTO>> getTikctSummary();
 
     @ApiOperation("Export tickets in Excel / CSV / PDF")

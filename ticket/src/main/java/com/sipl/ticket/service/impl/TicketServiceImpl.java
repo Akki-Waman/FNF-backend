@@ -61,6 +61,8 @@ public class TicketServiceImpl implements TicketService {
     private final EmailUtil emailUtil;
     private final SettingRepository settingRepository;
     private final MasterService masterService;
+    private final TicketResponseRepository ticketResponseRepository;
+    private final MastersRepository mastersRepository;
 
     @Override
         @Transactional(rollbackFor = Exception.class)
@@ -473,7 +475,7 @@ public class TicketServiceImpl implements TicketService {
             List<TicketCombinedResponseDto> content =
                     pageResult.getContent()
                             .stream()
-                            .map(ticketMapper::toCombinedDto)
+                            .map(this::mapToCombinedDto)
                             .collect(Collectors.toList());
 
             log.info("Ticket search success | query='{}', results={}, page={}/{}",
@@ -511,6 +513,75 @@ public class TicketServiceImpl implements TicketService {
                     true
             );
         }
+    }
+
+    private TicketCombinedResponseDto mapToCombinedDto(Ticket ticket) {
+
+        TicketCombinedResponseDto dto = new TicketCombinedResponseDto();
+        if (ticket.getCreatedBy() != null) {
+            dto.setCreatedBy(ticket.getCreatedBy().getUserName());
+        }
+
+        if (ticket.getModifiedBy() != null) {
+            dto.setModifiedBy(ticket.getModifiedBy().getUserName());
+        }
+
+        dto.setCreatedTime(ticket.getCreatedTime());
+        dto.setModifiedTime(ticket.getModifiedTime());
+
+        dto.setTicketId(ticket.getTicketId());
+        dto.setSubject(ticket.getSubject());
+        dto.setComplaintName(ticket.getComplaintName());
+        dto.setComplaintMobileNo(ticket.getComplaintMobileNo());
+
+        // ---------------- Department ----------------
+        if (ticket.getDepartment() != null) {
+            dto.setDepartmentId(ticket.getDepartment().getDepartmentId());
+            dto.setDepartmentName(ticket.getDepartment().getDepartmentName());
+        }
+
+        // ---------------- Service ----------------
+        if (ticket.getService() != null) {
+            dto.setServiceId(ticket.getService().getServiceId());
+            dto.setServiceName(ticket.getService().getServiceName());
+        }
+
+        // ---------------- Status (Master Table) ----------------
+        if (ticket.getStatus() != null) {
+            Masters status = mastersRepository.findByColumnCodeAndColumnValue(2, ticket.getStatus());
+            dto.setStatus(status.getValueDesc());
+        }
+
+        // ---------------- Priority ----------------
+        dto.setPriority(getPriorityLabel(ticket.getPriority()));
+
+        // ---------------- Last Reply ----------------
+        List<LocalDateTime> replies =
+                ticketResponseRepository.findLastReplyTime(ticket.getTicketId());
+        if (replies != null && !replies.isEmpty()) {
+            dto.setLastReply(replies.get(0));
+        }
+
+
+        // ---------------- Tags ----------------
+        if (ticket.getTicketTags() != null && !ticket.getTicketTags().isEmpty()) {
+
+            dto.setTagIds(
+                    ticket.getTicketTags()
+                            .stream()
+                            .map(t -> t.getTags().getTagId())
+                            .collect(Collectors.toList())
+            );
+
+            dto.setTagName(
+                    ticket.getTicketTags()
+                            .stream()
+                            .map(t -> t.getTags().getTagName())
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return dto;
     }
 
     @Override
