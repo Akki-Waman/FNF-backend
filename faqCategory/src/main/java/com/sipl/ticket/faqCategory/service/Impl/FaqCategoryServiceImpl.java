@@ -30,7 +30,11 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
     private final FaqCategoryRepository faqCategoryRepository;
     private final FaqCategoryMapper faqCategoryMapper;
 
-    @ActivityLoggable(action = "CREATE", module = "FAQ CATEGORY")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "FAQ_CATEGORY",
+            description = "FAQ category {0} created successfully"
+    )
     public ApiResponseDTO<FaqCategoryDto> saveFaqCategoryDetails(FaqCategoryDto faqCategoryDto) {
         try {
             validateFaqCategoryDto(faqCategoryDto);
@@ -162,7 +166,11 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
             );
         }
     }
-    @ActivityLoggable(action = "DELETE", module = "FAQ CATEGORY")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "FAQ_CATEGORY",
+            description = "FAQ category id {0} updated successfully"
+    )
     public ApiResponseDTO<String> deleteById(Integer faqCategoryId) {
         try {
             Optional<FaqCategory> faqCategory = faqCategoryRepository.findById(faqCategoryId);
@@ -228,7 +236,11 @@ public class FaqCategoryServiceImpl implements FaqCategoryService {
         }
     }
 
-    @ActivityLoggable(action = "UPDATE", module = "FAQ CATEGORY")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "FAQ_CATEGORY",
+            description = "FAQ category {0} deleted successfully"
+    )
     public ApiResponseDTO<FaqCategoryDto> updateFaqCategoryDetails(FaqCategoryDto faqCategoryDto) {
         try {
             validateFaqCategoryDto(faqCategoryDto);

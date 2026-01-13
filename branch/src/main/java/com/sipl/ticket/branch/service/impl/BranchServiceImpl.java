@@ -37,8 +37,11 @@ public class BranchServiceImpl implements BranchService {
     private final CityRepository cityRepository;
     private final CompanyRepository companyRepository;
 
-    @Override
-    @ActivityLoggable(action = "CREATE", module = "BRANCH")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "BRANCH",
+            description = "Branch {0} created successfully"
+    )
     public ApiResponseDTO<BranchDto> saveBranch(BranchRequestDto dto) {
         try {
 
@@ -121,8 +124,11 @@ public class BranchServiceImpl implements BranchService {
         return null;
     }
 
-    @Override
-    @ActivityLoggable(action = "UPDATE", module = "BRANCH")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "BRANCH",
+            description = "Branch {0} updated successfully"
+    )
     public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
         Branches branch = repository.findById(dto.getBranchId()).orElse(null);
@@ -184,8 +190,11 @@ public class BranchServiceImpl implements BranchService {
                 ));
     }
 
-    @Override
-    @ActivityLoggable(action = "DELETE", module = "BRANCH")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "BRANCH",
+            description = "Branch Id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Integer branchId) {
 
         Branches branch = repository.findById(branchId).orElse(null);

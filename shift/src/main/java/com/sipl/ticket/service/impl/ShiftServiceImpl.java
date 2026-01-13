@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Shift;
 import com.sipl.ticket.core.dao.repository.ShiftRepository;
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
@@ -40,6 +41,11 @@ public class ShiftServiceImpl implements ShiftService {
 
     @Override
     @CacheEvict(value = "shifts", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "SHIFT",
+            description = "Shift {0} created successfully"
+    )
     public ApiResponseDTO<ShiftResponseDTO> saveShift(ShiftRequestDto dto) {
 
         log.info("Saving shift with name: {}", dto.getShiftName());
@@ -86,6 +92,11 @@ public class ShiftServiceImpl implements ShiftService {
 
     @Override
     @CacheEvict(value = "shifts", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "SHIFT",
+            description = "Shift {0} updated successfully"
+    )
     public ApiResponseDTO<ShiftResponseDTO> updateShift(ShiftRequestDto dto) {
 
         log.info("Updating shift, id={}, name={}", dto.getShiftId(), dto.getShiftName());
@@ -184,6 +195,11 @@ public class ShiftServiceImpl implements ShiftService {
 
     @Override
     @CacheEvict(value = "shifts", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "SHIFT",
+            description = "Shift id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deleting shift logically, id={}", id);

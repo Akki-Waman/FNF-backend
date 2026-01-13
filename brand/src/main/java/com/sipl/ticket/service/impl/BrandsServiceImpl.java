@@ -38,9 +38,11 @@ public class BrandsServiceImpl implements BrandsService {
     private final BrandRepository repository;
     private final BrandsMapper mapper;
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "BRAND")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "BRAND",
+            description = "Brand {0} created successfully"
+    )
     public ApiResponseDTO<BrandDto> saveBrand(BrandsRequestDto dto) {
 
         log.info("Saving brand with name: {}", dto.getBrandName());
@@ -81,9 +83,11 @@ public class BrandsServiceImpl implements BrandsService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "BRAND")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "BRAND",
+            description = "Brand {0} updated successfully"
+    )
     public ApiResponseDTO<BrandDto> updateBrand(BrandsRequestDto dto) {
 
         log.info("Updating brand, id={}, name={}", dto.getBrandId(), dto.getBrandName());
@@ -186,9 +190,11 @@ public class BrandsServiceImpl implements BrandsService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "BRAND")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "BRAND",
+            description = "Brand {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating brand, id={}", id);

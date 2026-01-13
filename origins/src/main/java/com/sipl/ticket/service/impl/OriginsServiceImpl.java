@@ -41,7 +41,11 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "ORIGIN")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "ORIGINS",
+            description = "Origin {0} created successfully"
+    )
     public ApiResponseDTO<OriginDto> saveOrigin(OriginsRequestDto dto) {
 
         log.info("Request received to save Origin");
@@ -107,7 +111,11 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "ORIGIN")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "ORIGINS",
+            description = "Origin {0} updated successfully"
+    )
     public ApiResponseDTO<OriginDto> updateOrigin(OriginsRequestDto dto) {
 
         log.info("Updating origin, id={}, name={}", dto.getOriginId(), dto.getOriginName());
@@ -217,7 +225,11 @@ public class OriginsServiceImpl implements OriginsService {
 
     @Override
     @CacheEvict(value = "origins", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "ORIGIN")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "ORIGINS",
+            description = "Origin id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating origin, id={}", id);

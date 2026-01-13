@@ -38,8 +38,11 @@ public class ClientProductServiceImpl implements ClientProductService {
     private final ZoneRepository zoneRepository;
     private final DivisionsRepository divisionsRepository;
 
-    @Override
-    @ActivityLoggable(action = "CREATE", module = "CLIENT PRODUCT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CLIENT_PRODUCTS",
+            description = "Client product {0} created successfully"
+    )
     public ApiResponseDTO<ClientProductsResponseDTO> saveClientProducts(ClientProductsRequestDTO dto) {
         log.info("Saving client product with serialNo: {}, imeiNo: {}",
                 dto.getSerialNumber(), dto.getImeiNo());
@@ -147,8 +150,11 @@ public class ClientProductServiceImpl implements ClientProductService {
 
 
 
-    @Override
-    @ActivityLoggable(action = "UPDATE", module = "CLIENT PRODUCT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "CLIENT_PRODUCTS",
+            description = "Client product {0} updated successfully"
+    )
     public ApiResponseDTO<ClientProductsResponseDTO> updateClientProducts(Long clientProductId,ClientProductsRequestDTO dto) {
         log.info("Updating client product with serialNo: {}, imeiNo: {}", dto.getSerialNumber(), dto.getImeiNo());
         try {
@@ -211,8 +217,11 @@ public class ClientProductServiceImpl implements ClientProductService {
         }
     }
 
-    @Override
-    @ActivityLoggable(action = "DELETE", module = "CLIENT PRODUCT")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CLIENT PRODUCTS",
+            description = "Client product id {0} deleted successfully"
+    )
     public ApiResponseDTO<ClientProductsResponseDTO> deleteClientProducts(Long clientProductId) {
         try {
             Optional<ClientProducts> optionalClientProduct =

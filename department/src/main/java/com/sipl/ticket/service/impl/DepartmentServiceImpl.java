@@ -37,7 +37,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "DEPARTMENT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "DEPARTMENT",
+            description = "Department {0} created successfully"
+    )
     public ApiResponseDTO<DepartmentResponseDTO> saveDepartment(DepartmentRequestDto dto) {
 
         log.info("Saving department with name: {}", dto.getDepartmentName());
@@ -79,7 +83,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "DEPARTMENT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "DEPARTMENT",
+            description = "Department {0} updated successfully"
+    )
     public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(DepartmentRequestDto dto) {
 
         log.info("Updating department, id={}, name={}",
@@ -186,7 +194,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "DEPARTMENT")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "DEPARTMENT",
+            description = "Department id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating department, id={}", id);

@@ -40,7 +40,11 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "TAG")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "TAG",
+            description = "Tag {0} created successfully"
+    )
     public ApiResponseDTO<TagResponseDto> saveTag(TagsRequestDto dto) {
 
         try {
@@ -81,7 +85,11 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "TAG")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "TAG",
+            description = "Tag {0} updated successfully"
+    )
     public ApiResponseDTO<TagResponseDto> updateTag(TagsRequestDto dto) {
 
         try {
@@ -183,7 +191,11 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "TAG")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "TAG",
+            description = "Tag id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

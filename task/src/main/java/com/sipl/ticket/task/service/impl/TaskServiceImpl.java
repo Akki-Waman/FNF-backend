@@ -59,7 +59,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @ActivityLoggable(action = "ADD", module = "TASK")
+    @ActivityLoggable(
+            action = "ADD",
+            module = "TASK",
+            description = "Task {0} created successfully"
+    )
     public ApiResponseDTO<CombinedTaskResponseDto> addTask(
             String taskRequestDto,
             List<MultipartFile> files) {
@@ -111,7 +115,11 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
-    @ActivityLoggable(action = "CREATE", module = "TASK")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "TASK",
+            description = "Task {0} created successfully"
+    )
     private Task saveTask(TaskRequestDto dto) {
 
         validateTaskRequest(dto);
@@ -451,7 +459,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @ActivityLoggable(action = "UPDATE", module = "TASK")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "TASK",
+            description = "Task {0} updated successfully"
+    )
     public ApiResponseDTO<CombinedTaskResponseDto> updateTask(
             String taskRequestDto,
             List<MultipartFile> files) {
@@ -805,7 +817,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @ActivityLoggable(action = "DELETE", module = "TASK")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "TASK",
+            description = "Task {0} deleted successfully"
+    )
     public ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO) {
 
         try {

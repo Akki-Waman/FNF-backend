@@ -36,7 +36,11 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     private final BranchRepository branchRepository;
 
     @Override
-    @ActivityLoggable(action = "CREATE", module = "SLA_PROFILE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "SLA_PROFILE",
+            description = "SLA profile {0} created successfully"
+    )
     public ApiResponseDTO<SlaProfileResponseDto> saveSlaProfile(
             SlaProfileRequestDto dto) {
 
@@ -117,7 +121,11 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     }
 
     @Override
-    @ActivityLoggable(action = "UPDATE", module = "SLA_PROFILE")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "SLA_PROFILE",
+            description = "SLA profile {0} updated successfully"
+    )
     public ApiResponseDTO<SlaProfileResponseDto> updateSlaProfile(
             SlaProfileRequestDto dto) {
 
@@ -205,7 +213,11 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     }
 
     @Override
-    @ActivityLoggable(action = "DELETE", module = "SLA_PROFILE")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "SLA_PROFILE",
+            description = "SLA profile id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(
             Integer slaProfileId) {
 

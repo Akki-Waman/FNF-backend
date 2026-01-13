@@ -37,7 +37,11 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "COUNTRY")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "COUNTRY",
+            description = "Country {0} created successfully"
+    )
     public ApiResponseDTO<CountryResponseDto> createCountry(CountryRequestDto dto) {
 
         log.info("Creating country={}", dto);
@@ -78,7 +82,11 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "COUNTRY")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "COUNTRY",
+            description = "Country {0} updated successfully"
+    )
     public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
 
         log.info("Updating country, id={}, payload={}", id, dto);
@@ -225,7 +233,11 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "COUNTRY")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "COUNTRY",
+            description = "Country id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteCountry(Long countryId) {
 
         log.info("Deleting country, id={}", countryId);
