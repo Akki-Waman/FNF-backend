@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MastersRepository extends JpaRepository<Masters, Long> {
@@ -24,4 +25,7 @@ public interface MastersRepository extends JpaRepository<Masters, Long> {
             @Param("tblName") String tblName,
             @Param("columnCode") Integer columnCode
     );
+
+    @Query("From Masters m where m.columnCode=?1 and m.columnValue=?2")
+    Masters findByColumnCodeAndColumnValue(Integer columnCode, Integer status);
 }

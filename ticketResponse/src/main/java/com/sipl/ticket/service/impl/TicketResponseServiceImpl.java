@@ -305,15 +305,29 @@ public class TicketResponseServiceImpl implements TicketResponseService {
 
 
     private String buildEmailBody(Ticket ticket, TicketResponse ticketResponse) {
+
+        String customerName = ticket.getComplaintName() != null
+                ? ticket.getComplaintName()
+                : "Customer";
+
+        String statusLine;
+        if (Objects.equals(ticketResponse.getStatusBefore(),
+                ticketResponse.getStatusAfter())) {
+            statusLine = ticketResponse.getStatusAfter();
+        } else {
+            statusLine = ticketResponse.getStatusBefore() + " → " +
+                    ticketResponse.getStatusAfter();
+        }
+
         return String.format(
-                "Dear Customer,\n\n" +
+                "Dear %s,\n\n" +
                         "Thank you for your patience.\n\n" +
                         "We would like to inform you that there has been an update on your support ticket.\n\n" +
                         "--------------------------------------------------\n" +
                         "Ticket ID     : %s\n" +
                         "Issue Subject : %s\n" +
                         "Response Type : %s\n" +
-                        "Status        : %s → %s\n\n" +
+                        "Status        : %s\n\n" +
                         "Response:\n" +
                         "%s\n" +
                         "--------------------------------------------------\n\n" +
@@ -321,14 +335,15 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                         "Warm Regards,\n" +
                         "Ticket Management System\n" +
                         "IT Support Team",
+                customerName,
                 ticket.getTicketId(),
                 ticket.getSubject(),
                 ticketResponse.getResponseType(),
-                ticketResponse.getStatusBefore(),
-                ticketResponse.getStatusAfter(),
+                statusLine,
                 ticketResponse.getResponseBody()
         );
     }
 
 }
+
 
