@@ -55,7 +55,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "PRODUCT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "PRODUCT",
+            description = "Product {0} created successfully"
+    )
     public ApiResponseDTO<CombinedProductResponseDto> saveOrUpdateProduct(
             Long productId, String productRequestDtoString, MultipartFile multipartFile) {
         try {
@@ -409,7 +413,11 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    @ActivityLoggable(action = "DELETE", module = "PRODUCT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "PRODUCT",
+            description = "Product id {0} updated successfully"
+    )
     public ApiResponseDTO<ProductDto> deleteProduct(Long productId) {
         try {
 

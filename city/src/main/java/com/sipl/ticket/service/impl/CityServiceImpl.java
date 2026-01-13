@@ -39,9 +39,11 @@ public class CityServiceImpl implements CityService {
     private final StateRepository stateRepository;
     private final CityMapper mapper;
 
-    @Override
-    @CacheEvict(value = "cities", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "CITY")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CITY",
+            description = "City Id {0} created successfully"
+    )
     public ApiResponseDTO<CityResponseDto> saveCity(CityRequestDto dto) {
 
         try {
@@ -120,9 +122,11 @@ public class CityServiceImpl implements CityService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "cities", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "CITY")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "CITY",
+            description = "City {0} updated successfully"
+    )
     public ApiResponseDTO<CityResponseDto> updateCity(CityRequestDto dto) {
 
         try {
@@ -252,9 +256,11 @@ public class CityServiceImpl implements CityService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "cities", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "CITY")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CITY",
+            description = "City {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

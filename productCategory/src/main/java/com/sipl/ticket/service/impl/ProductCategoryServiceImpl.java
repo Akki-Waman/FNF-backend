@@ -41,8 +41,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "PRODUCT CATEGORY")
-    public ApiResponseDTO<ProductCategoryDto> saveProductCategory(
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category {0} created successfully"
+    ) public ApiResponseDTO<ProductCategoryDto> saveProductCategory(
             ProductCategoryRequestDto dto) {
 
         log.info("Saving product category with name: {}", dto.getProductCategoryName());
@@ -108,7 +111,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "PRODUCT CATEGORY")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category {0} updated successfully"
+    )
     public ApiResponseDTO<ProductCategoryDto> updateProductCategory(
             ProductCategoryRequestDto dto) {
 
@@ -220,7 +227,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "PRODUCT CATEGORY")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating product category, id={}", id);

@@ -1,5 +1,6 @@
 package com.sipl.ticket.company.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.company.service.CompanyService;
 import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.repository.CompanyRepository;
@@ -39,6 +40,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "COMPANY",
+            description = "Company {0} created successfully"
+    )
     public ApiResponseDTO<CompanyDto> saveCompany(CompaniesRequestDto dto) {
 
         try {
@@ -79,6 +85,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "COMPANY",
+            description = "Company {0} updated successfully"
+    )
     public ApiResponseDTO<CompanyDto> updateCompany(CompaniesRequestDto dto) {
 
         try {
@@ -180,6 +191,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "COMPANY",
+            description = "Company id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {

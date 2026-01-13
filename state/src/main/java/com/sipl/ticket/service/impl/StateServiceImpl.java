@@ -44,7 +44,11 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "STATE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "STATE",
+            description = "State {0} created successfully"
+    )
     public ApiResponseDTO<StateResponseDto> saveState(StateRequestDto dto) {
         log.info("Request received to save State");
         try {
@@ -82,7 +86,11 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "STATE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "STATE",
+            description = "State {0} created successfully"
+    )
     public ApiResponseDTO<StateResponseDto> updateState(StateRequestDto dto) {
         log.info("Request received to update State, id={}", dto.getStateId());
         try {
@@ -133,7 +141,11 @@ public class StateServiceImpl implements StateService {
 
     @Override
     @CacheEvict(value = "states", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "STATE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "STATE",
+            description = "State id {0} created successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long stateId) {
         log.info("Request received to delete state, id={}", stateId);
         try {

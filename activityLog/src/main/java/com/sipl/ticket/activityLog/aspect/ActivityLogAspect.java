@@ -20,10 +20,39 @@ public class ActivityLogAspect {
             JoinPoint joinPoint,
             ActivityLoggable activityLoggable) {
 
-        String description =
-                activityLoggable.action() + " " +
-                        activityLoggable.module();
+        String description = activityLoggable.description();
+        Object[] args = joinPoint.getArgs();
+
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+            if (arg == null) continue;
+
+            String value = extractName(arg);
+            if (value != null) {
+                description = description.replace("{" + i + "}", value);
+            }
+        }
 
         activityLogService.log(description);
     }
+
+    private String extractName(Object arg) {
+        try {
+            for (var method : arg.getClass().getMethods()) {
+                if (method.getName().startsWith("get")
+                        && method.getName().endsWith("Name")
+                        && method.getParameterCount() == 0) {
+
+                    Object value = method.invoke(arg);
+                    if (value != null) {
+                        return value.toString();
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return arg.toString();
+    }
 }
+
+

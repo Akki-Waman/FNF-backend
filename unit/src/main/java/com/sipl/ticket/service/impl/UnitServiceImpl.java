@@ -40,7 +40,11 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "UNIT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "UNIT",
+            description = "Unit {0} created successfully"
+    )
     public ApiResponseDTO<UnitDto> createUnit(UnitRequestDto dto) {
         try {
             String name = dto.getUnitName().trim();
@@ -80,7 +84,11 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "UNIT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "UNIT",
+            description = "Unit {0} updated successfully"
+    )
     public ApiResponseDTO<UnitDto> updateUnit(Long unitId, UnitRequestDto dto) {
         try {
             if (unitId == null || dto.getUnitName() == null || dto.getUnitName().trim().isEmpty()) {
@@ -174,7 +182,11 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "UNIT")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "UNIT",
+            description = "Unit id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteUnit(Long unitId) {
         try {
             Unit unit = repository.findById(unitId).orElse(null);

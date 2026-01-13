@@ -38,7 +38,11 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    @ActivityLoggable(action = "CREATE", module = "CONTACT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CONTACT",
+            description = "Contact {0} created successfully"
+    )
     public ApiResponseDTO<ContactResponseDto> saveContact(ContactRequestDto dto) {
 
         log.info(
@@ -107,7 +111,11 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    @ActivityLoggable(action = "UPDATE", module = "CONTACT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "CONTACT",
+            description = "Contact {0} updated successfully"
+    )
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
         log.info(
@@ -230,7 +238,11 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    @ActivityLoggable(action = "DELETE", module = "CONTACT")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CONTACT",
+            description = "Contact id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long contactId) {
 
         log.info("Deactivating contact [id={}]", contactId);

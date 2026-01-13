@@ -41,7 +41,11 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "SERVICE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "SERVICE",
+            description = "Service {0} created successfully"
+    )
     public ApiResponseDTO<ServiceResponseDTO> saveService(ServiceRequestDto dto) {
 
         try {
@@ -79,7 +83,11 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "SERVICE")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "SERVICE",
+            description = "Service {0} updated successfully"
+    )
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
         ServiceEntity service =
@@ -138,7 +146,11 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "SERVICE")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "SERVICE",
+            description = "Service id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long serviceId) {
 
         ServiceEntity service = repository.findById(serviceId).orElse(null);

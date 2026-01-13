@@ -34,7 +34,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
-    @ActivityLoggable(action = "CREATE", module = "CLIENT")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CLIENT",
+            description = "Client {0} created successfully"
+    )
     public ApiResponseDTO<ClientResponseDto> saveClient(ClientRequestDto dto) {
 
         log.info("Saving client with code={}, name={}", dto.getClientCode(), dto.getClientName());
@@ -67,7 +71,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
-    @ActivityLoggable(action = "UPDATE", module = "CLIENT")
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "CLIENT",
+            description = "Client {0} updated successfully"
+    )
     public ApiResponseDTO<ClientResponseDto> updateClient(ClientRequestDto dto) {
 
         log.info("Updating client id={}", dto.getClientId());
@@ -142,7 +150,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
-    @ActivityLoggable(action = "DELETE", module = "CLIENT")
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CLIENT",
+            description = "Client {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deleting client id={}", id);
