@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -83,5 +84,16 @@ public class ContactControllerImpl implements ContactController {
         return response;
     }
 
+    @Override
+    public ResponseEntity<Void> exportContactsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportContactsExcel <<Start>>");
+
+        contactService.exportContactsExcel(response);
+
+        log.info("<<End>> exportContactsExcel <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
 
 }

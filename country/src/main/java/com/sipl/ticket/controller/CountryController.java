@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -59,6 +60,8 @@ public interface CountryController {
     ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
             @RequestBody CountrySearchRequestDto requestDto);
 
+    @GetMapping("/export")
+    ResponseEntity<Void> exportCountriesExcel(HttpServletResponse response);
 
 
 }

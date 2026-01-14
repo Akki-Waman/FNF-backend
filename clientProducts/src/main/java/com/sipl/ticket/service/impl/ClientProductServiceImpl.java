@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.ClientProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ClientProductMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ClientProductService;
@@ -20,9 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -390,6 +393,29 @@ public class ClientProductServiceImpl implements ClientProductService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportClientProductsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active client products to Excel");
+
+        try {
+            List<ClientProductsResponseDTO> clientProducts =
+                    clientProductsRepository.findByIsActiveTrue()
+                            .stream()
+                            .map(clientProductMapper::toDto)
+                            .collect(Collectors.toList());
+
+            ClientProductExcelGenerator.generateExcel(clientProducts, response);
+
+            log.info("Client products Excel export completed successfully, totalRecords={}",
+                    clientProducts.size());
+
+        } catch (Exception e) {
+            log.error("exportClientProductsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export client products Excel", e);
+        }
+    }
 
 
 

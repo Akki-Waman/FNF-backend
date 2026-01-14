@@ -5,6 +5,8 @@ import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ProductService {
 
@@ -18,4 +20,7 @@ public interface ProductService {
     ApiResponseDTO<ProductDto> getAllProduct();
 
     ApiResponseDTO<PagedResponse<ProductDto>>searchProducts(ProductSearchRequestDto requestDto);
+
+    void exportProductsExcel(HttpServletResponse response);
+
 }

@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -61,4 +62,17 @@ public class BranchControllerImpl implements BranchController {
         ApiResponseDTO<BranchDto> response = branchService.getAllBranches();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportBranchesCsv(HttpServletResponse response) {
+
+        log.info("<<Start>> exportBranchesCsv endpoint called <<Start>>");
+
+        branchService.exportBranchesCsv(response);
+
+        log.info("<<End>> exportBranchesCsv endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

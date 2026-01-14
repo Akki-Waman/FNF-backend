@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SlaProfileResponseDto;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface SlaProfileService {
 
@@ -31,4 +33,7 @@ public interface SlaProfileService {
     ApiResponseDTO<PagedResponse<SlaProfileResponseDto>> searchSlaProfiles(
             SlaProfileSearchRequestDto requestDto
     );
+
+    void exportSlaProfilesExcel(HttpServletResponse response);
+
 }

@@ -9,6 +9,8 @@ import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ClientProductService {
     ApiResponseDTO<ClientProductsResponseDTO> saveClientProducts(ClientProductsRequestDTO clientProductsRequestDTO);
@@ -21,4 +23,6 @@ public interface ClientProductService {
 
     ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(
             ClientProductSearchRequestDto requestDto);
+    void exportClientProductsExcel(HttpServletResponse response);
+
 }

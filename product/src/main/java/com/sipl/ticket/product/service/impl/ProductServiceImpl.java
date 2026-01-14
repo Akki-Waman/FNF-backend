@@ -12,6 +12,7 @@ import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.CustomException;
 import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
+import com.sipl.ticket.core.helper.ProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductMapper;
 import com.sipl.ticket.core.util.FileUploadUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Cacheable;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -621,5 +623,28 @@ public class ProductServiceImpl implements ProductService {
                 );
             }
         }
+    @Override
+    @Transactional(readOnly = true)
+    public void exportProductsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active products to Excel");
+
+        try {
+            List<ProductDto> products = productRepository.findByIsActiveTrue()
+                    .stream()
+                    .map(productMapper::toDto)
+                    .collect(Collectors.toList());
+
+            ProductExcelGenerator.generateExcel(products, response);
+
+            log.info("Products Excel export completed successfully, totalRecords={}",
+                    products.size());
+
+        } catch (Exception e) {
+            log.error("exportProductsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export products Excel", e);
+        }
     }
+
+}
 

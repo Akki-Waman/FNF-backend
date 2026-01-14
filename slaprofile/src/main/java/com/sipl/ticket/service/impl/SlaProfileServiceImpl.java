@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.request.SlaProfileSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SlaProfileResponseDto;
+import com.sipl.ticket.core.helper.SlaProfileExcelGenerator;
 import com.sipl.ticket.core.mapper.SlaProfileMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.SlaProfileService;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -346,5 +348,30 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             );
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportSlaProfilesExcel(HttpServletResponse response) {
+
+        log.info("Exporting SLA profiles to Excel");
+
+        try {
+            List<SlaProfileResponseDto> profiles =
+                    repository.findAll()
+                            .stream()
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
+
+            SlaProfileExcelGenerator.generateExcel(profiles, response);
+
+            log.info("SLA Profile Excel export completed successfully, totalRecords={}",
+                    profiles.size());
+
+        } catch (Exception e) {
+            log.error("exportSlaProfilesExcel unexpected error", e);
+            throw new RuntimeException("Failed to export SLA profiles Excel", e);
+        }
+    }
+
 }
 

@@ -9,6 +9,7 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -44,6 +45,9 @@ public interface ContactController {
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
             @RequestBody ContactSearchRequestDto searchRequestDto
     );
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportContactsExcel(HttpServletResponse response);
 
 
 }
