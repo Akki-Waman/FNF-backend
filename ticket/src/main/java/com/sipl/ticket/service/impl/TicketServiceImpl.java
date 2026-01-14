@@ -811,20 +811,26 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary() {
         log.info("Fetching Ticket Summary KPI...");
-
         try {
-            List<Object[]> result = ticketRepository.countTicketsByStatus();
-
+            List<Object[]> ticketCounts =
+                    ticketRepository.countTicketsByStatus();
+            Map<String, Long> countMap = new HashMap<>();
+            for (Object[] row : ticketCounts) {
+                String statusName = row[0].toString();
+                Long count = ((Number) row[1]).longValue();
+                countMap.put(statusName, count);
+            }
+            List<Masters> statuses =
+                    mastersRepository.findAllActiveStatuses(2);
             List<SummaryKpiResponseDTO> summaryList =
-                    result.stream()
-                            .map(obj -> new SummaryKpiResponseDTO(
-                                    String.valueOf(obj[0]),   // status
-                                    obj[1]                    // count
+                    statuses.stream()
+                            .map(master -> new SummaryKpiResponseDTO(
+                                    master.getValueDesc(),
+                                    countMap.getOrDefault(
+                                            master.getValueDesc(), 0L
+                                    )
                             ))
                             .collect(Collectors.toList());
-
-            log.info("Ticket summary fetched successfully. Total statuses: {}", summaryList.size());
-
             return new ApiResponseDTO<>(
                     null,
                     summaryList,
@@ -835,9 +841,9 @@ public class TicketServiceImpl implements TicketService {
                     null,
                     null
             );
-
         } catch (Exception e) {
-            log.error("Error fetching ticket summary KPI: {}", e.getMessage(), e);
+            log.error("Error fetching ticket summary KPI", e);
+
             return new ApiResponseDTO<>(
                     null,
                     null,
@@ -850,6 +856,7 @@ public class TicketServiceImpl implements TicketService {
             );
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)

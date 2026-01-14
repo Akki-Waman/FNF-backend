@@ -28,4 +28,8 @@ public interface MastersRepository extends JpaRepository<Masters, Long> {
 
     @Query("From Masters m where m.columnCode=?1 and m.columnValue=?2")
     Masters findByColumnCodeAndColumnValue(Integer columnCode, Integer status);
+
+    @Query("From Masters m where m.columnCode=?1")
+    List<Masters> findAllActiveStatuses(Integer columnCode);
+
 }
