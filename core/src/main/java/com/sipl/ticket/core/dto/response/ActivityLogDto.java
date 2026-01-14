@@ -16,7 +16,7 @@ public class ActivityLogDto extends AuditDto{
 
     private String staffName;
 
-    private Users performedBy;
+    private String performedBy;
 
     private String ipAddress;
 }
