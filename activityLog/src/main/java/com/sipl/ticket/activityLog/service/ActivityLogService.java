@@ -1,12 +1,14 @@
 package com.sipl.ticket.activityLog.service;
 
 
-import java.util.Map;
+import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
+import java.util.List;
 
 public interface ActivityLogService {
 
     void log(String description);
 
-    Map<String, Object> getLatestActivities();
+    List<ActivityLogDashboardDto> getLatestActivities();
+
 
 }

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,16 +20,18 @@ public class ActivityLogControllerImpl implements ActivityLogController {
     private final ActivityLogService activityLogService;
 
     @Override
-    public ResponseEntity<Map<String, Object>> getLatestActivities() {
+    public ResponseEntity<List<com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto>> getLatestActivities() {
 
-        log.info("<<Start>> getLatestActivities controller");
+        log.info("ActivityLogController | Request received to fetch latest activities");
 
-        Map<String, Object> response =
+        List<com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto> response =
                 activityLogService.getLatestActivities();
 
-        log.info("<<End>> getLatestActivities controller");
+        log.info("ActivityLogController | Successfully returned {} activity logs",
+                response.size());
 
         return ResponseEntity.ok(response);
     }
+
 
 }

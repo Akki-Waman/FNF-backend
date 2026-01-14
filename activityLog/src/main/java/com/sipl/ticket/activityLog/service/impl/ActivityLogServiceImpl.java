@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,65 +42,63 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     }
 
     @Override
-    public Map<String, Object> getLatestActivities() {
+    public List<ActivityLogDashboardDto> getLatestActivities() {
 
-        Map<String, Object> response = new LinkedHashMap<>();
+        log.info("ActivityLogService | Request received to fetch latest activities");
 
         try {
             Users loggedInUser = SecurityUtil.getCurrentUser();
-
             Pageable pageable = PageRequest.of(0, 10);
 
             List<ActivityLog> logs;
 
             if (loggedInUser != null) {
-                log.info("Fetching logs for logged-in user | userId={}",
-                        loggedInUser.getId());
+                log.info("Fetching activity logs for userId={}", loggedInUser.getId());
 
                 logs = activityLogRepository
                         .findLatestLogsByUser(loggedInUser, pageable);
-
             } else {
-                log.warn("No authenticated user found, fetching SYSTEM logs");
+                log.warn("No authenticated user found, fetching system-wide activity logs");
 
                 logs = activityLogRepository
                         .findLatestLogs(pageable);
             }
 
-            List<Map<String, Object>> aaData = logs.stream()
-                    .map(log -> {
-                        Map<String, Object> row = new LinkedHashMap<>();
-                        row.put("message", log.getDescription());
-                        row.put("createdOn", log.getCreatedTime());
-                        row.put("module", log.getStaffName());
+            List<ActivityLogDashboardDto> response =
+                    logs.stream()
+                            .map(this::mapToDashboardDto)
+                            .collect(Collectors.toList());
 
-                        if (log.getCreatedBy() != null) {
-                            Users u = log.getCreatedBy();
-                            row.put("createdBy",
-                                    u.getFirstName() + " " + u.getLastName());
-                        } else {
-                            row.put("createdBy", "SYSTEM");
-                        }
+            log.info("Successfully fetched {} activity logs", response.size());
 
-                        return row;
-                    })
-                    .collect(Collectors.toList());
-
-            response.put("aaData", aaData);
-
-            log.info("Fetched {} activity logs", aaData.size());
+            return response;
 
         } catch (Exception ex) {
 
-            log.error("Error while fetching activity logs", ex);
+            log.error("Failed to fetch latest activity logs", ex);
 
-            response.put("aaData", List.of());
-            response.put("error", true);
-            response.put("message", "Unable to fetch activity logs");
-            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+            return List.of();
+        }
+    }
+
+
+    private ActivityLogDashboardDto mapToDashboardDto(ActivityLog log) {
+
+        ActivityLogDashboardDto dto = new ActivityLogDashboardDto();
+
+        dto.setMessage(log.getDescription());
+        dto.setModule(log.getStaffName());
+        dto.setCreatedTime(log.getCreatedTime());
+
+        if (log.getCreatedBy() != null) {
+            Users u = log.getCreatedBy();
+            dto.setCreatedBy(u.getFirstName() + " " + u.getLastName());
+        } else {
+            dto.setCreatedBy("SYSTEM");
         }
 
-
-        return response;
+        return dto;
     }
+
+
 }
