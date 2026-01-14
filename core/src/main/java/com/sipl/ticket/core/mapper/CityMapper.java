@@ -22,5 +22,5 @@ public interface CityMapper extends AuditEntityMapper {
     @Mapping(source = "state.stateName", target = "stateName")
     CityResponseDto toDto(City city);
 
-    List<CityResponseDto> mapCityListToDtoList(List<City> cityList);
+    List<CityResponseDto> toDtoList(List<City> cities);
 }

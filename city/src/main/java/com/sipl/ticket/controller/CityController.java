@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RequestMapping("/api/v1/cities")
 @RestController
 @CrossOrigin(origins = "*")
@@ -83,5 +85,8 @@ public interface CityController {
     ResponseEntity<ApiResponseDTO<PagedResponse<CityResponseDto>>> searchCities(
             @RequestBody CitySearchRequestDto requestDto
     );
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportCitiesExcel(HttpServletResponse response);
 
 }

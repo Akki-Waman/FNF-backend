@@ -1,6 +1,7 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.helper.CityExcelGenerator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CityService;
 import com.sipl.ticket.core.dao.entity.City;
@@ -25,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -463,4 +465,31 @@ public class CityServiceImpl implements CityService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportCitiesExcel(HttpServletResponse response) {
+
+        log.info("Exporting active cities to Excel");
+
+        try {
+
+            List<CityResponseDto> cities =
+                    repository.findAll()
+                            .stream()
+                            .filter(city -> Boolean.TRUE.equals(city.getIsActive()))
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
+
+            CityExcelGenerator.generateExcel(cities, response);
+
+            log.info(
+                    "Cities Excel export completed successfully | totalRecords={}",
+                    cities.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportCitiesExcel unexpected error", e);
+            throw new RuntimeException("Failed to export cities Excel", e);
+        }
+    }
 }

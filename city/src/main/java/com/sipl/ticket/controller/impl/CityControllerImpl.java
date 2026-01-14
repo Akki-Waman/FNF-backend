@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -107,4 +109,17 @@ public class CityControllerImpl implements CityController {
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportCitiesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCitiesExcel endpoint called <<Start>>");
+
+        cityService.exportCitiesExcel(response);
+
+        log.info("<<End>> exportCitiesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

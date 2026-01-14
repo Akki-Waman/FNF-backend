@@ -18,7 +18,7 @@ public class LocationResponseDTO extends AuditDto {
     @NotBlank(message = "Location name is required")
     @Size(min = 2, max = 100, message = "Location name must be between 2 and 100 characters")
     private String locationName;
-    private String  locationType;
+  //  private String  locationType;
  //   private BigDecimal locationCapacity;
     private Boolean isActive;
 //    private Long plantId;

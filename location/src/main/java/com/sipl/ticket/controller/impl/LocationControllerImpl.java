@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -107,6 +108,18 @@ public class LocationControllerImpl implements LocationController {
         log.info("<<End>>searchLocations endpoint called<<End>>");
 
         return response;
+    }
+
+    @Override
+    public ResponseEntity<Void> exportLocationExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportLocationExcel endpoint called <<Start>>");
+
+        locationService.exportLocationExcel(response);
+
+        log.info("<<End>> exportLocationExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
     }
 
 
