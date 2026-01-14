@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.CityResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface CityService {
 
@@ -35,4 +37,7 @@ public interface CityService {
     ApiResponseDTO<PagedResponse<CityResponseDto>> searchCities(
             CitySearchRequestDto requestDto
     );
+
+    void exportCitiesExcel(HttpServletResponse response);
+
 }

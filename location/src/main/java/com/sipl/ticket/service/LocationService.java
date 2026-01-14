@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface LocationService {
 
@@ -36,5 +38,8 @@ public interface LocationService {
     ApiResponseDTO<PagedResponse<LocationResponseDTO>> searchLocations(
             LocationSearchRequestDTO requestDto
     );
+
+    void exportLocationExcel(HttpServletResponse response);
+
 
 }

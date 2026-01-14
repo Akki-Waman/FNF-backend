@@ -9,6 +9,8 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/locations")
 @CrossOrigin("*")
@@ -42,5 +44,9 @@ public interface LocationController {
     ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> searchLocations(
             @RequestBody LocationSearchRequestDTO requestDto
     );
+
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportLocationExcel(HttpServletResponse response);
 
 }

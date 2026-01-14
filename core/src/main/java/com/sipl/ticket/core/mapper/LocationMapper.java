@@ -22,4 +22,5 @@ public interface LocationMapper extends AuditEntityMapper {
     List<LocationResponseDTO> mapLocationsListToDtoList(List<Locations> locationsList);
 
     List<LocationResponseDTO> mapLocationsDropListToDtoList(List<Locations> locations);
+
 }

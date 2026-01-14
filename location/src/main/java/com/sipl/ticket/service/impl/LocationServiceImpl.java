@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.LocationExcelGenerator;
 import com.sipl.ticket.core.mapper.LocationMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.LocationService;
@@ -16,13 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -354,6 +354,31 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportLocationExcel(HttpServletResponse response) {
 
+        log.info("Exporting active locations to Excel");
 
+        try {
+
+            List<LocationResponseDTO> locations =
+                    repository.findAll()
+                            .stream()
+                            .filter(location -> Boolean.TRUE.equals(location.getIsActive()))
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
+
+            LocationExcelGenerator.generateExcel(locations, response);
+
+            log.info(
+                    "Location Excel export completed successfully | totalRecords={}",
+                    locations.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportLocationExcel unexpected error", e);
+            throw new RuntimeException("Failed to export location Excel", e);
+        }
+    }
 }
