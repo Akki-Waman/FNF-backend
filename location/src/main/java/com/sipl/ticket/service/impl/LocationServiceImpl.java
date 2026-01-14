@@ -61,6 +61,7 @@ public class LocationServiceImpl implements LocationService {
             Locations location = new Locations();
             location.setLocationName(name);
             location.setIsActive(true);
+            location.setIsDeleted(false);
 
             Locations saved = repository.save(location);
 
@@ -91,12 +92,13 @@ public class LocationServiceImpl implements LocationService {
             module = "LOCATION",
             description = "Location {0} updated successfully"
     )
-    public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO locationRequestDTO)  {
+    public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO dto) {
 
         try {
-            if ( locationRequestDTO == null ||
-                    locationRequestDTO.getLocationName() == null ||
-                    locationRequestDTO.getLocationName().trim().isEmpty()){
+            if (dto == null ||
+                    dto.getLocationId() == null ||
+                    dto.getLocationName() == null ||
+                    dto.getLocationName().trim().isEmpty()) {
 
                 return new ApiResponseDTO<>(
                         null,
@@ -106,13 +108,23 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            Locations location = repository.findById(locationRequestDTO.getLocationId()).orElse(null);
+            Locations location =
+                    repository.findById(dto.getLocationId()).orElse(null);
 
             if (location == null) {
                 return new ApiResponseDTO<>(
                         null,
                         "Location not found",
                         HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            if (Boolean.TRUE.equals(location.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Deleted location cannot be updated",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -126,10 +138,10 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            String name = locationRequestDTO.getLocationName().trim();
+            String name = dto.getLocationName().trim();
 
             if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
-                    name, locationRequestDTO.getLocationId())) {
+                    name, dto.getLocationId())) {
 
                 return new ApiResponseDTO<>(
                         null,
@@ -140,7 +152,6 @@ public class LocationServiceImpl implements LocationService {
             }
 
             location.setLocationName(name);
-        //    location.setLocationType(locationRequestDTO.getLocationType());
 
             Locations updated = repository.save(location);
 
@@ -169,7 +180,10 @@ public class LocationServiceImpl implements LocationService {
 
         try {
             return repository.findById(id)
-                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
+                    .filter(l ->
+                            Boolean.TRUE.equals(l.getIsActive()) &&
+                                    Boolean.FALSE.equals(l.getIsDeleted())
+                    )
                     .map(l -> new ApiResponseDTO<>(
                             mapper.toDto(l),
                             "Location found",
@@ -194,7 +208,7 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== DELETE ===================== */
+    /* ===================== DELETE (SOFT DELETE) ===================== */
 
     @Override
     @CacheEvict(value = "locations", allEntries = true)
@@ -217,16 +231,18 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            if (Boolean.FALSE.equals(location.getIsActive())) {
+            if (Boolean.TRUE.equals(location.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location already inactive",
+                        "Location already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             location.setIsActive(false);
+            location.setIsDeleted(true);
+
             repository.save(location);
 
             return new ApiResponseDTO<>(
@@ -254,11 +270,15 @@ public class LocationServiceImpl implements LocationService {
     public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations() {
 
         try {
-            List<LocationResponseDTO> list = repository.findAll()
-                    .stream()
-                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<LocationResponseDTO> list =
+                    repository.findAll()
+                            .stream()
+                            .filter(l ->
+                                    Boolean.TRUE.equals(l.getIsActive()) &&
+                                            Boolean.FALSE.equals(l.getIsDeleted())
+                            )
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
 
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -294,6 +314,8 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
+    /* ===================== SEARCH ===================== */
+
     @Override
     public ApiResponseDTO<PagedResponse<LocationResponseDTO>> searchLocations(
             LocationSearchRequestDTO dto) {
@@ -305,6 +327,7 @@ public class LocationServiceImpl implements LocationService {
                     dto.getSortBy(),
                     dto.getSortDir()
             );
+
             Page<Locations> pageResult =
                     repository.searchLocations(
                             dto.getQuery(),
@@ -321,10 +344,11 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            List<LocationResponseDTO> content = pageResult.getContent()
-                    .stream()
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<LocationResponseDTO> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
 
             PagedResponse<LocationResponseDTO> pagedResponse =
                     new PagedResponse<>(
@@ -354,6 +378,8 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
+    /* ===================== EXPORT ===================== */
+
     @Override
     @Transactional(readOnly = true)
     public void exportLocationExcel(HttpServletResponse response) {
@@ -361,23 +387,25 @@ public class LocationServiceImpl implements LocationService {
         log.info("Exporting active locations to Excel");
 
         try {
-
             List<LocationResponseDTO> locations =
                     repository.findAll()
                             .stream()
-                            .filter(location -> Boolean.TRUE.equals(location.getIsActive()))
+                            .filter(l ->
+                                    Boolean.TRUE.equals(l.getIsActive()) &&
+                                            Boolean.FALSE.equals(l.getIsDeleted())
+                            )
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
             LocationExcelGenerator.generateExcel(locations, response);
 
             log.info(
-                    "Location Excel export completed successfully | totalRecords={}",
+                    "Location Excel export completed | totalRecords={}",
                     locations.size()
             );
 
         } catch (Exception e) {
-            log.error("exportLocationExcel unexpected error", e);
+            log.error("exportLocationExcel error", e);
             throw new RuntimeException("Failed to export location Excel", e);
         }
     }

@@ -23,4 +23,6 @@ public class LocationResponseDTO extends AuditDto {
     private Boolean isActive;
 //    private Long plantId;
 //    private String plantCode;
+
+    private Boolean isDeleted;
 }
