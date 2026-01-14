@@ -35,4 +35,6 @@ public class LocationRequestDTO {
 
     //private Long plantId;
 
+    private Boolean isDeleted;
+
 }

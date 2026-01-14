@@ -19,13 +19,14 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             String locationName, Long locationId
     );
 
-    List<Locations> findByIsActiveTrue();
+    List<Locations> findByIsActiveTrueAndIsDeletedFalse();
 
     Page<Locations> findByLocationId(Long locationId, Pageable pageable);
 
     @Query(
             "SELECT l FROM Locations l " +
-                    "WHERE ( :isActive IS NULL OR l.isActive = :isActive ) " +
+                    "WHERE l.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR l.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
@@ -34,6 +35,4 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
-
-
 }
