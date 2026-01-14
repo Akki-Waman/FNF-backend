@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -100,4 +101,17 @@ public class SlaProfileControllerImpl implements SlaProfileController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportSlaProfilesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportSlaProfilesExcel <<Start>>");
+
+        slaProfileService.exportSlaProfilesExcel(response);
+
+        log.info("<<End>> exportSlaProfilesExcel  <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

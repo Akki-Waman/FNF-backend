@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 
 @RestController
 @RequestMapping("/api/v1/sla-profiles")
@@ -69,4 +71,8 @@ public interface SlaProfileController {
     )
     @GetMapping("")
     ResponseEntity<ApiResponseDTO<SlaProfileResponseDto>> getAllSlaProfiles();
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportSlaProfilesExcel(HttpServletResponse response);
+
 }

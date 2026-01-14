@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.ContactExcelGenerator;
 import com.sipl.ticket.core.mapper.ContactMapper;
 import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -419,6 +421,28 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportContactsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active contacts to Excel");
+
+        try {
+            List<ContactResponseDto> contacts = contactRepository.findByIsActiveTrue()
+                    .stream()
+                    .map(contactMapper::toResponseDto)
+                    .collect(Collectors.toList());
+
+            ContactExcelGenerator.generateExcel(contacts, response);
+
+            log.info("Contacts Excel export completed successfully, totalRecords={}",
+                    contacts.size());
+
+        } catch (Exception e) {
+            log.error("exportContactsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export contacts Excel", e);
+        }
+    }
 
 
 

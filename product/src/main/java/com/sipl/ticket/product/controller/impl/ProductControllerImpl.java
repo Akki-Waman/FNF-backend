@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @Slf4j
 public class ProductControllerImpl implements ProductController {
@@ -76,4 +78,17 @@ public class ProductControllerImpl implements ProductController {
         log.info("<<START>> searchProducts called <<START>>");
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportProductsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportProductsExcel endpoint called <<Start>>");
+
+        productService.exportProductsExcel(response);
+
+        log.info("<<End>> exportProductsExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

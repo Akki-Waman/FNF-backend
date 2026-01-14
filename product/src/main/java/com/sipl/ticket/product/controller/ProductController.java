@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RequestMapping("/api/v1/products")
 @RestController
 @CrossOrigin(origins = "*")
@@ -63,4 +65,8 @@ public interface ProductController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ProductDto>>> searchProducts(
             @RequestBody ProductSearchRequestDto requestDto
     );
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportProductsExcel(HttpServletResponse response);
+
 }

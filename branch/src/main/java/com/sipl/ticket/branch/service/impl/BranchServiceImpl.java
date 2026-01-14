@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.helper.BranchExcelGenerator;
 import com.sipl.ticket.core.mapper.BranchMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class BranchServiceImpl implements BranchService {
     private final StateRepository stateRepository;
     private final CityRepository cityRepository;
     private final CompanyRepository companyRepository;
+
 
     @ActivityLoggable(
             action = "CREATE",
@@ -303,5 +306,30 @@ public class BranchServiceImpl implements BranchService {
             );
         }
     }
+        @Override
+        @Transactional(readOnly = true)
+        public void exportBranchesCsv(HttpServletResponse response) {
+
+            log.info("Exporting active branches to Excel");
+
+            try {
+                List<BranchDto> branches = repository.findAll()
+                        .stream()
+                        .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                        .map(mapper::toDto)
+                        .collect(Collectors.toList());
+
+                BranchExcelGenerator.generateExcel(branches, response);
+
+                log.info("Branches Excel export completed successfully, totalRecords={}",
+                        branches.size());
+
+            } catch (Exception e) {
+                log.error("exportBranchesCsv unexpected error", e);
+                throw new RuntimeException("Failed to export branches Excel", e);
+            }
+        }
+
+
 
 }

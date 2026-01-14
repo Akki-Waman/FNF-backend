@@ -50,7 +50,11 @@ public class TicketResponseServiceImpl implements TicketResponseService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @ActivityLoggable(action = "ADD", module = "TICKET_RESPONSE")
+    @ActivityLoggable(
+            action = "ADD",
+            module = "TICKET_RESPONSE",
+            description = "Ticket response {0} added successfully"
+    )
     public ApiResponseDTO<TicketResponseCombinedDto> addTicketResponse(
             String ticketResponseRequestDto,
             List<MultipartFile> files) {
@@ -110,7 +114,11 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         }
     }
 
-    @ActivityLoggable(action = "CREATE", module = "TICKET_RESPONSE")
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "TICKET_RESPONSE",
+            description = "Ticket response {0} created successfully"
+    )
     private TicketResponse saveTicketResponse(TicketResponseRequestDTO dto) {
 
         validateTicketResponseRequest(dto);

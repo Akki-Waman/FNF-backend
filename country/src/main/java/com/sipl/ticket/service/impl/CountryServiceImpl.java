@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.CountryRequestDto;
 import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
+import com.sipl.ticket.core.helper.CountryExcelGenerator;
 import com.sipl.ticket.core.mapper.CountryMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CountryService;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -359,6 +361,29 @@ public class CountryServiceImpl implements CountryService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportCountriesExcel(HttpServletResponse response) {
+
+        log.info("Exporting active countries to Excel");
+
+        try {
+            List<CountryResponseDto> countries = repository.findAll()
+                    .stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            CountryExcelGenerator.generateExcel(countries, response);
+
+            log.info("Countries Excel export completed successfully, totalRecords={}",
+                    countries.size());
+
+        } catch (Exception e) {
+            log.error("exportCountriesExcel unexpected error", e);
+            throw new RuntimeException("Failed to export countries Excel", e);
+        }
+    }
 
 
 

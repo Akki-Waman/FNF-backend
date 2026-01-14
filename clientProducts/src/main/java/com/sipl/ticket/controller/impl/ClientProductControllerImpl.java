@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -69,6 +71,17 @@ public class ClientProductControllerImpl implements ClientProductController {
         return response;
     }
 
+    @Override
+    public ResponseEntity<Void> exportClientProductsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportClientProductsExcel endpoint called <<Start>>");
+
+        clientProductService.exportClientProductsExcel(response);
+
+        log.info("<<End>> exportClientProductsExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
 
 
 }
