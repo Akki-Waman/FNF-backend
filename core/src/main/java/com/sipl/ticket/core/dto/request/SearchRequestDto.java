@@ -14,8 +14,7 @@ import java.util.List;
 @SuperBuilder
 public class SearchRequestDto {
 
-    @Builder.Default
-    private Boolean isActive = true;
+    private Boolean isActive ;
 
     @Builder.Default
     private int page = 0;
