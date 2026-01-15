@@ -44,9 +44,8 @@ public interface TicketController {
     @ApiOperation(
             value = "Update a existing ticket entry",
             notes = "Provide the necessary ticket information to save a new entry")
-    @PutMapping("/update/{ticketId}")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> updateTickets(
-            @PathVariable Long ticketId,
             @RequestPart(value = "ticketRequestDto") String ticketRequestDto,
             @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile);
 

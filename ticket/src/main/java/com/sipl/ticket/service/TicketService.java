@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public interface TicketService {
-    ApiResponseDTO<CombinedTicketResponseDto> addTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
+    ApiResponseDTO<CombinedTicketResponseDto> addTickets(String ticketRequestDto, List<MultipartFile> multipartFile);
 
     ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO);
 
@@ -20,7 +20,7 @@ public interface TicketService {
             TicketSearchRequestDto requestDto
     );
 
-    ApiResponseDTO<CombinedTicketResponseDto> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
+    ApiResponseDTO<CombinedTicketResponseDto> updateTickets( String ticketRequestDto, List<MultipartFile> multipartFile);
 
     ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary();
 
