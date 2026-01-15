@@ -29,5 +29,6 @@ public interface TicketService {
             HttpServletResponse response
     );
 
+    ApiResponseDTO<Long> getAllTicketIds();
 
 }

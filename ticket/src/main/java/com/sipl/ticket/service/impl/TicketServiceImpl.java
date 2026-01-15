@@ -917,7 +917,66 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Failed to export tickets", e);
         }
     }
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponseDTO<Long> getAllTicketIds() {
 
+        try {
+
+            List<Long> ticketIds =
+                    ticketRepository.findAllActiveTicketIds();
+
+            if (ticketIds == null || ticketIds.isEmpty()) {
+
+                log.warn("getAllTicketIds | No active tickets found");
+
+                return new ApiResponseDTO<Long>(
+                        null,
+                        Collections.emptyList(),
+                        null,
+                        "No active tickets are available at the moment.",
+                        HttpStatus.NOT_FOUND,
+                        false,
+                        null,
+                        null
+                );
+            }
+
+            log.info(
+                    "getAllTicketIds | Successfully fetched {} active ticket IDs",
+                    ticketIds.size()
+            );
+
+            return new ApiResponseDTO<Long>(
+                    null,
+                    ticketIds,
+                    null,
+                    "Active ticket IDs fetched successfully.",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "getAllTicketIds | Unexpected error while fetching active ticket IDs",
+                    e
+            );
+
+            return new ApiResponseDTO<Long>(
+                    null,
+                    null,
+                    null,
+                    "Something went wrong while fetching ticket IDs. Please try again later.",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
 }
 
 
