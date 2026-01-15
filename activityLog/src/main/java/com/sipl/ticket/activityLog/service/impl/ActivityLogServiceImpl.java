@@ -4,16 +4,19 @@ import com.sipl.ticket.activityLog.service.ActivityLogService;
 import com.sipl.ticket.core.dao.entity.ActivityLog;
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dao.repository.ActivityLogRepository;
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.util.RequestContextUtil;
 import com.sipl.ticket.core.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,44 +42,77 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     }
 
     @Override
-    public List<ActivityLogDashboardDto> getLatestActivities() {
-
-        log.info("ActivityLogService | Request received to fetch latest activities");
+    public ApiResponseDTO<ActivityLogDashboardDto> getLatestActivities() {
 
         try {
             Users loggedInUser = SecurityUtil.getCurrentUser();
             Pageable pageable = PageRequest.of(0, 10);
 
+            log.debug("ActivityLogService | Pageable initialized | page=0, size=10");
+
             List<ActivityLog> logs;
 
             if (loggedInUser != null) {
-                log.info("Fetching activity logs for userId={}", loggedInUser.getId());
+
+                log.info(
+                        "ActivityLogService | Fetching logs for logged-in user | userId={}",
+                        loggedInUser.getId()
+                );
 
                 logs = activityLogRepository
                         .findLatestLogsByUser(loggedInUser, pageable);
+
             } else {
-                log.warn("No authenticated user found, fetching system-wide activity logs");
+
+                log.warn(
+                        "ActivityLogService | No authenticated user found | fetching system-wide logs"
+                );
 
                 logs = activityLogRepository
                         .findLatestLogs(pageable);
             }
 
-            List<ActivityLogDashboardDto> response =
-                    logs.stream()
-                            .map(this::mapToDashboardDto)
-                            .collect(Collectors.toList());
+            log.info(
+                    "ActivityLogService | Logs fetched successfully | count={}",
+                    logs.size()
+            );
 
-            log.info("Successfully fetched {} activity logs", response.size());
+            List<ActivityLogDashboardDto> dtoList = logs.stream()
+                    .map(this::mapToDashboardDto)
+                    .collect(Collectors.toList());
+
+            ApiResponseDTO<ActivityLogDashboardDto> response = new ApiResponseDTO<>();
+
+            response.setDataList(dtoList);
+            response.setStatus(HttpStatus.OK);
+            response.setMessage("Latest activity logs fetched successfully");
+            response.setError(false);
+
+            log.info(
+                    "ActivityLogService | getLatestActivities | END | returnedCount={}",
+                    dtoList.size()
+            );
 
             return response;
 
         } catch (Exception ex) {
 
-            log.error("Failed to fetch latest activity logs", ex);
+            log.error(
+                    "ActivityLogService | getLatestActivities | ERROR",
+                    ex
+            );
 
-            return List.of();
+            ApiResponseDTO<ActivityLogDashboardDto> response = new ApiResponseDTO<>();
+
+            response.setDataList(Collections.emptyList());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            response.setMessage("Failed to fetch latest activity logs");
+            response.setError(true);
+
+            return response;
         }
     }
+
 
 
     private ActivityLogDashboardDto mapToDashboardDto(ActivityLog log) {

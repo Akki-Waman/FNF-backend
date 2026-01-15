@@ -3,6 +3,7 @@ package com.sipl.ticket.activityLog.controller.impl;
 import com.sipl.ticket.activityLog.controller.ActivityLogController;
 import com.sipl.ticket.activityLog.service.ActivityLogService;
 
+import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +19,20 @@ public class ActivityLogControllerImpl implements ActivityLogController {
     private final ActivityLogService activityLogService;
 
     @Override
-    public ResponseEntity<List<ActivityLogDashboardDto>> getLatestActivities() {
+    public ResponseEntity<ApiResponseDTO<ActivityLogDashboardDto>> getLatestActivities() {
 
         log.info("<<START>> getLatestActivities <<START>>");
-        List<ActivityLogDashboardDto> response =
+
+        ApiResponseDTO<ActivityLogDashboardDto> response =
                 activityLogService.getLatestActivities();
 
         log.info("<<END>> getLatestActivities <<END>>");
 
         return ResponseEntity.ok(response);
     }
+
+
+
 
 
 }
