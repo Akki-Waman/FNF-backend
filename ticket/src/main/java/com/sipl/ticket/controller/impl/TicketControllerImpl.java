@@ -25,7 +25,7 @@ public class TicketControllerImpl implements TicketController {
     public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> addTickets(String ticketRequestDto, List<MultipartFile> multipartFile) {
         log.info("<<START>> addProduct controller <<START>>");
         ApiResponseDTO<CombinedTicketResponseDto> apiResponse =
-                ticketService.addTickets(null,ticketRequestDto, multipartFile);
+                ticketService.addTickets(ticketRequestDto, multipartFile);
         log.info("<<END>> addProduct controller <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
@@ -56,10 +56,10 @@ public class TicketControllerImpl implements TicketController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile) {
+    public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> updateTickets(String ticketRequestDto, List<MultipartFile> multipartFile) {
         log.info("<<START>> updateTickets controller <<START>>");
         ApiResponseDTO<CombinedTicketResponseDto> apiResponse =
-                ticketService.updateTickets(ticketId,ticketRequestDto, multipartFile);
+                ticketService.updateTickets(ticketRequestDto, multipartFile);
         log.info("<<END>> updateTickets controller <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
