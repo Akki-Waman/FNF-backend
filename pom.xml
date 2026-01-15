@@ -42,6 +42,7 @@
         <module>activityLog</module>
         <module>slaprofile</module>
         <module>ticketResponse</module>
+        <module>dataFetch</module>
 
     </modules>
 
@@ -343,6 +344,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>ticketResponse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>dataFetch</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>
