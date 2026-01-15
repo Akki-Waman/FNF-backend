@@ -198,7 +198,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>slaprofile</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>dataFetch</artifactId>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>com.sipl.ticket</groupId>-->
 <!--            <artifactId>redisCache</artifactId>-->
