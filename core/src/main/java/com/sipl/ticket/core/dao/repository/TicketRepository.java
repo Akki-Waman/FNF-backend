@@ -38,12 +38,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query(
             "SELECT t FROM Ticket t " +
                     "WHERE t.isDeleted = false " +
+                    "AND ( :branchId IS NULL OR t.branch.branchId = :branchId ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR t.searchText LIKE CONCAT('%', LOWER(:query), '%') )"
     )
-    Page<Ticket> searchTickets(@Param("query") String query, Pageable pageable);
-
-
+    Page<Ticket> searchTickets(@Param("query") String query, @Param("branchId") Integer branchId, Pageable pageable);
 
     @Query(
             "SELECT sm.valueDesc, COUNT(t.id) " +

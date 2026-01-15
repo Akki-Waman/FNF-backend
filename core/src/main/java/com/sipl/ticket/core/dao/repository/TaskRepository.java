@@ -22,6 +22,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             "SELECT t " +
                     "FROM Task t " +
                     "WHERE (:ticketId IS NULL OR t.ticket.ticketId = :ticketId) " +
+                    "AND ( :branchId IS NULL OR t.branch.branchId = :branchId ) " +
                     "AND ( " +
                     "   :query IS NULL " +
                     "   OR CAST(t.taskId AS string) = :query " +
@@ -30,6 +31,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     )
     Page<Task> searchTasks(
             @Param("ticketId") Long ticketId,
+            @Param("branchId") Integer branchId,
             @Param("query") String query,
             Pageable pageable
     );

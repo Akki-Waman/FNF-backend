@@ -510,12 +510,13 @@ public class TicketServiceImpl implements TicketService {
     public ApiResponseDTO<PagedResponse<TicketCombinedResponseDto>> searchTickets(
             TicketSearchRequestDto dto) {
 
-        log.info("Ticket search started | query='{}', page={}, size={}, sortBy={}, sortDir={}",
+        log.info("Ticket search started | query='{}', page={}, size={}, sortBy={}, sortDir={}, branchId={}",
                 dto.getQuery(),
                 dto.getPage(),
                 dto.getSize(),
                 dto.getSortBy(),
-                dto.getSortDir()
+                dto.getSortDir(),
+                dto.getBranchId()
         );
 
         try {
@@ -527,7 +528,7 @@ public class TicketServiceImpl implements TicketService {
             );
 
             Page<Ticket> pageResult =
-                    ticketRepository.searchTickets(dto.getQuery(), pageable);
+                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(), pageable);
 
             if (pageResult.isEmpty()) {
                 log.warn("No tickets found for query='{}'", dto.getQuery());
@@ -889,7 +890,7 @@ public class TicketServiceImpl implements TicketService {
 
             List<Ticket> tickets =
                     ticketRepository
-                            .searchTickets(search, Pageable.unpaged())
+                            .searchTickets(search, null, Pageable.unpaged())
                             .getContent();
 
             log.info("Tickets fetched successfully | count={}", tickets.size());

@@ -29,5 +29,5 @@ public class SearchRequestDto {
     @Builder.Default
     private String sortDir = "desc";
 
-    //private List<Long> plantIds;
+    private Integer branchId;
 }
