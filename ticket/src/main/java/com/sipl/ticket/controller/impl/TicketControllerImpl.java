@@ -87,6 +87,18 @@ public class TicketControllerImpl implements TicketController {
         return ResponseEntity.ok().build();
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<Long>> getAllTicketIds() {
+
+        log.info("<<START>> getAllTicketIds controller");
+
+        ApiResponseDTO<Long> response =
+                ticketService.getAllTicketIds();
+
+        log.info("<<END>> getAllTicketIds controller");
+
+        return ResponseEntity.ok(response);
+    }
 
 
 

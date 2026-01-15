@@ -60,6 +60,12 @@ public interface TicketController {
             HttpServletResponse response
     );
 
+    @ApiOperation(
+            value = "Get list of all ticket IDs",
+            notes = "Fetches list of active ticket IDs"
+    )
+    @GetMapping("/ids")
+    ResponseEntity<ApiResponseDTO<Long>> getAllTicketIds();
 
 
 }
