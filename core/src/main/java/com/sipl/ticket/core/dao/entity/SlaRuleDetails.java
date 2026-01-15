@@ -31,7 +31,7 @@ public class SlaRuleDetails extends AuditEntity {
     private ServiceEntity service;
 
     @Column(name = "severity_master_id", nullable = false)
-    private Long severityMasterId;
+    private Integer severityMasterId;
 
     @Column(name = "sla_type_master_id", nullable = false)
     private Long slaTypeMasterId;

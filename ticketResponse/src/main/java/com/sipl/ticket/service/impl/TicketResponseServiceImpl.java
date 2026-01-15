@@ -27,6 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 
 
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,6 +50,10 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final TicketResponseAttachmentRepository ticketResponseAttachmentRepository;
     private final EmailUtil emailUtil;
     private final SettingRepository settingRepository;
+    private final SlaProfileRepository slaProfileRepository;
+    private final SlaRuleDetailsRepository slaRuleDetailsRepository;
+
+    public static final Long SLA_TYPE_RESPONSE_ID = 1L;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -132,13 +139,9 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         ticketResponse.setIsPublic(Boolean.TRUE.equals(dto.getIsPublic()));
         ticketResponse.setStatusBefore(dto.getStatusBefore());
         ticketResponse.setStatusAfter(dto.getStatusAfter());
+        applySlaLogic(ticketResponse);
 
-        TicketResponse saved = ticketResponseRepository.save(ticketResponse);
-        ticketResponseRepository.flush();
-
-        log.info("TicketResponse saved with id={}", saved.getTicketResponseId());
-
-        return saved;
+        return ticketResponseRepository.save(ticketResponse);
     }
 
     private void validateTicketResponseRequest(TicketResponseRequestDTO dto) {
@@ -350,6 +353,121 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                 statusLine,
                 ticketResponse.getResponseBody()
         );
+    }
+
+    private void applySlaLogic(TicketResponse ticketResponse) {
+
+        Ticket ticket = ticketResponse.getTicket();
+        log.info("SLA START for ticketId={}", ticket.getTicketId());
+        /* ---------- STEP 1 : Branch ---------- */
+        Integer branchId = Optional.ofNullable(ticket.getBranch())
+                .map(Branches::getBranchId)
+                .orElse(null);
+
+        log.info("SLA STEP 1 → branchId={}", branchId);
+        if (branchId == null) {
+            log.warn("SLA EXIT → Branch not found for ticketId={}", ticket.getTicketId());
+            setSlaFieldsNull(ticketResponse);
+            return;
+        }
+
+        /* ---------- STEP 2 : SLA Profile ---------- */
+        Optional<SlaProfile> slaProfileOpt =
+                slaProfileRepository.findActiveProfileByBranch(
+                        branchId,
+                        LocalDate.now()
+                );
+
+        if (slaProfileOpt.isEmpty()) {
+            log.warn("SLA EXIT → No active SLA profile for branchId={}", branchId);
+            setSlaFieldsNull(ticketResponse);
+            return;
+        }
+
+        SlaProfile slaProfile = slaProfileOpt.get();
+        log.info("SLA STEP 2 → slaProfileId={}", slaProfile.getSlaProfileId());
+
+        /* ---------- STEP 3 : SLA Rule ---------- */
+        Optional<SlaRuleDetails> ruleOpt =
+                slaRuleDetailsRepository.findActiveRule(
+                        slaProfile.getSlaProfileId(),
+                        ticket.getService().getServiceId(),
+                        ticket.getPriority(),
+                        SLA_TYPE_RESPONSE_ID
+                );
+
+        if (ruleOpt.isEmpty()) {
+            log.warn(
+                    "SLA EXIT → No SLA rule found for profileId={}, serviceId={}, severity={}, slaTypeId={}",
+                    slaProfile.getSlaProfileId(),
+                    ticket.getService().getServiceId(),
+                    ticket.getPriority(),
+                    SLA_TYPE_RESPONSE_ID
+            );
+            setSlaFieldsNull(ticketResponse);
+            return;
+        }
+        SlaRuleDetails rule = ruleOpt.get();
+        log.info("SLA STEP 3 SUCCESS → ruleId={}, slaHours={}",
+                rule.getSlaRuleDetailId(),
+                rule.getSlaHours()
+        );
+        /* ---------- STEP 4 : SLA Calculation ---------- */
+        calculateAndSetSla(ticketResponse, rule);
+        log.info("SLA END → ticketId={} SLA calculated successfully", ticket.getTicketId());
+    }
+
+    private void calculateAndSetSla(
+            TicketResponse ticketResponse,
+            SlaRuleDetails rule) {
+
+        Ticket ticket = ticketResponse.getTicket();
+
+        double slaHours = rule.getSlaHours();
+        int graceMinutes = rule.getGraceHours() * 60;
+        double penaltyPercentPerMinute =
+                rule.getPenaltyPercent() / 60;
+
+        double responseHours =
+                Duration.between(ticket.getCreatedTime(), LocalDateTime.now())
+                        .toMinutes() /60.0;
+
+        boolean withinSla = responseHours <= slaHours;
+
+        log.info(
+                "SLA CALC → responseHours={}, slaHours={}, withinSla={}",
+                responseHours, slaHours, withinSla
+        );
+
+        ticketResponse.setResponseTimeHours(responseHours);
+        ticketResponse.setSlaHours(slaHours);
+        ticketResponse.setWithinSla(withinSla);
+
+        if (withinSla) {
+            ticketResponse.setPenaltyAllowed(false);
+            ticketResponse.setPenaltyTime(0);
+            ticketResponse.setPenaltyPercentage(BigDecimal.ZERO);
+        } else {
+            double penaltyMinutes =
+                    Math.max(0, responseHours - slaHours - graceMinutes);
+
+            BigDecimal penaltyPercentage =
+                    BigDecimal.valueOf(penaltyMinutes)
+                            .multiply(BigDecimal.valueOf(penaltyPercentPerMinute));
+
+            ticketResponse.setPenaltyAllowed(true);
+            ticketResponse.setPenaltyTime((int) penaltyMinutes);
+            ticketResponse.setPenaltyPercentage(penaltyPercentage);
+        }
+    }
+
+    private void setSlaFieldsNull(TicketResponse tr) {
+        tr.setResponseTimeHours(null);
+        tr.setSlaHours(null);
+        tr.setWithinSla(null);
+        tr.setPenaltyAllowed(null);
+        tr.setPenaltyTime(null);
+        tr.setPenaltyPercentage(null);
     }
 
 }

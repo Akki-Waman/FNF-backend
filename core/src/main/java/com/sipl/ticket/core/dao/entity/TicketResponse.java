@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ticket_responses")
@@ -39,4 +41,23 @@ public class TicketResponse extends AuditEntity{
     @Column(name = "status_after", length = 30)
     private String statusAfter;
 
+    /* ===== New SLA & Penalty Columns ===== */
+
+    @Column(name = "sla_hours")
+    private Double  slaHours;
+
+    @Column(name = "penalty_allowed")
+    private Boolean penaltyAllowed;
+
+    @Column(name = "response_time_hours")
+    private Double  responseTimeHours;
+
+    @Column(name = "within_sla")
+    private Boolean withinSla;
+
+    @Column(name = "penalty_time")
+    private Integer penaltyTime;
+
+    @Column(name = "penalty_percentage")
+    private BigDecimal penaltyPercentage;
 }

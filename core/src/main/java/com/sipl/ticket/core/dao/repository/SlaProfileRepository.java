@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Repository
 public interface SlaProfileRepository extends JpaRepository<SlaProfile, Integer> {
@@ -38,5 +39,14 @@ public interface SlaProfileRepository extends JpaRepository<SlaProfile, Integer>
             @Param("branchId") Integer branchId,
             @Param("isActive") Boolean isActive,
             Pageable pageable
+    );
+
+    @Query("SELECT sp FROM SlaProfile sp " +
+            "WHERE sp.branch.branchId = :branchId " +
+            "AND sp.isActive = true " +
+            "AND :today BETWEEN sp.effectiveFrom AND sp.effectiveTo ")
+    Optional<SlaProfile> findActiveProfileByBranch(
+            @Param("branchId") Integer branchId,
+            @Param("today") LocalDate today
     );
 }
