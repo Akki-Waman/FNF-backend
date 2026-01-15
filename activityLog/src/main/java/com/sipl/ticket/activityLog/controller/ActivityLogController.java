@@ -5,7 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 import java.util.List;
 
 @RestController
@@ -20,6 +20,6 @@ public interface ActivityLogController {
             response = ActivityLogDto.class
     )
     @GetMapping("/latest")
-    ResponseEntity<List<com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto>> getLatestActivities();
+    ResponseEntity<List<ActivityLogDashboardDto>> getLatestActivities();
 
 }
