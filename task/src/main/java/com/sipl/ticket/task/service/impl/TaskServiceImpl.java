@@ -379,6 +379,7 @@ public class TaskServiceImpl implements TaskService {
         );
         Page<Task> pageResult = taskRepository.searchTasks(
                 dto.getTicketId(),
+                dto.getBranchId(),
                 dto.getQuery(),
                 pageable
         );
@@ -895,7 +896,7 @@ public class TaskServiceImpl implements TaskService {
 
             List<Task> tasks =
                     taskRepository
-                            .searchTasks(null, search, Pageable.unpaged())
+                            .searchTasks(null,null, search, Pageable.unpaged())
                             .getContent();
 
             log.info("Tasks fetched successfully | count={}", tasks.size());
