@@ -8,6 +8,9 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -39,6 +42,29 @@ public class ActivityLogAspect {
     private String extractName(Object arg) {
         try {
             for (var method : arg.getClass().getMethods()) {
+
+                if (method.getName().startsWith("get")
+                        && method.getParameterCount() == 0
+                        && List.class.isAssignableFrom(method.getReturnType())) {
+
+                    Object value = method.invoke(arg);
+
+                    if (value != null && value instanceof List) {
+                        List<?> list = (List<?>) value;
+
+                        if (!list.isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < list.size(); i++) {
+                                if (i > 0) sb.append(",");
+                                sb.append(String.valueOf(list.get(i)));
+                            }
+                            return sb.toString();
+                        }
+                    }
+                }
+            }
+
+            for (var method : arg.getClass().getMethods()) {
                 if (method.getName().startsWith("get")
                         && method.getName().endsWith("Name")
                         && method.getParameterCount() == 0) {
@@ -49,10 +75,14 @@ public class ActivityLogAspect {
                     }
                 }
             }
+
         } catch (Exception ignored) {
         }
+
         return arg.toString();
     }
+
+
 }
 
 

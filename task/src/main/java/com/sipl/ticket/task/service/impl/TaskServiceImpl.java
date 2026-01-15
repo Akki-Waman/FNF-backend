@@ -820,7 +820,7 @@ public class TaskServiceImpl implements TaskService {
     @ActivityLoggable(
             action = "DELETE",
             module = "TASK",
-            description = "Task {0} deleted successfully"
+            description = "Task id {0} deleted successfully"
     )
     public ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO) {
 
