@@ -56,4 +56,24 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Query("SELECT t.ticketId FROM Ticket t WHERE t.isDeleted = false")
     List<Long> findAllActiveTicketIds();
+
+    @Query(
+            "SELECT t " +
+                    "FROM Ticket t " +
+                    "LEFT JOIN t.clientProducts cp " +
+                    "LEFT JOIN t.service s " +
+                    "WHERE t.isDeleted = false " +
+                    "AND (:ticketId IS NULL OR t.ticketId = :ticketId) " +
+                    "AND (:unitName IS NULL OR LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :unitName, '%'))) " +
+                    "AND (:deviceName IS NULL OR LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :deviceName, '%'))) " +
+                    "AND (:service IS NULL OR LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :service, '%'))) "
+    )
+    Page<Ticket> searchResponsePenaltyReport(
+            @Param("ticketId") Long ticketId,
+            @Param("unitName") String unitName,
+            @Param("deviceName") String deviceName,
+            @Param("service") String service,
+            Pageable pageable
+    );
+
 }
