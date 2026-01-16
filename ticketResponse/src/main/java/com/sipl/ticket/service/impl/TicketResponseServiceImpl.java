@@ -358,9 +358,15 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private void applyResponseSlaLogic(Ticket  ticket ) {
         log.info("SLA START for ticketId={}", ticket.getTicketId());
 
-        if (ticket.getResponseDateTime() == null) {
-            ticket.setResponseDateTime(LocalDateTime.now());
+        if (ticket.getResponseDateTime() != null) {
+            log.info(
+                    "RESPONSE SLA SKIPPED → ticketId={} already responded at {}",
+                    ticket.getTicketId(),
+                    ticket.getResponseDateTime()
+            );
+            return;
         }
+            ticket.setResponseDateTime(LocalDateTime.now());
         /* ---------- STEP 1 : Branch ---------- */
         Integer branchId = Optional.ofNullable(ticket.getBranch())
                 .map(Branches::getBranchId)
