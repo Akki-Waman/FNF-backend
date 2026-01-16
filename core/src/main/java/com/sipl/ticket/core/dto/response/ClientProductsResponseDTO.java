@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ClientProductsResponseDTO extends AuditDto{
 
     private Long clientProductId;
