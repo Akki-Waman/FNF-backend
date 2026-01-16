@@ -1,18 +1,9 @@
 package com.sipl.ticket.service.impl;
 
-import com.sipl.ticket.core.dao.entity.Divisions;
-import com.sipl.ticket.core.dao.entity.OperationalUnit;
-import com.sipl.ticket.core.dao.entity.Region;
-import com.sipl.ticket.core.dao.entity.Zone;
-import com.sipl.ticket.core.dao.repository.DivisionsRepository;
-import com.sipl.ticket.core.dao.repository.OperationalUnitRepository;
-import com.sipl.ticket.core.dao.repository.RegionRepository;
-import com.sipl.ticket.core.dao.repository.ZoneRepository;
+import com.sipl.ticket.core.dao.entity.*;
+import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.response.*;
-import com.sipl.ticket.core.mapper.DivisionMapper;
-import com.sipl.ticket.core.mapper.OperationalUnitMapper;
-import com.sipl.ticket.core.mapper.RegionMapper;
-import com.sipl.ticket.core.mapper.ZoneMapper;
+import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.service.DataFetchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +25,9 @@ public class DataFetchServiceImpl implements DataFetchService {
     private final DivisionMapper divisionMapper;
     private final OperationalUnitRepository operationalUnitRepository;
     private final OperationalUnitMapper operationalUnitMapper;
+    private final GstSlabRepository gstSlabMasterRepository;
+    private final GstSlabMasterMapper gstSlabMasterMapper;
+
 
     @Override
     public ApiResponseDTO<RegionResponseDTO> getAllRegions() {
@@ -246,5 +240,45 @@ public class DataFetchServiceImpl implements DataFetchService {
                     true
             );
         }    }
+
+    @Override
+    public ApiResponseDTO<GstSlabDto> getAllGstSlabs() {
+        try {
+            List<GstSlabMaster> gstSlabs = gstSlabMasterRepository.findByIsActiveTrue();
+
+            if (gstSlabs.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No GST slabs found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<GstSlabDto> gstSlabDtos =
+                    gstSlabMasterMapper.mapGstSlabListToDtoList(gstSlabs);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    gstSlabDtos,
+                    null,
+                    "GST slabs fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception ex) {
+            log.error("Error while fetching GST slabs", ex);
+            return new ApiResponseDTO<>(
+                    null,
+                    ex.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 
 }

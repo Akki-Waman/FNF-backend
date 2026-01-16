@@ -18,4 +18,7 @@ public interface DataFetchService {
     ApiResponseDTO<DivisionResponseDTO> getAllDivisionsByZones(Long zoneId);
 
     ApiResponseDTO<OperationalUnitResponseDTO> getAllOperationalUnitsByDivisions(Long divisionId);
+
+    ApiResponseDTO<GstSlabDto> getAllGstSlabs();
+
 }

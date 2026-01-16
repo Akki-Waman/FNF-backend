@@ -11,7 +11,6 @@ public class ProductSearchRequestDto extends SearchRequestDto {
     private List<Long> originId;
     private List<Long> productCategoryId;
     private List<Long> productSubCategoryId;
-    private List<Integer> branchId;
 
 
 }
