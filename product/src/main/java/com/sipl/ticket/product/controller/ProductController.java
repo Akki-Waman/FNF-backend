@@ -54,7 +54,9 @@ public interface ProductController {
             notes = "Fetch all the product entries available in the system.",
             response = ProductDto.class)
     @GetMapping("")
-    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct();
+    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct(
+            @RequestParam(required = false) Integer branchId
+    );
 
     @ApiOperation(
             value = "Search products",
@@ -67,6 +69,8 @@ public interface ProductController {
     );
 
     @GetMapping("/export")
-    ResponseEntity<Void> exportProductsExcel(HttpServletResponse response);
+    ResponseEntity<Void> exportProductsExcel(HttpServletResponse response,
+                                             @RequestParam(required = false) Integer branchId
+    );
 
 }

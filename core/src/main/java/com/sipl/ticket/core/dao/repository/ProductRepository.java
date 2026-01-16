@@ -27,14 +27,24 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
       "SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Products p WHERE p.productCode = :productCode")
   boolean existsByProductCode(@Param("productCode") String productCode);
 
-    @Query("from Products p where p.isActive=true")
-    List<Products> findByIsActiveTrue();
+    @Query(
+            "from Products p " +
+                    "where p.isActive = true " +
+                    "and (:branchId is null or p.branch.branchId = :branchId)"
+    )
+    List<Products> findByIsActiveTrue(
+            @Param("branchId") Integer branchId
+    );
+
 
 
     @Query(
             "SELECT p " +
                     "FROM Products p " +
                     "WHERE p.isActive = true " +
+
+                    "AND ( :#{#branchIds == null || #branchIds.isEmpty()} = true " +
+                    "      OR p.branch.branchId IN :branchIds ) " +
 
                     "AND ( :#{#productIds == null || #productIds.isEmpty()} = true " +
                     "      OR p.productId IN :productIds ) " +
@@ -57,6 +67,8 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
             @Param("originIds") List<Long> originIds,
             @Param("categoryIds") List<Long> categoryIds,
             @Param("subCategoryIds") List<Long> subCategoryIds,
+            @Param("branchIds") List<Integer> branchIds,
             Pageable pageable
     );
+
 }

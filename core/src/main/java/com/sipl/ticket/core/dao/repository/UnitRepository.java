@@ -15,16 +15,16 @@ import java.util.Optional;
 public interface UnitRepository extends JpaRepository<Unit, Long> {
 
     @Query("From Unit u where u.unitId = :unitId AND u.isActive = true")
-    Optional<Unit> findActiveById(Long unitId);
+    Optional<Unit> findActiveById( @Param("unitId") Long unitId);
 
     @Query("From Unit u where u.isActive = true")
     List<Unit> findAllActive();
 
-    boolean existsByUnitNameIgnoreCase(String unitName);
+    boolean existsByUnitNameIgnoreCase(@Param("unitName") String unitName);
 
     boolean existsByUnitNameIgnoreCaseAndUnitIdNot(
-            String unitName,
-            Long unitId
+            @Param("unitName") String unitName,
+           @Param("unitId") Long unitId
     );
 
     @Query(

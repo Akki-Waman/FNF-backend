@@ -14,10 +14,10 @@ import java.util.Optional;
 @Repository
 public interface BrandRepository extends JpaRepository<Brands, Long> {
 
-    boolean existsByBrandNameIgnoreCase(String brandName);
+    boolean existsByBrandNameIgnoreCase(@Param("brandName") String brandName);
 
     boolean existsByBrandNameIgnoreCaseAndBrandIdNot(
-            String brandName, Long brandId
+           @Param("brandName") String brandName,@Param("brandId") Long brandId
     );
 
     List<Brands> findByIsActiveTrue();

@@ -68,4 +68,10 @@ public class ProductDto extends AuditDto {
     private Long dmsDocId;
 
     private Boolean isSync;
+
+    private Integer branchId;
+
+    private String branchName;
+
+
 }
