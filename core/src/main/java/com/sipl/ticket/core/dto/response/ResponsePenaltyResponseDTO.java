@@ -17,7 +17,7 @@ public class ResponsePenaltyResponseDTO {
     private String subject;
     private LocalDate issueLogged;
     private LocalDate issueResolved;
-    private Double resolutionTime;
+    private String resolutionTime;
     private String status;
     private String taskStatus;
     private Boolean withInWeek;
