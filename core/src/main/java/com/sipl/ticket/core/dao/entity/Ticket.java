@@ -123,7 +123,7 @@ public class Ticket extends AuditEntity{
     private Boolean responseWithinSla;
 
     @Column(name = "response_penalty_time")
-    private Integer responsePenaltyTime;
+    private Double responsePenaltyTime;
 
     @Column(name = "response_penalty_percentage")
     private BigDecimal responsePenaltyPercentage;
@@ -143,7 +143,7 @@ public class Ticket extends AuditEntity{
     private Boolean resolutionWithinSla;
 
     @Column(name = "resolution_penalty_time")
-    private Integer resolutionPenaltyTime;
+    private Double resolutionPenaltyTime;
 
     @Column(name = "resolution_penalty_percentage")
     private BigDecimal resolutionPenaltyPercentage;

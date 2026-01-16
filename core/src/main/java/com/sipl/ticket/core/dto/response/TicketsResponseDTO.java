@@ -39,7 +39,7 @@ public class TicketsResponseDTO extends AuditDto {
     private Double responseSlaHours;
     private Double responseTimeHours;
     private Boolean responseWithinSla;
-    private Integer responsePenaltyTime;
+    private Double responsePenaltyTime;
     private BigDecimal responsePenaltyPercentage;
     private LocalDateTime responseDateTime;
 
@@ -48,7 +48,7 @@ public class TicketsResponseDTO extends AuditDto {
     private Double resolutionSlaHours;
     private Double resolutionTimeHours;
     private Boolean resolutionWithinSla;
-    private Integer resolutionPenaltyTime;
+    private Double resolutionPenaltyTime;
     private BigDecimal resolutionPenaltyPercentage;
     private LocalDateTime resolutionDateTime;
 

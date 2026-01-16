@@ -452,7 +452,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
 
         if (withinSla) {
             ticket.setPenaltyAllowed(false);
-            ticket.setResponsePenaltyTime(0);
+            ticket.setResponsePenaltyTime(0.0);
             ticket.setResponsePenaltyPercentage(BigDecimal.ZERO);
         } else {
             double penaltyMinutes =
@@ -462,7 +462,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                     BigDecimal.valueOf(penaltyMinutes)
                             .multiply(BigDecimal.valueOf(penaltyPercentPerMinute));
             ticket.setPenaltyAllowed(true);
-            ticket.setResponsePenaltyTime((int) penaltyMinutes);
+            ticket.setResponsePenaltyTime((double) penaltyMinutes);
             ticket.setResponsePenaltyPercentage(penaltyPercentage);
         }
     }
