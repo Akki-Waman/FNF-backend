@@ -37,4 +37,7 @@ public interface TaskService {
             ExportSearchRequestDTO request,
             HttpServletResponse response
     );
+
+    ApiResponseDTO<Long> getAllTaskIds();
+
 }
