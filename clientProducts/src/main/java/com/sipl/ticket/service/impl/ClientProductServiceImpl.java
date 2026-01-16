@@ -400,9 +400,11 @@ public class ClientProductServiceImpl implements ClientProductService {
         log.info("Exporting active client products to Excel");
 
         try {
+            List<ClientProducts> entities =
+                    clientProductsRepository.findActiveForExport();
+
             List<ClientProductsResponseDTO> clientProducts =
-                    clientProductsRepository.findByIsActiveTrue()
-                            .stream()
+                    entities.stream()
                             .map(clientProductMapper::toDto)
                             .collect(Collectors.toList());
 
@@ -416,6 +418,7 @@ public class ClientProductServiceImpl implements ClientProductService {
             throw new RuntimeException("Failed to export client products Excel", e);
         }
     }
+
 
 
 

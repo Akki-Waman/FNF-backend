@@ -58,4 +58,12 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+    @Query(
+            "SELECT cp FROM ClientProducts cp " +
+                    "JOIN FETCH cp.products " +
+                    "WHERE cp.isActive = true"
+    )
+    List<ClientProducts> findActiveForExport();
+
 }
