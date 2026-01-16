@@ -31,4 +31,8 @@ public interface DataFetchController {
 
     @GetMapping("/get-operational-units/{divisionId}")
     ResponseEntity<ApiResponseDTO<OperationalUnitResponseDTO>> getAllOperationalUnitsByDivisions(@PathVariable Long divisionId);
+
+    @GetMapping("/get-gst-slabs")
+    ResponseEntity<ApiResponseDTO<GstSlabDto>> getAllGstSlabs();
+
 }

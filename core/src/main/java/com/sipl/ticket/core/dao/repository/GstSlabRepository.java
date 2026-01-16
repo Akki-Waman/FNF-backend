@@ -6,10 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface GstSlabRepository extends JpaRepository<GstSlabMaster, Long> {
 
     @Query("From GstSlabMaster gst where gst.slabId = :slabId and gst.isActive = true")
     Optional<GstSlabMaster> findActiveGstById(@Param("slabId") Long slabId);
+
+    List<GstSlabMaster> findByIsActiveTrue();
+
 }

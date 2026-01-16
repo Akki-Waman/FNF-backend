@@ -76,4 +76,16 @@ public class DataFetchControllerImpl implements DataFetchController {
         log.info("<<End>>getAllOperationalUnitsByDivisions endpoint called<<End>>");
         return responseEntity;
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<GstSlabDto>> getAllGstSlabs() {
+        log.info("<<Start>> getAllGstSlabs  <<Start>>");
+
+        ResponseEntity<ApiResponseDTO<GstSlabDto>> responseEntity =
+                new ResponseEntity<>(dataFetchService.getAllGstSlabs(), HttpStatus.OK);
+
+        log.info("<<End>> getAllGstSlabs <<End>>");
+        return responseEntity;
+    }
+
 }
