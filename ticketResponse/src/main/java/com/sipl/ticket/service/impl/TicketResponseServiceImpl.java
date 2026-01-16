@@ -139,7 +139,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         ticketResponse.setIsPublic(Boolean.TRUE.equals(dto.getIsPublic()));
         ticketResponse.setStatusBefore(dto.getStatusBefore());
         ticketResponse.setStatusAfter(dto.getStatusAfter());
-        applySlaLogic(ticketResponse);
+        applyResponseSlaLogic(ticket);
 
         return ticketResponseRepository.save(ticketResponse);
     }
@@ -355,10 +355,18 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         );
     }
 
-    private void applySlaLogic(TicketResponse ticketResponse) {
-
-        Ticket ticket = ticketResponse.getTicket();
+    private void applyResponseSlaLogic(Ticket  ticket ) {
         log.info("SLA START for ticketId={}", ticket.getTicketId());
+
+        if (ticket.getResponseDateTime() != null) {
+            log.info(
+                    "RESPONSE SLA SKIPPED → ticketId={} already responded at {}",
+                    ticket.getTicketId(),
+                    ticket.getResponseDateTime()
+            );
+            return;
+        }
+            ticket.setResponseDateTime(LocalDateTime.now());
         /* ---------- STEP 1 : Branch ---------- */
         Integer branchId = Optional.ofNullable(ticket.getBranch())
                 .map(Branches::getBranchId)
@@ -367,7 +375,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         log.info("SLA STEP 1 → branchId={}", branchId);
         if (branchId == null) {
             log.warn("SLA EXIT → Branch not found for ticketId={}", ticket.getTicketId());
-            setSlaFieldsNull(ticketResponse);
+            clearResponseSla(ticket);
             return;
         }
 
@@ -380,7 +388,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
 
         if (slaProfileOpt.isEmpty()) {
             log.warn("SLA EXIT → No active SLA profile for branchId={}", branchId);
-            setSlaFieldsNull(ticketResponse);
+            clearResponseSla(ticket);
             return;
         }
 
@@ -404,7 +412,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                     ticket.getPriority(),
                     SLA_TYPE_RESPONSE_ID
             );
-            setSlaFieldsNull(ticketResponse);
+            clearResponseSla(ticket);
             return;
         }
         SlaRuleDetails rule = ruleOpt.get();
@@ -413,15 +421,14 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                 rule.getSlaHours()
         );
         /* ---------- STEP 4 : SLA Calculation ---------- */
-        calculateAndSetSla(ticketResponse, rule);
+        calculateAndSetResponseSla(ticket, rule);
+        ticketRepository.save(ticket);
         log.info("SLA END → ticketId={} SLA calculated successfully", ticket.getTicketId());
     }
 
-    private void calculateAndSetSla(
-            TicketResponse ticketResponse,
+    private void calculateAndSetResponseSla(
+            Ticket ticket,
             SlaRuleDetails rule) {
-
-        Ticket ticket = ticketResponse.getTicket();
 
         double slaHours = rule.getSlaHours();
         int graceMinutes = rule.getGraceHours() * 60;
@@ -439,14 +446,14 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                 responseHours, slaHours, withinSla
         );
 
-        ticketResponse.setResponseTimeHours(responseHours);
-        ticketResponse.setSlaHours(slaHours);
-        ticketResponse.setWithinSla(withinSla);
+        ticket.setResponseSlaHours(slaHours);
+        ticket.setResponseTimeHours(responseHours);
+        ticket.setResponseWithinSla(withinSla);
 
         if (withinSla) {
-            ticketResponse.setPenaltyAllowed(false);
-            ticketResponse.setPenaltyTime(0);
-            ticketResponse.setPenaltyPercentage(BigDecimal.ZERO);
+            ticket.setPenaltyAllowed(false);
+            ticket.setResponsePenaltyTime(0.0);
+            ticket.setResponsePenaltyPercentage(BigDecimal.ZERO);
         } else {
             double penaltyMinutes =
                     Math.max(0, responseHours - slaHours - graceMinutes);
@@ -454,20 +461,19 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             BigDecimal penaltyPercentage =
                     BigDecimal.valueOf(penaltyMinutes)
                             .multiply(BigDecimal.valueOf(penaltyPercentPerMinute));
-
-            ticketResponse.setPenaltyAllowed(true);
-            ticketResponse.setPenaltyTime((int) penaltyMinutes);
-            ticketResponse.setPenaltyPercentage(penaltyPercentage);
+            ticket.setPenaltyAllowed(true);
+            ticket.setResponsePenaltyTime((double) penaltyMinutes);
+            ticket.setResponsePenaltyPercentage(penaltyPercentage);
         }
     }
 
-    private void setSlaFieldsNull(TicketResponse tr) {
-        tr.setResponseTimeHours(null);
-        tr.setSlaHours(null);
-        tr.setWithinSla(null);
-        tr.setPenaltyAllowed(null);
-        tr.setPenaltyTime(null);
-        tr.setPenaltyPercentage(null);
+    private void clearResponseSla(Ticket ticket) {
+        ticket.setResponseSlaHours(null);
+        ticket.setResponseTimeHours(null);
+        ticket.setResponseWithinSla(null);
+        ticket.setPenaltyAllowed(null);
+        ticket.setResponsePenaltyTime(null);
+        ticket.setResponsePenaltyPercentage(null);
     }
 
 }

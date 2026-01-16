@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -32,4 +34,23 @@ public class TicketsResponseDTO extends AuditDto {
     private String statusLabel;
     private String priorityLabel;
 
+    /* ===== RESPONSE (REPLY) SLA ===== */
+
+    private Double responseSlaHours;
+    private Double responseTimeHours;
+    private Boolean responseWithinSla;
+    private Double responsePenaltyTime;
+    private BigDecimal responsePenaltyPercentage;
+    private LocalDateTime responseDateTime;
+
+    /* ===== RESOLUTION (CLOSE) SLA ===== */
+
+    private Double resolutionSlaHours;
+    private Double resolutionTimeHours;
+    private Boolean resolutionWithinSla;
+    private Double resolutionPenaltyTime;
+    private BigDecimal resolutionPenaltyPercentage;
+    private LocalDateTime resolutionDateTime;
+
+    private Boolean penaltyAllowed;
 }
