@@ -1,6 +1,7 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Branches;
+import com.sipl.ticket.core.dao.entity.Brands;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,12 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface BranchRepository extends JpaRepository<Branches, Integer> {
 
-    boolean existsByEmailIgnoreCase(String email);
+    boolean existsByEmailIgnoreCase(@Param("email") String email);
 
-    boolean existsByEmailIgnoreCaseAndBranchIdNot(String email, Integer branchId);
+    boolean existsByEmailIgnoreCaseAndBranchIdNot(@Param("email") String email, @Param("branchId") Integer branchId);
 
     @Query(
             "SELECT b " +
@@ -34,5 +37,9 @@ public interface BranchRepository extends JpaRepository<Branches, Integer> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+    @Query("from Branches b where b.branchId = :branchId")
+    Optional<Branches> findByBranchId(@Param("branchId") Integer branchId);
+
 
 }

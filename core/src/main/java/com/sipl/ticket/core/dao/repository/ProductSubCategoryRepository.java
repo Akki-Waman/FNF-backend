@@ -17,10 +17,10 @@ import java.util.Optional;
 public interface ProductSubCategoryRepository
         extends JpaRepository<ProductSubCategories, Long> {
 
-    boolean existsByProductSubCategoryNameIgnoreCase(String name);
+    boolean existsByProductSubCategoryNameIgnoreCase( @Param("name")String name);
 
     boolean existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNot(
-            String name, Long productSubCategoryId
+            @Param("name") String name, @Param("productSubCategoryId") Long productSubCategoryId
     );
 
     // optional & clean

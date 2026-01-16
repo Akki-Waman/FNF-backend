@@ -16,10 +16,8 @@ import java.util.Optional;
 public interface ProductCategoryRepository
         extends JpaRepository<ProductCategories, Long> {
 
-    boolean existsByProductCategoryNameIgnoreCase(String name);
-
     boolean existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNot(
-            String name, Long productCategoryId
+            @Param("name") String name, @Param("productCategoryId") Long productCategoryId
     );
 
 
@@ -39,6 +37,6 @@ public interface ProductCategoryRepository
 
 
 
-    Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive(String name, boolean b);
+    Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive( String name, boolean b);
 }
 

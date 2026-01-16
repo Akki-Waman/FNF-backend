@@ -53,6 +53,8 @@ public class ProductServiceImpl implements ProductService {
     private final OriginsRepository originsRepository;
     private final AccountRepository accountRepository;
     private final ProductUnitRepository productUnitRepository;
+    private final BranchRepository branchesRepository;
+
 
     @Override
     @Transactional
@@ -64,6 +66,8 @@ public class ProductServiceImpl implements ProductService {
     )
     public ApiResponseDTO<CombinedProductResponseDto> saveOrUpdateProduct(
             Long productId, String productRequestDtoString, MultipartFile multipartFile) {
+        log.info("Incoming productRequestDtoString = {}", productRequestDtoString);
+
         try {
             NewProductRequestDto productRequestDto =
                     objectMapper.readValue(productRequestDtoString, NewProductRequestDto.class);
@@ -354,6 +358,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void setNestedEntities(Products productEntity, ProductDto productDto) {
+        if (productDto.getBranchId() == null) {
+            throw new IllegalArgumentException("Branch is required.");
+        }
+
+        Branches branch =
+                branchesRepository
+                        .findByBranchId(productDto.getBranchId())
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Invalid branch id"));
+
+        productEntity.setBranch(branch);
         if (productDto.getProductSubCategory() != null) {
 
             Optional<ProductSubCategories> productSubCategoryFromDb =
@@ -516,9 +531,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ApiResponseDTO<ProductDto> getAllProduct() {
+    public ApiResponseDTO<ProductDto> getAllProduct(Integer branchId) {
         try {
-            List<Products> productList = productRepository.findByIsActiveTrue();
+            List<Products> productList = productRepository.findByIsActiveTrue(branchId);
 
             if (productList.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -570,7 +585,10 @@ public class ProductServiceImpl implements ProductService {
                     sortBy = "brands.brandId";
                 } else if ("originId".equalsIgnoreCase(sortBy)) {
                     sortBy = "origins.originId";
-                } else {
+                } else if ("branchId".equalsIgnoreCase(sortBy)) {
+                    sortBy = "branch.branchId";
+                }
+                else {
                     sortBy = "productId"; // default safe fallback
                 }
 
@@ -587,6 +605,7 @@ public class ProductServiceImpl implements ProductService {
                         dto.getOriginId(),
                         dto.getProductCategoryId(),
                         dto.getProductSubCategoryId(),
+                        dto.getBranchId(),
                         pageable
                 );
 
@@ -625,12 +644,12 @@ public class ProductServiceImpl implements ProductService {
         }
     @Override
     @Transactional(readOnly = true)
-    public void exportProductsExcel(HttpServletResponse response) {
+    public void exportProductsExcel(HttpServletResponse response,Integer branchId) {
 
         log.info("Exporting active products to Excel");
 
         try {
-            List<ProductDto> products = productRepository.findByIsActiveTrue()
+            List<ProductDto> products = productRepository.findByIsActiveTrue(branchId)
                     .stream()
                     .map(productMapper::toDto)
                     .collect(Collectors.toList());
