@@ -64,7 +64,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("UPDATE Task t SET t.isDeleted = true WHERE t.id IN (:ids)")
     int softDeleteByIds(@Param("ids") List<Long> ids);
 
-
+    @Query("SELECT t.taskId FROM Task t WHERE t.isDeleted = false")
+    List<Long> findAllActiveTaskIds();
 }
 
 

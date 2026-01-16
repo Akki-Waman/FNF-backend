@@ -951,4 +951,65 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Failed to export tasks", e);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApiResponseDTO<Long> getAllTaskIds() {
+
+        try {
+
+            List<Long> taskIds =
+                    taskRepository.findAllActiveTaskIds();
+
+            if (taskIds == null || taskIds.isEmpty()) {
+
+                log.warn("getAllTaskIds | No active tasks found");
+
+                return new ApiResponseDTO<>(
+                        null,
+                        Collections.emptyList(),
+                        null,
+                        "No active tasks are available at the moment.",
+                        HttpStatus.NOT_FOUND,
+                        false,
+                        null,
+                        null
+                );
+            }
+
+            log.info(
+                    "getAllTaskIds | Successfully fetched {} active task IDs",
+                    taskIds.size()
+            );
+
+            return new ApiResponseDTO<>(
+                    null,
+                    taskIds,
+                    null,
+                    "Active task IDs fetched successfully.",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "getAllTaskIds | Unexpected error while fetching active task IDs",
+                    e
+            );
+
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    "Something went wrong while fetching task IDs. Please try again later.",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
 }

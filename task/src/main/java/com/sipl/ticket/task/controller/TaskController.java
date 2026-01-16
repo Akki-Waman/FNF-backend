@@ -63,4 +63,12 @@ public interface TaskController {
             @RequestBody ExportSearchRequestDTO request,
             HttpServletResponse response
     );
+
+    @ApiOperation(
+            value = "Get list of all task IDs",
+            notes = "Fetches list of active task IDs"
+    )
+    @GetMapping("/tasks/ids")
+    ResponseEntity<ApiResponseDTO<Long>> getAllTaskIds();
+
 }
