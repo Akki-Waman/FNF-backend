@@ -73,7 +73,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             if (inactiveCategory.isPresent()) {
                 ProductCategories category = inactiveCategory.get();
                 category.setIsActive(true);
-
+                category.setIsDeleted(false);
                 ProductCategories updatedCategory = repository.save(category);
 
                 return new ApiResponseDTO<>(
@@ -141,6 +141,14 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             ProductCategories category =
                     repository.findById(dto.getProductCategoryId()).orElse(null);
 
+            if (category == null || Boolean.TRUE.equals(category.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product category not found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
             if (category == null) {
                 return new ApiResponseDTO<>(
                         null,
@@ -201,6 +209,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             return repository.findById(id)
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ApiResponseDTO<>(
                             mapper.toDto(c),
                             "Product category found",
@@ -258,6 +267,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             }
 
             category.setIsActive(false);
+            category.setIsDeleted(true);
+
             repository.save(category);
 
             return new ApiResponseDTO<>(
@@ -287,6 +298,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                     .findAll(Sort.by(Sort.Direction.DESC, "productCategoryId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -327,6 +339,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             List<ProductCategoryDto> categories = repository.findAll()
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ProductCategoryDto(
                             c.getProductCategoryId(),
                             c.getProductCategoryName(),

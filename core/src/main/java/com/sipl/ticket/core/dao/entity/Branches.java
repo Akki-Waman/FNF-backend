@@ -53,4 +53,7 @@ public class Branches extends AuditEntity {
     private City city;
 
     private Boolean isClient;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = true;
 }

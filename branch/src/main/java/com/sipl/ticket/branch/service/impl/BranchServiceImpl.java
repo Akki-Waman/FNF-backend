@@ -154,6 +154,16 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
+        if (Boolean.TRUE.equals(branch.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Branch is deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+
         if (dto.getEmail() != null &&
                 repository.existsByEmailIgnoreCaseAndBranchIdNot(
                         dto.getEmail(), dto.getBranchId())) {
@@ -207,6 +217,7 @@ public class BranchServiceImpl implements BranchService {
 
         return repository.findById(branchId)
                 .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                 .map(b -> new ApiResponseDTO<>(
                         mapper.toDto(b),
                         "Branch found",
@@ -239,7 +250,18 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
+        if (Boolean.TRUE.equals(branch.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Branch already deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+
         branch.setIsActive(false);
+        branch.setIsDeleted(true);
         repository.save(branch);
 
         return new ApiResponseDTO<>(
@@ -304,6 +326,7 @@ public class BranchServiceImpl implements BranchService {
                     .findAll(Sort.by(Sort.Direction.DESC, "branchId"))
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -344,6 +367,7 @@ public class BranchServiceImpl implements BranchService {
                 List<BranchDto> branches = repository.findAll()
                         .stream()
                         .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                        .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                         .map(mapper::toDto)
                         .collect(Collectors.toList());
 

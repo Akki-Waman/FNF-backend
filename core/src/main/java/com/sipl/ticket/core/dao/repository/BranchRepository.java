@@ -21,7 +21,8 @@ public interface BranchRepository extends JpaRepository<Branches, Integer> {
     @Query(
             "SELECT b " +
                     "FROM Branches b " +
-                    "WHERE ( :isActive IS NULL OR b.isActive = :isActive ) " +
+                    "WHERE b.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR b.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR CAST(b.branchId AS string) LIKE CONCAT('%', :search, '%') " +
                     "   OR LOWER(b.branchName) LIKE LOWER(CONCAT('%', :search, '%')) " +

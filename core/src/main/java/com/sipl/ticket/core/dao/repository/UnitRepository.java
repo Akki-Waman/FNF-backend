@@ -29,7 +29,8 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
 
     @Query(
             "SELECT u FROM Unit u " +
-                    "WHERE ( :isActive IS NULL OR u.isActive = :isActive ) " +
+                    "WHERE u.isDelete = false " +
+                    "AND ( :isActive IS NULL OR u.isActive = :isActive ) " +
                     "AND ( :search IS NULL " +
                     "   OR LOWER(u.unitName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
@@ -38,6 +39,5 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
-
 
 }

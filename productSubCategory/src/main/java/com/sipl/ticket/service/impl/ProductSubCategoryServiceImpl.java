@@ -83,6 +83,7 @@ public class ProductSubCategoryServiceImpl
             subCategory.setProductCategories(category);
             subCategory.setProductSubCategoryName(name);
             subCategory.setIsActive(true);
+            subCategory.setIsDeleted(false);
 
             ProductSubCategories saved = repository.save(subCategory);
 
@@ -137,10 +138,20 @@ public class ProductSubCategoryServiceImpl
                     repository.findById(dto.getProductSubCategoryId()).orElse(null);
 
             if (subCategory == null) {
+
                 return new ApiResponseDTO<>(
                         null,
                         "Product sub category not found",
                         HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            if (Boolean.TRUE.equals(subCategory.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product sub category is deleted",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -196,6 +207,7 @@ public class ProductSubCategoryServiceImpl
         try {
             return repository.findById(id)
                     .filter(sc -> Boolean.TRUE.equals(sc.getIsActive()))
+                    .filter(sc -> Boolean.FALSE.equals(sc.getIsDeleted()))
                     .map(sc -> new ApiResponseDTO<>(
                             mapper.toDto(sc),
                             "Product sub category found",
@@ -244,6 +256,15 @@ public class ProductSubCategoryServiceImpl
                 );
             }
 
+            if (Boolean.TRUE.equals(subCategory.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product sub category already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
             if (Boolean.FALSE.equals(subCategory.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
@@ -254,6 +275,7 @@ public class ProductSubCategoryServiceImpl
             }
 
             subCategory.setIsActive(false);
+            subCategory.setIsDeleted(true);
             repository.save(subCategory);
 
             return new ApiResponseDTO<>(
@@ -283,6 +305,7 @@ public class ProductSubCategoryServiceImpl
                     .findAll(Sort.by(Sort.Direction.DESC, "productSubCategoryId"))
                     .stream()
                     .filter(sc -> Boolean.TRUE.equals(sc.getIsActive()))
+                    .filter(sc -> Boolean.FALSE.equals(sc.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -325,6 +348,7 @@ public class ProductSubCategoryServiceImpl
                     repository.findAll()
                             .stream()
                             .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                            .filter(s -> Boolean.FALSE.equals(s.getIsDeleted()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 

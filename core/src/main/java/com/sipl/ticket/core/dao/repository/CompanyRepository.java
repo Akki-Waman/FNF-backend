@@ -20,7 +20,8 @@ public interface CompanyRepository extends JpaRepository<Companies, Long> {
     @Query(
             "SELECT c " +
                     "FROM Companies c " +
-                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "WHERE c.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR c.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )

@@ -26,7 +26,8 @@ public interface StateRepository extends JpaRepository<State, Long> {
     @Query(
             "SELECT s " +
                     "FROM State s " +
-                    "WHERE ( :isActive IS NULL OR s.isActive = :isActive ) " +
+                    "WHERE s.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR s.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR LOWER(s.stateName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(s.country.countryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
@@ -36,5 +37,6 @@ public interface StateRepository extends JpaRepository<State, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }

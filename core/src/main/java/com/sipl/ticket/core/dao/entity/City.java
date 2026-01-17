@@ -30,4 +30,7 @@ public class City extends AuditEntity {
     private State state;
 
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = true;
 }
