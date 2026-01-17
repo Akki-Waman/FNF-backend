@@ -36,7 +36,7 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
                     "LEFT JOIN cp.zone z " +
                     "LEFT JOIN cp.division d " +
                     "LEFT JOIN cp.unit u " +
-                    "WHERE cp.isActive = :isActive " +
+                    "WHERE (:isActive IS NULL OR cp.isActive = :isActive) " +
                     "AND ( " +
                     "LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
                     "LOWER(cp.serialNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
