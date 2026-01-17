@@ -11,4 +11,6 @@ public class DepartmentRequestDto {
 
     private Long departmentId;
     private String departmentName;
+    private Boolean isActive;
+
 }

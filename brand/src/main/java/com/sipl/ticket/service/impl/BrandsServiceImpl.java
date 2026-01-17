@@ -90,15 +90,16 @@ public class BrandsServiceImpl implements BrandsService {
     )
     public ApiResponseDTO<BrandDto> updateBrand(BrandsRequestDto dto) {
 
-        log.info("Updating brand, id={}, name={}", dto.getBrandId(), dto.getBrandName());
+        log.info("Updating brand, id={}, name={}, isActive={}",
+                dto != null ? dto.getBrandId() : null,
+                dto != null ? dto.getBrandName() : null,
+                dto != null ? dto.getIsActive() : null);
 
         try {
-            if (dto == null || dto.getBrandId() == null ||
-                    dto.getBrandName() == null || dto.getBrandName().trim().isEmpty()) {
-
+            if (dto == null || dto.getBrandId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand ID and name are required",
+                        "Brand ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -115,29 +116,42 @@ public class BrandsServiceImpl implements BrandsService {
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            boolean isUpdated = false;
+
+            if (dto.getBrandName() != null &&
+                    !dto.getBrandName().trim().isEmpty()) {
+
+                String name = dto.getBrandName().trim();
+
+                if (repository.existsByBrandNameIgnoreCaseAndBrandIdNot(
+                        name, dto.getBrandId())) {
+
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Brand with the name '" + name + "' already exists.",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                brand.setBrandName(name);
+                isUpdated = true;
+            }
+
+            if (dto.getIsActive() != null) {
+                brand.setIsActive(dto.getIsActive());
+                isUpdated = true;
+            }
+
+            if (!isUpdated) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive brand cannot be updated",
+                        "No fields provided to update",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getBrandName().trim();
-
-            if (repository.existsByBrandNameIgnoreCaseAndBrandIdNot(
-                    name, dto.getBrandId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Brand with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            brand.setBrandName(name);
             Brands updatedBrand = repository.save(brand);
 
             return new ApiResponseDTO<>(
@@ -157,6 +171,7 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<BrandDto> getById(Long id) {

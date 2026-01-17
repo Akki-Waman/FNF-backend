@@ -92,14 +92,16 @@ public class CompanyServiceImpl implements CompanyService {
     )
     public ApiResponseDTO<CompanyDto> updateCompany(CompaniesRequestDto dto) {
 
-        try {
-            if (dto.getCompanyId() == null ||
-                    dto.getCompanyName() == null ||
-                    dto.getCompanyName().trim().isEmpty()) {
+        log.info("Updating company, id={}, name={}, isActive={}",
+                dto != null ? dto.getCompanyId() : null,
+                dto != null ? dto.getCompanyName() : null,
+                dto != null ? dto.getIsActive() : null);
 
+        try {
+            if (dto == null || dto.getCompanyId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Company ID and name are required",
+                        "Company ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -116,29 +118,42 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
-            if (Boolean.FALSE.equals(company.getIsActive())) {
+            boolean isUpdated = false;
+
+            if (dto.getCompanyName() != null &&
+                    !dto.getCompanyName().trim().isEmpty()) {
+
+                String name = dto.getCompanyName().trim();
+
+                if (repository.existsByCompanyNameIgnoreCaseAndCompanyIdNot(
+                        name, dto.getCompanyId())) {
+
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Company '" + name + "' already exists",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                company.setCompanyName(name);
+                isUpdated = true;
+            }
+
+            if (dto.getIsActive() != null) {
+                company.setIsActive(dto.getIsActive());
+                isUpdated = true;
+            }
+
+            if (!isUpdated) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive company cannot be updated",
+                        "No fields provided to update",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getCompanyName().trim();
-
-            if (repository.existsByCompanyNameIgnoreCaseAndCompanyIdNot(
-                    name, dto.getCompanyId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            company.setCompanyName(name);
             Companies updated = repository.save(company);
 
             return new ApiResponseDTO<>(
@@ -158,6 +173,7 @@ public class CompanyServiceImpl implements CompanyService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<CompanyDto> getById(Long id) {
