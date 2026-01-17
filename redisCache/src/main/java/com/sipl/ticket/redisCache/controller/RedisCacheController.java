@@ -1,4 +1,4 @@
-package com.sipl.collaboration.redisCache.controller;
+package com.sipl.ticket.redisCache.controller;
 
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
