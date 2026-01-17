@@ -134,6 +134,15 @@ public class BranchServiceImpl implements BranchService {
     )
     public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
+        if (dto == null || dto.getBranchId() == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Branch ID is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
         Branches branch = repository.findById(dto.getBranchId()).orElse(null);
 
         if (branch == null) {
@@ -145,8 +154,9 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
-        if (repository.existsByEmailIgnoreCaseAndBranchIdNot(
-                dto.getEmail(), dto.getBranchId())) {
+        if (dto.getEmail() != null &&
+                repository.existsByEmailIgnoreCaseAndBranchIdNot(
+                        dto.getEmail(), dto.getBranchId())) {
 
             return new ApiResponseDTO<>(
                     null,
@@ -156,14 +166,30 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
-        mapper.partialUpdate(dto, branch);
+        boolean isUpdated = false;
 
-        ApiResponseDTO<BranchDto> validationError =
-                validateAndSetRelations(branch, dto);
+        if (dto.getEmail() != null ||
+                dto.getBranchName() != null ||
+                dto.getAddress() != null) {
 
-        if (validationError != null) {
-            return validationError;
+            mapper.partialUpdate(dto, branch);
+            isUpdated = true;
         }
+
+        if (dto.getIsActive() != null) {
+            branch.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No fields provided to update",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
         Branches saved = repository.save(branch);
 
         return new ApiResponseDTO<>(
@@ -173,6 +199,8 @@ public class BranchServiceImpl implements BranchService {
                 false
         );
     }
+
+
 
     @Override
     public ApiResponseDTO<BranchDto> getById(Integer branchId) {

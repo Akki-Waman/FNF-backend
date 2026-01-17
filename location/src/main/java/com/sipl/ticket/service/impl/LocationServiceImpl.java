@@ -35,8 +35,6 @@ public class LocationServiceImpl implements LocationService {
     private final LocationRepository repository;
     private final LocationMapper mapper;
 
-    /* ===================== SAVE ===================== */
-
     @Override
     @CacheEvict(value = "locations", allEntries = true)
     @ActivityLoggable(
@@ -61,7 +59,6 @@ public class LocationServiceImpl implements LocationService {
             Locations location = new Locations();
             location.setLocationName(name);
             location.setIsActive(true);
-            location.setIsDeleted(false);
 
             Locations saved = repository.save(location);
 
@@ -83,8 +80,6 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== UPDATE ===================== */
-
     @Override
     @CacheEvict(value = "locations", allEntries = true)
     @ActivityLoggable(
@@ -94,22 +89,24 @@ public class LocationServiceImpl implements LocationService {
     )
     public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO dto) {
 
-        try {
-            if (dto == null ||
-                    dto.getLocationId() == null ||
-                    dto.getLocationName() == null ||
-                    dto.getLocationName().trim().isEmpty()) {
+        log.info("Updating location, id={}, name={}, isActive={}",
+                dto != null ? dto.getLocationId() : null,
+                dto != null ? dto.getLocationName() : null,
+                dto != null ? dto.getIsActive() : null);
 
+        try {
+            if (dto == null || dto.getLocationId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location ID and name are required",
+                        "Location ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            Locations location =
-                    repository.findById(dto.getLocationId()).orElse(null);
+            Locations location = repository
+                    .findById(dto.getLocationId())
+                    .orElse(null);
 
             if (location == null) {
                 return new ApiResponseDTO<>(
@@ -120,38 +117,41 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            if (Boolean.TRUE.equals(location.getIsDeleted())) {
+            boolean isUpdated = false;
+
+            if (dto.getLocationName() != null &&
+                    !dto.getLocationName().trim().isEmpty()) {
+
+                String name = dto.getLocationName().trim();
+
+                if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
+                        name, dto.getLocationId())) {
+
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Location '" + name + "' already exists",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                location.setLocationName(name);
+                isUpdated = true;
+            }
+
+            if (dto.getIsActive() != null) {
+                location.setIsActive(dto.getIsActive());
+                isUpdated = true;
+            }
+
+            if (!isUpdated) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Deleted location cannot be updated",
+                        "No fields provided to update",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
-
-            if (Boolean.FALSE.equals(location.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive location cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getLocationName().trim();
-
-            if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
-                    name, dto.getLocationId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            location.setLocationName(name);
 
             Locations updated = repository.save(location);
 
@@ -173,17 +173,12 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== GET BY ID ===================== */
-
     @Override
     public ApiResponseDTO<LocationResponseDTO> getById(Long id) {
 
         try {
             return repository.findById(id)
-                    .filter(l ->
-                            Boolean.TRUE.equals(l.getIsActive()) &&
-                                    Boolean.FALSE.equals(l.getIsDeleted())
-                    )
+                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
                     .map(l -> new ApiResponseDTO<>(
                             mapper.toDto(l),
                             "Location found",
@@ -208,14 +203,12 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== DELETE (SOFT DELETE) ===================== */
-
     @Override
     @CacheEvict(value = "locations", allEntries = true)
     @ActivityLoggable(
             action = "DELETE",
             module = "LOCATION",
-            description = "Location id {0} deleted successfully"
+            description = "Location id {0} deactivated successfully"
     )
     public ApiResponseDTO<String> deleteById(Long id) {
 
@@ -231,18 +224,16 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            if (Boolean.TRUE.equals(location.getIsDeleted())) {
+            if (Boolean.FALSE.equals(location.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location already deleted",
+                        "Location already inactive",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             location.setIsActive(false);
-            location.setIsDeleted(true);
-
             repository.save(location);
 
             return new ApiResponseDTO<>(
@@ -263,8 +254,6 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== GET ALL ===================== */
-
     @Override
     @Cacheable("locations")
     public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations() {
@@ -273,10 +262,7 @@ public class LocationServiceImpl implements LocationService {
             List<LocationResponseDTO> list =
                     repository.findAll()
                             .stream()
-                            .filter(l ->
-                                    Boolean.TRUE.equals(l.getIsActive()) &&
-                                            Boolean.FALSE.equals(l.getIsDeleted())
-                            )
+                            .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
@@ -313,8 +299,6 @@ public class LocationServiceImpl implements LocationService {
             );
         }
     }
-
-    /* ===================== SEARCH ===================== */
 
     @Override
     public ApiResponseDTO<PagedResponse<LocationResponseDTO>> searchLocations(
@@ -378,8 +362,6 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== EXPORT ===================== */
-
     @Override
     @Transactional(readOnly = true)
     public void exportLocationExcel(HttpServletResponse response) {
@@ -390,10 +372,7 @@ public class LocationServiceImpl implements LocationService {
             List<LocationResponseDTO> locations =
                     repository.findAll()
                             .stream()
-                            .filter(l ->
-                                    Boolean.TRUE.equals(l.getIsActive()) &&
-                                            Boolean.FALSE.equals(l.getIsDeleted())
-                            )
+                            .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 

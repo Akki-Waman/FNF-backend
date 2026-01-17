@@ -90,23 +90,24 @@ public class DepartmentServiceImpl implements DepartmentService {
     )
     public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(DepartmentRequestDto dto) {
 
-        log.info("Updating department, id={}, name={}",
-                dto.getDepartmentId(), dto.getDepartmentName());
+        log.info("Updating department, id={}, name={}, isActive={}",
+                dto != null ? dto.getDepartmentId() : null,
+                dto != null ? dto.getDepartmentName() : null,
+                dto != null ? dto.getIsActive() : null);
 
         try {
-            if (dto == null || dto.getDepartmentId() == null ||
-                    dto.getDepartmentName() == null || dto.getDepartmentName().trim().isEmpty()) {
-
+            if (dto == null || dto.getDepartmentId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Department ID and name are required",
+                        "Department ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            Department department =
-                    repository.findById(dto.getDepartmentId()).orElse(null);
+            Department department = repository
+                    .findById(dto.getDepartmentId())
+                    .orElse(null);
 
             if (department == null) {
                 return new ApiResponseDTO<>(
@@ -117,29 +118,38 @@ public class DepartmentServiceImpl implements DepartmentService {
                 );
             }
 
-            if (Boolean.FALSE.equals(department.getIsActive())) {
+            if (dto.getDepartmentName() != null &&
+                    !dto.getDepartmentName().trim().isEmpty()) {
+
+                String name = dto.getDepartmentName().trim();
+
+                if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
+                        name, dto.getDepartmentId())) {
+
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Department with the name '" + name + "' already exists",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                department.setDepartmentName(name);
+            }
+
+            if (dto.getIsActive() != null) {
+                department.setIsActive(dto.getIsActive());
+            }
+
+            if (dto.getDepartmentName() == null && dto.getIsActive() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive department cannot be updated",
+                        "No fields provided to update",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getDepartmentName().trim();
-
-            if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
-                    name, dto.getDepartmentId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            department.setDepartmentName(name);
             Department updated = repository.save(department);
 
             return new ApiResponseDTO<>(
@@ -159,6 +169,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
         }
     }
+
+
 
     @Override
     public ApiResponseDTO<DepartmentResponseDTO> getById(Long id) {

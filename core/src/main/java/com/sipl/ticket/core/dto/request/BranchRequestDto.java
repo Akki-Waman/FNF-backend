@@ -15,4 +15,5 @@ public class BranchRequestDto {
     private Long cityId;
 
     private Boolean isClient;
+    private Boolean isActive;
 }
