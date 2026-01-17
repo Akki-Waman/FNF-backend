@@ -10,6 +10,8 @@ import javax.validation.constraints.*;
 @ToString
 public class ContactSearchRequestDto extends SearchRequestDto {
 
+    private Long contactId;
+    private Long departmentId;
     private String query;
 
 }

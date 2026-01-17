@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import com.sipl.ticket.core.util.PaginationUtil;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -353,24 +354,39 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
-
     @Override
     public ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
             ContactSearchRequestDto dto
     ) {
 
-        log.info("Contact search initiated [query='{}']", dto.getQuery());
+        log.info("Contact search initiated [request={}]", dto);
 
         try {
-            Pageable pageable = PaginationUtil.pageable(
+
+            String sortBy = dto.getSortBy();
+
+            if ("departmentId".equalsIgnoreCase(sortBy)) {
+                sortBy = "department.departmentId";
+            } else if ("contactId".equalsIgnoreCase(sortBy)) {
+                sortBy = "contactId";
+            } else if ("contactName".equalsIgnoreCase(sortBy)) {
+                sortBy = "contactName";
+            }
+
+            Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(
                     dto.getPage(),
                     dto.getSize(),
-                    dto.getSortBy(),
-                    dto.getSortDir()
+                    sort
             );
 
             Page<Contact> pageResult =
                     contactRepository.searchContacts(
+                            dto.getContactId(),
+                            dto.getDepartmentId(),
                             dto.getQuery(),
                             pageable
                     );
@@ -390,7 +406,7 @@ public class ContactServiceImpl implements ContactService {
                             .map(contactMapper::toResponseDto)
                             .collect(Collectors.toList());
 
-            PagedResponse<ContactResponseDto> pagedResponse =
+            return new ApiResponseDTO<>(
                     new PagedResponse<>(
                             content,
                             pageResult.getNumber(),
@@ -398,13 +414,7 @@ public class ContactServiceImpl implements ContactService {
                             pageResult.getTotalPages(),
                             pageResult.getSize(),
                             pageResult.isLast()
-                    );
-
-            log.info("Contact search successful [totalRecords={}]",
-                    pageResult.getTotalElements());
-
-            return new ApiResponseDTO<>(
-                    pagedResponse,
+                    ),
                     "Contacts fetched successfully",
                     HttpStatus.OK,
                     false
