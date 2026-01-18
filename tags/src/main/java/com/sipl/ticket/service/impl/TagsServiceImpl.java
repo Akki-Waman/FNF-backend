@@ -62,7 +62,7 @@ public class TagsServiceImpl implements TagsService {
             Tags tag = new Tags();
             tag.setTagName(name);
             tag.setIsActive(true);
-
+            tag.setIsDelete(false);
             Tags saved = repository.save(tag);
 
             return new ApiResponseDTO<>(
@@ -115,6 +115,15 @@ public class TagsServiceImpl implements TagsService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(tag.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Cannot update deleted tag",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
 
             if (Boolean.FALSE.equals(tag.getIsActive())) {
                 return new ApiResponseDTO<>(
@@ -164,7 +173,10 @@ public class TagsServiceImpl implements TagsService {
 
         try {
             return repository.findById(id)
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .filter(t ->
+                            Boolean.TRUE.equals(t.getIsActive()) &&
+                                    Boolean.FALSE.equals(t.getIsDelete())
+                    )
                     .map(t -> new ApiResponseDTO<>(
                             mapper.toDto(t),
                             "Tag found",
@@ -220,6 +232,7 @@ public class TagsServiceImpl implements TagsService {
             }
 
             tag.setIsActive(false);
+            tag.setIsDelete(true);
             repository.save(tag);
 
             return new ApiResponseDTO<>(
@@ -248,7 +261,10 @@ public class TagsServiceImpl implements TagsService {
             List<TagResponseDto> list = repository
                     .findAll(Sort.by(Sort.Direction.DESC, "tagId"))
                     .stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .filter(t ->
+                            Boolean.TRUE.equals(t.getIsActive()) &&
+                                    Boolean.FALSE.equals(t.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -349,7 +365,10 @@ public class TagsServiceImpl implements TagsService {
         try {
             List<TagResponseDto> tags = repository.findAll()
                     .stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .filter(t ->
+                            Boolean.TRUE.equals(t.getIsActive()) &&
+                                    Boolean.FALSE.equals(t.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 

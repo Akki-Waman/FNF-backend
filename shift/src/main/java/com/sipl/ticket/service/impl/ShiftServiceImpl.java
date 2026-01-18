@@ -69,7 +69,7 @@ public class ShiftServiceImpl implements ShiftService {
             shift.setStartTime(dto.getStartTime());
             shift.setEndTime(dto.getEndTime());
             shift.setIsActive(true);
-
+            shift.setIsDeleted(false);
             Shift savedShift = repository.save(shift);
 
             return new ApiResponseDTO<>(
@@ -122,6 +122,24 @@ public class ShiftServiceImpl implements ShiftService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(shift.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Cannot update deleted shift",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            if (Boolean.FALSE.equals(shift.getIsActive())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Inactive shift cannot be updated",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+
 
             String name = dto.getShiftName().trim();
 
@@ -168,7 +186,10 @@ public class ShiftServiceImpl implements ShiftService {
 
         try {
             return repository.findById(id)
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .filter(s ->
+                            Boolean.TRUE.equals(s.getIsActive())
+                                    && Boolean.FALSE.equals(s.getIsDeleted())
+                    )
                     .map(s -> new ApiResponseDTO<>(
                             mapper.toResponseDto(s),
                             "Shift found",
@@ -259,7 +280,10 @@ public class ShiftServiceImpl implements ShiftService {
         try {
             List<ShiftResponseDTO> list = repository.findAll()
                     .stream()
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .filter(s ->
+                            Boolean.TRUE.equals(s.getIsActive())
+                                    && Boolean.FALSE.equals(s.getIsDeleted())
+                    )
                     .map(mapper::toResponseDto)
                     .collect(Collectors.toList());
 

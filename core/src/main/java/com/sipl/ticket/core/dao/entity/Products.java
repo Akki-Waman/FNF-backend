@@ -127,6 +127,9 @@ public class Products extends AuditEntity {
     )
     private Branches branch;
 
+    @Column(name = "is_delete")
+    private Boolean isDelete = true;
+
 
 
     private Long dmsDocId;

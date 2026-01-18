@@ -19,7 +19,8 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
 
     @Query(
             "SELECT t FROM Tags t " +
-                    "WHERE ( :isActive IS NULL OR t.isActive = :isActive ) " +
+                    "WHERE t.isDelete = false " +
+                    "AND ( :isActive IS NULL OR t.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(t.tagName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
@@ -28,5 +29,6 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 }

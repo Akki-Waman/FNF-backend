@@ -60,6 +60,7 @@ public class ServiceServiceImpl implements ServiceService {
 
             ServiceEntity service = mapper.toEntity(dto);
             service.setIsActive(true);
+            service.setIsDelete(false);
 
             ServiceEntity saved = repository.save(service);
 
@@ -102,18 +103,48 @@ public class ServiceServiceImpl implements ServiceService {
             );
         }
 
-        if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
-                dto.getServiceName(), dto.getServiceId())) {
-
+        if (Boolean.TRUE.equals(service.getIsDelete())) {
             return new ApiResponseDTO<>(
                     null,
-                    "Service name already exists",
-                    HttpStatus.CONFLICT,
+                    "Cannot update deleted service",
+                    HttpStatus.BAD_REQUEST,
                     true
             );
         }
 
-        service.setServiceName(dto.getServiceName());
+        boolean isUpdated = false;
+
+        if (dto.getServiceName() != null && !dto.getServiceName().trim().isEmpty()) {
+
+            if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
+                    dto.getServiceName(), dto.getServiceId())) {
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "Service name already exists",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
+
+            service.setServiceName(dto.getServiceName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            service.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No fields provided to update",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
         ServiceEntity saved = repository.save(service);
 
         return new ApiResponseDTO<>(
@@ -124,12 +155,16 @@ public class ServiceServiceImpl implements ServiceService {
         );
     }
 
+
     @Override
     @Cacheable(value = "services", key = "#serviceId")
     public ApiResponseDTO<ServiceResponseDTO> getById(Long serviceId) {
 
         return repository.findById(serviceId)
-                .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                .filter(s ->
+                        Boolean.TRUE.equals(s.getIsActive()) &&
+                                Boolean.FALSE.equals(s.getIsDelete())
+                )
                 .map(s -> new ApiResponseDTO<>(
                         mapper.toDto(s),
                         "Service found",
@@ -163,8 +198,16 @@ public class ServiceServiceImpl implements ServiceService {
                     true
             );
         }
-
+        if (Boolean.TRUE.equals(service.getIsDelete())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Service already deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
         service.setIsActive(false);
+        service.setIsDelete(true);
         repository.save(service);
 
         return new ApiResponseDTO<>(
@@ -231,7 +274,10 @@ public class ServiceServiceImpl implements ServiceService {
             List<ServiceResponseDTO> list = repository
                     .findAll(Sort.by(Sort.Direction.DESC, "serviceId"))
                     .stream()
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .filter(s ->
+                            Boolean.TRUE.equals(s.getIsActive()) &&
+                                    Boolean.FALSE.equals(s.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -270,7 +316,10 @@ public class ServiceServiceImpl implements ServiceService {
         try {
             List<ServiceResponseDTO> services = repository.findAll()
                     .stream()
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .filter(s ->
+                            Boolean.TRUE.equals(s.getIsActive()) &&
+                                    Boolean.FALSE.equals(s.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 

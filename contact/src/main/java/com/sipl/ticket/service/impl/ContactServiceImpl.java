@@ -85,6 +85,7 @@ public class ContactServiceImpl implements ContactService {
             Contact contact = contactMapper.toEntity(dto);
             contact.setDepartment(department);
             contact.setIsActive(true);
+            contact.setIsDelete(false);
 
             Contact saved = contactRepository.save(contact);
             log.info(
@@ -121,15 +122,14 @@ public class ContactServiceImpl implements ContactService {
     )
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
-        log.info(
-                "Updating contact [id={}, name={}]",
+        log.info("Updating contact [id={}, name={}, isActive={}]",
                 dto != null ? dto.getContactId() : null,
-                dto != null ? dto.getContactName() : null
+                dto != null ? dto.getContactName() : null,
+                dto != null ? dto.getIsActive() : null
         );
 
         try {
             if (dto == null || dto.getContactId() == null) {
-                log.warn("Contact update failed – contact ID is missing");
                 return new ApiResponseDTO<>(
                         null,
                         "Contact ID is required",
@@ -138,14 +138,9 @@ public class ContactServiceImpl implements ContactService {
                 );
             }
 
-            Contact contact = contactRepository.findById(dto.getContactId())
-                    .orElse(null);
+            Contact contact = contactRepository.findById(dto.getContactId()).orElse(null);
 
             if (contact == null) {
-                log.warn(
-                        "Contact update failed – contact not found [id={}]",
-                        dto.getContactId()
-                );
                 return new ApiResponseDTO<>(
                         null,
                         "Contact not found",
@@ -154,31 +149,59 @@ public class ContactServiceImpl implements ContactService {
                 );
             }
 
-            Department department = departmentRepository.findById(dto.getDepartmentId())
-                    .orElse(null);
-
-            if (department == null) {
-                log.warn(
-                        "Contact update failed – department not found [departmentId={}]",
-                        dto.getDepartmentId()
-                );
+            // ❌ Deleted contact cannot be updated
+            if (Boolean.TRUE.equals(contact.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Department not found",
-                        HttpStatus.NOT_FOUND,
+                        "Cannot update deleted contact",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
+            boolean isUpdated = false;
+
+            // ✅ Update department ONLY if provided
+            if (dto.getDepartmentId() != null) {
+                Department department = departmentRepository
+                        .findById(dto.getDepartmentId())
+                        .orElse(null);
+
+                if (department == null) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Department not found",
+                            HttpStatus.NOT_FOUND,
+                            true
+                    );
+                }
+
+                contact.setDepartment(department);
+                isUpdated = true;
+            }
+
+            // ✅ Partial update (name, email, mobile, isActive etc.)
             contactMapper.partialUpdate(dto, contact);
-            contact.setDepartment(department);
+
+            if (dto.getContactName() != null ||
+                    dto.getEmailAddress() != null ||
+                    dto.getMobileNo() != null ||
+                    dto.getIsActive() != null) {
+
+                isUpdated = true;
+            }
+
+            // ❌ Nothing to update
+            if (!isUpdated) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No fields provided to update",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
             Contact updated = contactRepository.save(contact);
-            log.info(
-                    "Contact updated successfully [id={}]",
-                    updated.getContactId()
-            );
-
 
             return new ApiResponseDTO<>(
                     contactMapper.toResponseDto(updated),
@@ -188,11 +211,7 @@ public class ContactServiceImpl implements ContactService {
             );
 
         } catch (Exception e) {
-            log.error(
-                    "Unexpected error while updating contact [id={}]",
-                    dto != null ? dto.getContactId() : null,
-                    e
-            );
+            log.error("updateContact unexpected error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -203,6 +222,7 @@ public class ContactServiceImpl implements ContactService {
     }
 
 
+
     @Override
     public ApiResponseDTO<ContactResponseDto> getById(Long contactId) {
 
@@ -210,6 +230,10 @@ public class ContactServiceImpl implements ContactService {
 
         try {
             return contactRepository.findById(contactId)
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )
                     .map(contact -> new ApiResponseDTO<>(
                             contactMapper.toResponseDto(contact),
                             "Contact found",
@@ -273,7 +297,16 @@ public class ContactServiceImpl implements ContactService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(contact.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Contact already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
+            contact.setIsDelete(true);
             contact.setIsActive(false);
             contactRepository.save(contact);
 
@@ -309,7 +342,13 @@ public class ContactServiceImpl implements ContactService {
         log.info("Fetching all contacts");
 
         try {
-            List<Contact> contacts = contactRepository.findAll();
+            List<Contact> contacts = contactRepository.findAll()
+                    .stream()
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )
+                    .collect(Collectors.toList());
 
             if (contacts.isEmpty()) {
                 log.warn("No contacts found");
@@ -440,6 +479,10 @@ public class ContactServiceImpl implements ContactService {
         try {
             List<ContactResponseDto> contacts = contactRepository.findByIsActiveTrue()
                     .stream()
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )
                     .map(contactMapper::toResponseDto)
                     .collect(Collectors.toList());
 

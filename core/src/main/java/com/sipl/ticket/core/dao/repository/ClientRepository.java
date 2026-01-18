@@ -15,15 +15,14 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     @Query(
             "FROM Client c " +
-                    "WHERE (:isActive IS NULL OR c.isActive = true) " +
+                    "WHERE c.isDelete = false " +
                     "AND (:clientCode IS NULL OR LOWER(c.clientCode) LIKE LOWER(CONCAT('%', :clientCode, '%'))) " +
                     "AND (:clientName IS NULL OR LOWER(c.clientName) LIKE LOWER(CONCAT('%', :clientName, '%')))"
     )
     List<Client> searchClients(
             @Param("clientCode") String clientCode,
             @Param("clientName") String clientName
-
-
     );
+
 }
 

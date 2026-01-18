@@ -46,6 +46,7 @@ public class ClientServiceImpl implements ClientService {
         try {
             Client client = mapper.toEntity(dto);
             client.setIsActive(true);
+            client.setIsDelete(false);
 
             Client saved = repository.save(client);
 
@@ -91,10 +92,16 @@ public class ClientServiceImpl implements ClientService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(client.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Cannot update deleted client",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
-            client.setClientCode(dto.getClientCode());
-            client.setClientName(dto.getClientName());
-
+            mapper.partialUpdate(dto, client);
             Client updated = repository.save(client);
 
             log.info("Client updated successfully, id={}", updated.getClientId());
@@ -124,6 +131,7 @@ public class ClientServiceImpl implements ClientService {
 
         try {
             return repository.findById(id)
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDelete()))
                     .map(client -> new ApiResponseDTO<>(
                             mapper.toDto(client),
                             "Client found",
@@ -136,6 +144,7 @@ public class ClientServiceImpl implements ClientService {
                             HttpStatus.NOT_FOUND,
                             true
                     ));
+
 
         } catch (Exception e) {
             log.error("getById unexpected error, id={}", id, e);
@@ -171,16 +180,17 @@ public class ClientServiceImpl implements ClientService {
                 );
             }
 
-            if (Boolean.FALSE.equals(client.getIsActive())) {
+            if (Boolean.TRUE.equals(client.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Client already inactive",
+                        "Client already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             client.setIsActive(false);
+            client.setIsDelete(true);
             repository.save(client);
 
             log.info("Client deleted successfully, id={}", id);
@@ -251,7 +261,10 @@ public class ClientServiceImpl implements ClientService {
         log.info("Fetching all clients");
 
         try {
-            List<Client> list = repository.findAll();
+            List<Client> list = repository.findAll()
+                    .stream()
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDelete()))
+                    .collect(Collectors.toList());
 
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -289,8 +302,10 @@ public class ClientServiceImpl implements ClientService {
         try {
             List<ClientResponseDto> clients = repository.findAll()
                     .stream()
-                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
-                    .map(mapper::toDto)
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )                    .map(mapper::toDto)
                     .collect(Collectors.toList());
 
             ClientExcelGenerator.generateExcel(clients, response);

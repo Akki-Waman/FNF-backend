@@ -84,6 +84,7 @@ public class OriginsServiceImpl implements OriginsService {
             Origins origin = new Origins();
             origin.setOriginName(name);
             origin.setIsActive(true);
+            origin.setIsDelete(false);
 
             log.info("Saving new origin with name: '{}'", name);
             Origins saved = repository.save(origin);
@@ -109,8 +110,6 @@ public class OriginsServiceImpl implements OriginsService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "origins", allEntries = true)
     @ActivityLoggable(
             action = "UPDATE",
             module = "ORIGINS",
@@ -118,15 +117,16 @@ public class OriginsServiceImpl implements OriginsService {
     )
     public ApiResponseDTO<OriginDto> updateOrigin(OriginsRequestDto dto) {
 
-        log.info("Updating origin, id={}, name={}", dto.getOriginId(), dto.getOriginName());
+        log.info("Updating origin, id={}, name={}, isActive={}",
+                dto != null ? dto.getOriginId() : null,
+                dto != null ? dto.getOriginName() : null,
+                dto != null ? dto.getIsActive() : null);
 
         try {
-            if (dto == null || dto.getOriginId() == null ||
-                    dto.getOriginName() == null || dto.getOriginName().trim().isEmpty()) {
-
+            if (dto == null || dto.getOriginId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Origin ID and name are required",
+                        "Origin ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -143,34 +143,55 @@ public class OriginsServiceImpl implements OriginsService {
                 );
             }
 
-            if (Boolean.FALSE.equals(origin.getIsActive())) {
+            if (Boolean.TRUE.equals(origin.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive origin cannot be updated",
+                        "Cannot update deleted origin",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getOriginName().trim();
+            boolean isUpdated = false;
 
-            boolean exists = repository.findActiveByOriginName(name)
-                    .stream()
-                    .anyMatch(o ->
-                            o.getOriginName().equalsIgnoreCase(name)
-                                    && !o.getOriginId().equals(dto.getOriginId())
+            if (dto.getOriginName() != null && !dto.getOriginName().trim().isEmpty()) {
+
+                String name = dto.getOriginName().trim();
+
+                boolean exists = repository.findActiveByOriginName(name)
+                        .stream()
+                        .anyMatch(o ->
+                                o.getOriginName().equalsIgnoreCase(name)
+                                        && !o.getOriginId().equals(dto.getOriginId())
+                        );
+
+                if (exists) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Origin with the name '" + name + "' already exists.",
+                            HttpStatus.CONFLICT,
+                            true
                     );
+                }
 
-            if (exists) {
+                origin.setOriginName(name);
+                isUpdated = true;
+            }
+
+            if (dto.getIsActive() != null) {
+                origin.setIsActive(dto.getIsActive());
+                isUpdated = true;
+            }
+
+            if (!isUpdated) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Origin with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
+                        "No fields provided to update",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            origin.setOriginName(name);
             Origins updated = repository.save(origin);
 
             return new ApiResponseDTO<>(
@@ -191,6 +212,7 @@ public class OriginsServiceImpl implements OriginsService {
         }
     }
 
+
     @Override
     public ApiResponseDTO<OriginDto> getById(Long id) {
 
@@ -198,7 +220,10 @@ public class OriginsServiceImpl implements OriginsService {
 
         try {
             return repository.findById(id)
-                    .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
+                    .filter(o ->
+                            Boolean.TRUE.equals(o.getIsActive()) &&
+                                    Boolean.FALSE.equals(o.getIsDelete())
+                    )
                     .map(o -> new ApiResponseDTO<>(
                             mapper.toDto(o),
                             "Origin found",
@@ -254,6 +279,19 @@ public class OriginsServiceImpl implements OriginsService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(origin.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Origin already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+            origin.setIsDelete(true);
+            origin.setIsActive(false);
+            repository.save(origin);
+
 
             origin.setIsActive(false);
             repository.save(origin);
@@ -285,7 +323,10 @@ public class OriginsServiceImpl implements OriginsService {
         try {
             List<OriginDto> list = repository.findAll()
                     .stream()
-                    .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
+                    .filter(o ->
+                            Boolean.TRUE.equals(o.getIsActive()) &&
+                                    Boolean.FALSE.equals(o.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -404,7 +445,10 @@ public class OriginsServiceImpl implements OriginsService {
         try {
             List<OriginDto> dtoList = repository.findAll()
                     .stream()
-                    .filter(o -> Boolean.TRUE.equals(o.getIsActive()))
+                    .filter(o ->
+                            Boolean.TRUE.equals(o.getIsActive()) &&
+                                    Boolean.FALSE.equals(o.getIsDelete())
+                    )
                     .map(o -> {
                         OriginDto dto = new OriginDto();
 

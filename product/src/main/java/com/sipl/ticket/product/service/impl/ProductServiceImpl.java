@@ -127,6 +127,8 @@ public class ProductServiceImpl implements ProductService {
                 }
                 log.info("productToBeSaved");
                 productToBeSaved = productMapper.toEntity(productRequestDto.getProductDto());
+                productToBeSaved.setIsDelete(false);
+                productToBeSaved.setIsActive(true);
                 String generatedCode = generateProductCode(productRequestDto, productToBeSaved);
                 log.info("generatedCode");
                 productToBeSaved.setProductCode(generatedCode);
@@ -140,6 +142,9 @@ public class ProductServiceImpl implements ProductService {
                                         () ->
                                                 new ProductNotFoundException(
                                                         "No Product found for the specified productId"));
+                if (Boolean.TRUE.equals(existingProductFromDb.getIsDelete())) {
+                    throw new IllegalArgumentException("Cannot update deleted product");
+                }
 
                 log.info("existingProductFromDb");
 
@@ -459,6 +464,7 @@ public class ProductServiceImpl implements ProductService {
             }
             Products productsToSave = products.get();
             productsToSave.setIsActive(false);
+            productsToSave.setIsDelete(true);
             Products product = productRepository.save(productsToSave);
             ProductDto productToBeSent = productMapper.toDto(product);
             return new ApiResponseDTO<>(

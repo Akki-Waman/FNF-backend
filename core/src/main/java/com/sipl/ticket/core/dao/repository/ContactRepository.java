@@ -34,7 +34,8 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     @Query(
             "SELECT c FROM Contact c " +
                     "LEFT JOIN c.department d " +
-                    "WHERE c.isActive = true " +
+                    "WHERE c.isDelete = false " +
+                    "AND c.isActive = true " +
                     "AND (:contactId IS NULL OR c.contactId = :contactId) " +
                     "AND (:departmentId IS NULL OR d.departmentId = :departmentId) " +
                     "AND ( :query IS NULL " +
@@ -52,5 +53,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
             @Param("query") String query,
             Pageable pageable
     );
+
 
 }
