@@ -103,6 +103,8 @@ public class CityServiceImpl implements CityService {
             city.setCityName(name);
             city.setState(state);
             city.setIsActive(true);
+            city.setIsDeleted(false);
+
 
             City saved = repository.save(city);
 
@@ -160,6 +162,15 @@ public class CityServiceImpl implements CityService {
                         null,
                         "City not found",
                         HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            if (Boolean.TRUE.equals(city.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "City is deleted",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -234,6 +245,8 @@ public class CityServiceImpl implements CityService {
         try {
             return repository.findById(id)
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
+
                     .map(c -> new ApiResponseDTO<>(
                             mapper.toDto(c),
                             "City found",
@@ -277,6 +290,16 @@ public class CityServiceImpl implements CityService {
                 );
             }
 
+            if (Boolean.TRUE.equals(city.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "City already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+
             if (Boolean.FALSE.equals(city.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
@@ -287,6 +310,7 @@ public class CityServiceImpl implements CityService {
             }
 
             city.setIsActive(false);
+            city.setIsDeleted(true);
             repository.save(city);
 
             return new ApiResponseDTO<>(
@@ -316,6 +340,7 @@ public class CityServiceImpl implements CityService {
                     .findAll(Sort.by(Sort.Direction.DESC, "cityId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -374,6 +399,7 @@ public class CityServiceImpl implements CityService {
             List<CityResponseDto> list = repository
                     .findByState_StateIdAndIsActiveTrue(stateId)
                     .stream()
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -477,6 +503,7 @@ public class CityServiceImpl implements CityService {
                     repository.findAll()
                             .stream()
                             .filter(city -> Boolean.TRUE.equals(city.getIsActive()))
+                            .filter(city -> Boolean.FALSE.equals(city.getIsDeleted()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 

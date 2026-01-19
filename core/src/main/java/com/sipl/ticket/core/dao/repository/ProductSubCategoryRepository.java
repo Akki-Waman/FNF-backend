@@ -29,7 +29,8 @@ public interface ProductSubCategoryRepository
     @Query(
             "SELECT psc " +
                     "FROM ProductSubCategories psc " +
-                    "WHERE ( :isActive IS NULL OR psc.isActive = :isActive ) " +
+                    "WHERE psc.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR psc.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR LOWER(psc.productSubCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(psc.productCategories.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"

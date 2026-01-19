@@ -15,17 +15,14 @@ import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.cache.annotation.Cacheable;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,6 +58,7 @@ public class UnitServiceImpl implements UnitService {
             Unit unit = new Unit();
             unit.setUnitName(name);
             unit.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
+            unit.setIsDelete(false);
 
             Unit saved = repository.save(unit);
 
@@ -102,7 +100,7 @@ public class UnitServiceImpl implements UnitService {
 
             Unit unit = repository.findById(unitId).orElse(null);
 
-            if (unit == null) {
+            if (unit == null || Boolean.TRUE.equals(unit.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Unit not found",
@@ -157,6 +155,7 @@ public class UnitServiceImpl implements UnitService {
         try {
             return repository.findById(unitId)
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
                     .map(u -> new ApiResponseDTO<>(
                             mapper.toDto(u),
                             "Unit found",
@@ -200,16 +199,18 @@ public class UnitServiceImpl implements UnitService {
                 );
             }
 
-            if (Boolean.FALSE.equals(unit.getIsActive())) {
+            if (Boolean.TRUE.equals(unit.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Unit already inactive",
+                        "Unit already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             unit.setIsActive(false);
+            unit.setIsDelete(true);
+
             repository.save(unit);
 
             return new ApiResponseDTO<>(
@@ -233,11 +234,11 @@ public class UnitServiceImpl implements UnitService {
     @Override
     @Cacheable("units")
     public ApiResponseDTO<List<UnitDto>> getAllUnits() {
-
         try {
             List<UnitDto> list = repository.findAll()
                     .stream()
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -257,7 +258,6 @@ public class UnitServiceImpl implements UnitService {
                     false
             );
 
-
         } catch (Exception e) {
             log.error("getAllUnits error", e);
             return new ApiResponseDTO<>(
@@ -268,15 +268,18 @@ public class UnitServiceImpl implements UnitService {
             );
         }
     }
+
+    // ================= EXPORT =================
+
     @Override
     public void exportUnitsExcel(HttpServletResponse response) {
-
         log.info("Exporting active units to Excel");
 
         try {
             List<UnitDto> units = repository.findAll()
                     .stream()
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
                     .map(u -> {
                         UnitDto dto = new UnitDto();
                         dto.setUnitId(u.getUnitId());
@@ -284,25 +287,22 @@ public class UnitServiceImpl implements UnitService {
                         dto.setIsActive(u.getIsActive());
                         return dto;
                     })
-                    .collect(Collectors.toList()); // Java 8 safe
+                    .collect(Collectors.toList());
 
             UnitExcelGenerator.generateExcel(units, response);
 
-            log.info(
-                    "Units Excel export completed successfully, totalRecords={}",
-                    units.size()
-            );
+            log.info("Units Excel export completed, totalRecords={}", units.size());
 
         } catch (Exception e) {
-            log.error("exportUnitsExcel unexpected error", e);
+            log.error("exportUnitsExcel error", e);
             throw new RuntimeException("Failed to export units Excel", e);
         }
     }
 
-    @Override
-    public ApiResponseDTO<PagedResponse<UnitDto>> searchUnits(
-            UnitSearchRequestDto dto) {
+    // ================= SEARCH =================
 
+    @Override
+    public ApiResponseDTO<PagedResponse<UnitDto>> searchUnits(UnitSearchRequestDto dto) {
         try {
             Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
@@ -311,13 +311,11 @@ public class UnitServiceImpl implements UnitService {
                     dto.getSortDir()
             );
 
-
-            Page<Unit> pageResult =
-                    repository.searchUnits(
-                            dto.getQuery(),
-                            dto.getIsActive(),
-                            pageable
-                    );
+            Page<Unit> pageResult = repository.searchUnits(
+                    dto.getQuery(),
+                    dto.getIsActive(),
+                    pageable
+            );
 
             if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -361,5 +359,3 @@ public class UnitServiceImpl implements UnitService {
         }
     }
 }
-
-

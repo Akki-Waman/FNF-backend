@@ -22,4 +22,7 @@ public class Companies extends AuditEntity{
     private String companyName;
 
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = true;
 }

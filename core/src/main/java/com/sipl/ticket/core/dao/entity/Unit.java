@@ -28,4 +28,7 @@ public class Unit extends AuditEntity {
     public Unit(Long unitId) {
         this.unitId = unitId;
     }
+
+    @Column(name = "is_delete")
+    private Boolean isDelete = true;
 }

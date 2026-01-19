@@ -27,7 +27,8 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
     @Query(
             "SELECT c " +
                     "FROM Country c " +
-                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "WHERE c.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR c.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR LOWER(c.countryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(c.taxType) LIKE LOWER(CONCAT('%', :search, '%')) ) "

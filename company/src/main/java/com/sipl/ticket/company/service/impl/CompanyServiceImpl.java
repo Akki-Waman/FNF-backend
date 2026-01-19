@@ -62,6 +62,8 @@ public class CompanyServiceImpl implements CompanyService {
             Companies company = new Companies();
             company.setCompanyName(name);
             company.setIsActive(true);
+            company.setIsDeleted(false);
+
 
             Companies saved = repository.save(company);
 
@@ -114,6 +116,15 @@ public class CompanyServiceImpl implements CompanyService {
                         null,
                         "Company not found",
                         HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            if (Boolean.TRUE.equals(company.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Company is deleted",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -181,6 +192,7 @@ public class CompanyServiceImpl implements CompanyService {
         try {
             return repository.findById(id)
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ApiResponseDTO<>(
                             mapper.toDto(c),
                             "Company found",
@@ -226,6 +238,15 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
+            if (Boolean.TRUE.equals(company.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Company already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
             if (Boolean.FALSE.equals(company.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
@@ -236,6 +257,7 @@ public class CompanyServiceImpl implements CompanyService {
             }
 
             company.setIsActive(false);
+            company.setIsDeleted(true);
             repository.save(company);
 
             return new ApiResponseDTO<>(
@@ -265,6 +287,7 @@ public class CompanyServiceImpl implements CompanyService {
                     .findAll(Sort.by(Sort.Direction.DESC, "companyId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -365,6 +388,7 @@ public class CompanyServiceImpl implements CompanyService {
                             Sort.by(Sort.Direction.DESC, "companyId"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 

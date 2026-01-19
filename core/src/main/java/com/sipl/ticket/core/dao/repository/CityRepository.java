@@ -26,7 +26,8 @@ public interface CityRepository extends JpaRepository<City, Long> {
     @Query(
             "SELECT c " +
                     "FROM City c " +
-                    "WHERE ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "WHERE c.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR c.isActive = :isActive ) " +
                     "AND ( :search IS NULL OR :search = '' " +
                     "   OR LOWER(c.cityName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(c.state.stateName) LIKE LOWER(CONCAT('%', :search, '%')) )"

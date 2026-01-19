@@ -22,10 +22,12 @@ public interface ProductCategoryRepository
 
 
     List<ProductCategories> findByIsActiveTrue();
+    
     @Query(
             "SELECT pc " +
                     "FROM ProductCategories pc " +
-                    "WHERE ( :isActive IS NULL OR pc.isActive = :isActive ) " +
+                    "WHERE pc.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR pc.isActive = :isActive ) " +
                     "AND ( :search IS NULL " +
                     "   OR LOWER(pc.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
@@ -34,7 +36,6 @@ public interface ProductCategoryRepository
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
-
 
 
     Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive( String name, boolean b);
