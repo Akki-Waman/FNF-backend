@@ -147,23 +147,6 @@ public class ProductSubCategoryServiceImpl
                 );
             }
 
-            if (Boolean.TRUE.equals(subCategory.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product sub category is deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(subCategory.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive product sub category cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
 
             String name = dto.getProductSubCategoryName().trim();
 
@@ -177,8 +160,23 @@ public class ProductSubCategoryServiceImpl
                         true
                 );
             }
-
+            ProductCategories category =
+                    productCategoryRepository.findById(dto.getProductCategoryId())
+                            .orElse(null);
+            if (category == null || Boolean.TRUE.equals(category.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product category not found or deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            // 🔹 Update fields
             subCategory.setProductSubCategoryName(name);
+            Boolean active = Boolean.TRUE.equals(dto.getIsActive());
+            subCategory.setIsActive(active);
+            subCategory.setIsDeleted(!active);
+            subCategory.setProductCategories(category);
             ProductSubCategories updated = repository.save(subCategory);
 
             return new ApiResponseDTO<>(

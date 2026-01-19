@@ -141,14 +141,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             ProductCategories category =
                     repository.findById(dto.getProductCategoryId()).orElse(null);
 
-            if (category == null || Boolean.TRUE.equals(category.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product category not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
             if (category == null) {
                 return new ApiResponseDTO<>(
                         null,
@@ -157,16 +149,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                         true
                 );
             }
-
-            if (Boolean.FALSE.equals(category.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive product category cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             String name = dto.getProductCategoryName().trim();
 
             if (repository.existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNot(
@@ -181,7 +163,10 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             }
 
             category.setProductCategoryName(name);
-            ProductCategories updatedCategory = repository.save(category);
+            Boolean active = Boolean.TRUE.equals(dto.getIsActive());
+            category.setIsActive(active);
+            category.setIsDeleted(!active);
+          ProductCategories updatedCategory = repository.save(category);
 
             return new ApiResponseDTO<>(
                     mapper.toDto(updatedCategory),
