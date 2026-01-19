@@ -40,4 +40,6 @@ public interface TaskService {
 
     ApiResponseDTO<Long> getAllTaskIds();
 
+    ApiResponseDTO<TaskDto> startStopTaskTimer(Long taskId);
+
 }

@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -39,4 +41,11 @@ public class TaskDto extends AuditDto{
     private BranchDto branch;
 
     private TicketsResponseDTO ticket;
+
+    private LocalDateTime timerStartTime;
+
+    private LocalDateTime timerStopTime;
+
+    private BigDecimal totalTrackedHours;
+
 }

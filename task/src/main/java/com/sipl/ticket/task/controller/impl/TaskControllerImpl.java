@@ -118,4 +118,13 @@ public class TaskControllerImpl implements TaskController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<TaskDto>> startStopTaskTimer(Long taskId) {
+        log.info("<<START>> startStopTaskTimer <<START>>");
+        ApiResponseDTO<TaskDto> response =
+                taskService.startStopTaskTimer(taskId);
+        log.info("<<END>> startStopTaskTimer <<END>>");
+        return ResponseEntity.ok(response);
+    }
+
 }
