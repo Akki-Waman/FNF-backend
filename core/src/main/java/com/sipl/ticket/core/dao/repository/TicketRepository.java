@@ -75,5 +75,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("service") String service,
             Pageable pageable
     );
+    @Query(
+            "SELECT sm.valueDesc, COUNT(t.id) " +
+                    "FROM Ticket t " +
+                    "JOIN Masters sm ON sm.columnValue = t.status " +
+                    "WHERE sm.columnCode = :columnId " +
+                    "GROUP BY sm.valueDesc, sm.columnValue " +
+                    "ORDER BY sm.columnValue"
+    )
+    List<Object[]> countTicketsByPriority(@Param("columnId") Integer columnId);
 
 }

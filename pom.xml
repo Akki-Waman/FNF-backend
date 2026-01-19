@@ -44,6 +44,7 @@
         <module>ticketResponse</module>
         <module>dataFetch</module>
         <module>report</module>
+        <module>dashboard</module>
 
     </modules>
 
@@ -332,6 +333,11 @@
 				<artifactId>company</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>dashboard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>branch</artifactId>
