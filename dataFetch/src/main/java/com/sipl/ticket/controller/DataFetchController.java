@@ -37,8 +37,8 @@ public interface DataFetchController {
     ResponseEntity<ApiResponseDTO<GstSlabDto>> getAllGstSlabs();
 
     @ApiOperation(
-            value = "Download task attachment",
-            notes = "Downloads task attachment by document id"
+            value = "Download document.",
+            notes = "Downloads document by document id"
     )
     @GetMapping("/files/{documentId}")
     public ResponseEntity<byte[]> getFileFromDms(@PathVariable Long documentId);
