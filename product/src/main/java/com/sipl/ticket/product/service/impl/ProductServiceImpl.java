@@ -14,6 +14,7 @@ import com.sipl.ticket.core.exception.custom.CustomException;
 import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
 import com.sipl.ticket.core.helper.ProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductMapper;
+import com.sipl.ticket.core.mapper.ProductUnitMapper;
 import com.sipl.ticket.core.util.FileUploadUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.product.service.ProductService;
@@ -22,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
     private final AccountRepository accountRepository;
     private final ProductUnitRepository productUnitRepository;
     private final BranchRepository branchesRepository;
+    private final ProductUnitMapper productUnitMapper;
 
 
     @Override
@@ -575,79 +579,102 @@ public class ProductServiceImpl implements ProductService {
             );
         }
     }
-        @Override
-        public ApiResponseDTO<PagedResponse<ProductDto>> searchProducts(
-                ProductSearchRequestDto dto) {
 
-            try {
-                log.info("Searching products with request: {}", dto);
+    @Override
+    public ApiResponseDTO<PagedResponse<CombinedProductResponseDto>> searchProducts(
+            ProductSearchRequestDto dto) {
 
-                String sortBy = dto.getSortBy();
-                if ("productSubCategoryId".equalsIgnoreCase(sortBy)) {
-                    sortBy = "productSubCategory.productSubCategoryId";
-                } else if ("productCategoryId".equalsIgnoreCase(sortBy)) {
-                    sortBy = "productCategory.productCategoryId";
-                } else if ("brandId".equalsIgnoreCase(sortBy)) {
-                    sortBy = "brands.brandId";
-                } else if ("originId".equalsIgnoreCase(sortBy)) {
-                    sortBy = "origins.originId";
-                } else if ("branchId".equalsIgnoreCase(sortBy)) {
-                    sortBy = "branch.branchId";
-                }
-                else {
-                    sortBy = "productId"; // default safe fallback
-                }
+        try {
+            log.info("Searching products with request: {}", dto);
 
-                Pageable pageable = PaginationUtil.pageable(
-                        dto.getPage(),
-                        dto.getSize(),
-                        sortBy,
-                        dto.getSortDir()
-                );
+            String sortBy = dto.getSortBy();
+            if ("productSubCategoryId".equalsIgnoreCase(sortBy)) {
+                sortBy = "productSubCategory.productSubCategoryId";
+            } else if ("productCategoryId".equalsIgnoreCase(sortBy)) {
+                sortBy = "productCategory.productCategoryId";
+            } else if ("brandId".equalsIgnoreCase(sortBy)) {
+                sortBy = "brands.brandId";
+            } else if ("originId".equalsIgnoreCase(sortBy)) {
+                sortBy = "origins.originId";
+            } else if ("branchId".equalsIgnoreCase(sortBy)) {
+                sortBy = "branch.branchId";
+            } else {
+                sortBy = "productId";
+            }
 
-                Page<Products> pageResult = productRepository.searchProducts(
-                        dto.getProductId(),
-                        dto.getBrandId(),
-                        dto.getOriginId(),
-                        dto.getProductCategoryId(),
-                        dto.getProductSubCategoryId(),
-                        dto.getBranchId(),
-                        pageable
-                );
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    Sort.by(
+                            Sort.Direction.fromString(dto.getSortDir()),
+                            sortBy
+                    )
+            );
 
-                if (pageResult.isEmpty()) {
-                    return new ApiResponseDTO<>(
-                            null,
-                            "No products found",
-                            HttpStatus.NOT_FOUND,
-                            true
-                    );
-                }
+            Page<Products> pageResult = productRepository.searchProducts(
+                    dto.getProductId(),
+                    dto.getBrandId(),
+                    dto.getOriginId(),
+                    dto.getProductCategoryId(),
+                    dto.getProductSubCategoryId(),
+                    dto.getBranchId(),
+                    pageable
+            );
 
-                return new ApiResponseDTO<>(
-                        new PagedResponse<>(
-                                productMapper.toDtoList(pageResult.getContent()),
-                                pageResult.getNumber(),
-                                pageResult.getTotalElements(),
-                                pageResult.getTotalPages(),
-                                pageResult.getSize(),
-                                pageResult.isLast()
-                        ),
-                        "Products fetched successfully",
-                        HttpStatus.OK,
-                        false
-                );
-
-            } catch (Exception e) {
-                log.error("searchProducts error", e);
+            if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Internal server error",
-                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "No products found",
+                        HttpStatus.NOT_FOUND,
                         true
                 );
             }
+
+            List<CombinedProductResponseDto> responseList =
+                    pageResult.getContent().stream()
+                            .map(product -> {
+                                CombinedProductResponseDto combinedDto =
+                                        new CombinedProductResponseDto();
+                                ProductDto productDto = productMapper.toDto(product);
+                                combinedDto.setProductDto(productDto);
+                                List<ProductUnit> productUnits =
+                                        productUnitRepository.findAllByProductId(productDto.getProductId());
+                                if (!productUnits.isEmpty()) {
+                                    List<ProductUnitDto> productUnitDtos =
+                                            productUnitMapper.toProductUnitDtoList(productUnits);
+                                    combinedDto.setProductUnitDtoList(productUnitDtos);
+                                }
+                                return combinedDto;
+                            })
+                            .collect(Collectors.toList());
+
+            return new ApiResponseDTO<>(
+                    new PagedResponse<>(
+                            responseList,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    ),
+                    "Products fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchProducts error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
+    }
+
+
+
     @Override
     @Transactional(readOnly = true)
     public void exportProductsExcel(HttpServletResponse response,Integer branchId) {
