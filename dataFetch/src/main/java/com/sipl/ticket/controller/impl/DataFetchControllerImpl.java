@@ -88,4 +88,14 @@ public class DataFetchControllerImpl implements DataFetchController {
         return responseEntity;
     }
 
+    @Override
+    public ResponseEntity<byte[]> getFileFromDms(Long documentId) {
+        log.info("<<START>> getFileFromDms <<START>>");
+        ResponseEntity<byte[]> response =
+                dataFetchService.getFileFromDms(documentId);
+        log.info("<<END>> getFileFromDms <<END>>");
+        return response;
+    }
+
+
 }

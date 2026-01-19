@@ -3,6 +3,7 @@ package com.sipl.ticket.controller;
 import com.sipl.ticket.core.dao.entity.Zone;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,5 +35,12 @@ public interface DataFetchController {
 
     @GetMapping("/get-gst-slabs")
     ResponseEntity<ApiResponseDTO<GstSlabDto>> getAllGstSlabs();
+
+    @ApiOperation(
+            value = "Download document.",
+            notes = "Downloads document by document id"
+    )
+    @GetMapping("/files/{documentId}")
+    public ResponseEntity<byte[]> getFileFromDms(@PathVariable Long documentId);
 
 }
