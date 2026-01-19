@@ -14,22 +14,25 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Products, Long> {
 
-  @Query("from Products p where p.productName= :productName and p.isActive=true")
-  Optional<Products> findByProductName(@Param("productName") String productName);
+    @Query("from Products p where p.productName = :productName and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductName(@Param("productName") String productName);
 
-  @Query("from Products p where p.productId= :productId and p.isActive=true")
-  Optional<Products> findByProductId(@Param("productId") Long productId);
 
-  @Query("from Products p where p.productCode= :productCode and p.isActive=true")
-  Optional<Products> findByProductCode(@Param("productCode") String productCode);
+    @Query("from Products p where p.productId = :productId and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductId(@Param("productId") Long productId);
 
-  @Query(
+    @Query("from Products p where p.productCode = :productCode and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductCode(@Param("productCode") String productCode);
+
+
+    @Query(
       "SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Products p WHERE p.productCode = :productCode")
   boolean existsByProductCode(@Param("productCode") String productCode);
 
     @Query(
             "from Products p " +
                     "where p.isActive = true " +
+                    "and p.isDelete = false " +
                     "and (:branchId is null or p.branch.branchId = :branchId)"
     )
     List<Products> findByIsActiveTrue(

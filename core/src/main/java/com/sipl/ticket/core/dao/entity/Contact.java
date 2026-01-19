@@ -49,4 +49,8 @@ public class Contact extends AuditEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "is_delete", nullable = false)
+    private Boolean isDelete;
+
+
 }

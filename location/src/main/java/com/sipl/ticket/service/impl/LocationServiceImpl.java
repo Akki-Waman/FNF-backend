@@ -59,6 +59,7 @@ public class LocationServiceImpl implements LocationService {
             Locations location = new Locations();
             location.setLocationName(name);
             location.setIsActive(true);
+            location.setIsDeleted(false);
 
             Locations saved = repository.save(location);
 
@@ -116,6 +117,15 @@ public class LocationServiceImpl implements LocationService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(location.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Cannot update deleted location",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
 
             boolean isUpdated = false;
 
@@ -178,7 +188,10 @@ public class LocationServiceImpl implements LocationService {
 
         try {
             return repository.findById(id)
-                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
+                    .filter(l ->
+                            Boolean.TRUE.equals(l.getIsActive()) &&
+                                    Boolean.FALSE.equals(l.getIsDeleted())
+                    )
                     .map(l -> new ApiResponseDTO<>(
                             mapper.toDto(l),
                             "Location found",
@@ -232,7 +245,7 @@ public class LocationServiceImpl implements LocationService {
                         true
                 );
             }
-
+            location.setIsDeleted(true);
             location.setIsActive(false);
             repository.save(location);
 
@@ -262,7 +275,10 @@ public class LocationServiceImpl implements LocationService {
             List<LocationResponseDTO> list =
                     repository.findAll()
                             .stream()
-                            .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
+                            .filter(l ->
+                                    Boolean.TRUE.equals(l.getIsActive()) &&
+                                            Boolean.FALSE.equals(l.getIsDeleted())
+                            )
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
@@ -372,7 +388,10 @@ public class LocationServiceImpl implements LocationService {
             List<LocationResponseDTO> locations =
                     repository.findAll()
                             .stream()
-                            .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
+                            .filter(l ->
+                                    Boolean.TRUE.equals(l.getIsActive()) &&
+                                            Boolean.FALSE.equals(l.getIsDeleted())
+                            )
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 

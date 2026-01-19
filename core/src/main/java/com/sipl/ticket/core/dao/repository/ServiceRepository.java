@@ -19,14 +19,19 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
 
     @Query(
             "SELECT s FROM ServiceEntity s " +
-                    "WHERE ( :isActive IS NULL OR s.isActive = :isActive ) " +
+                    "WHERE s.isDelete = false " +
+                    "AND ( :isActive IS NULL OR s.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR LOWER(s.serviceName) LIKE CONCAT('%', LOWER(:query), '%') )"
+                    "   OR LOWER(s.serviceName) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "   OR CAST(s.serviceId AS string) LIKE CONCAT('%', :query, '%') " +
+                    ")"
     )
     Page<ServiceEntity> searchServices(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+
 
 }

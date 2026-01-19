@@ -29,4 +29,8 @@ public class Client extends AuditEntity{
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @Column(name = "is_delete",nullable = false)
+    private Boolean isDelete = true;
+
 }

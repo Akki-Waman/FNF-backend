@@ -60,6 +60,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
             Department department = mapper.toEntity(dto);
             department.setIsActive(true);
+            department.setIsDelete(false);
 
             Department saved = repository.save(department);
 
@@ -117,6 +118,15 @@ public class DepartmentServiceImpl implements DepartmentService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(department.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Cannot update deleted department",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
 
             if (dto.getDepartmentName() != null &&
                     !dto.getDepartmentName().trim().isEmpty()) {
@@ -179,7 +189,10 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         try {
             return repository.findById(id)
-                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
+                    .filter(d ->
+                            Boolean.TRUE.equals(d.getIsActive()) &&
+                                    Boolean.FALSE.equals(d.getIsDelete())
+                    )
                     .map(d -> new ApiResponseDTO<>(
                             mapper.toDto(d),
                             "Department found",
@@ -237,6 +250,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
 
             department.setIsActive(false);
+            department.setIsDelete(true);
             repository.save(department);
 
             return new ApiResponseDTO<>(
@@ -266,7 +280,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         try {
             List<DepartmentResponseDTO> list = repository.findAll()
                     .stream()
-                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
+                    .filter(d ->
+                            Boolean.TRUE.equals(d.getIsActive()) &&
+                                    Boolean.FALSE.equals(d.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -368,7 +385,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         try {
             List<DepartmentResponseDTO> departments = repository.findAll()
                     .stream()
-                    .filter(d -> Boolean.TRUE.equals(d.getIsActive()))
+                    .filter(d ->
+                            Boolean.TRUE.equals(d.getIsActive()) &&
+                                    Boolean.FALSE.equals(d.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
