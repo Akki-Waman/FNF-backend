@@ -590,6 +590,9 @@ public class TaskServiceImpl implements TaskService {
         if (dto.getStatus() != null) {
             task.setStatus(dto.getStatus());
         }
+        if (dto.getComment() != null) {
+            task.setComment(dto.getComment());
+        }
 
         if (dto.getBranchId() != null) {
             task.setBranch(getBranch(dto.getBranchId()));

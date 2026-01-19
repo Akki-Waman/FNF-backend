@@ -48,4 +48,6 @@ public class TaskDto extends AuditDto{
 
     private BigDecimal totalTrackedHours;
 
+    private String comment;
+
 }

@@ -24,7 +24,7 @@ public class TaskRequestDto {
     private String repeatType;
     private String relatedToType;
     private Integer status;
-
+    private String comment;
     private Integer branchId;
     private Long ticketId;
 
