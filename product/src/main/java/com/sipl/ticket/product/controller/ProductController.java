@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,5 +73,17 @@ public interface ProductController {
     ResponseEntity<Void> exportProductsExcel(HttpServletResponse response,
                                              @RequestParam(required = false) Integer branchId
     );
+
+    @ApiOperation(
+            value = "Download product file",
+            notes = "Downloads product related file by file name",
+            response = byte[].class)
+    @GetMapping(
+            value = "/download/{fileName}",
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<?> downloadProductFile(
+            @PathVariable("fileName") String fileName);
+
+
 
 }
