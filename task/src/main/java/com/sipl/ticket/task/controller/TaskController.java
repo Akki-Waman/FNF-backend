@@ -80,4 +80,13 @@ public interface TaskController {
             @PathVariable Long taskId
     );
 
+    @ApiOperation(
+            value = "Get task details by task id",
+            notes = "Fetch task with assignees, followers, tags and attachments"
+    )
+    @GetMapping("/{taskId}")
+    public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> getTaskById(
+            @PathVariable Long taskId
+    );
+
 }
