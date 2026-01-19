@@ -177,4 +177,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(EntityDeletedException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleEntityDeleted(
+            EntityDeletedException ex) {
+
+        return ResponseEntity.badRequest().body(
+                new ApiResponseDTO<>(
+                        null,
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST,
+                        true
+                )
+        );
+    }
+
 }
