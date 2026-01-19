@@ -7,8 +7,11 @@ import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.service.DataFetchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -280,5 +283,36 @@ public class DataFetchServiceImpl implements DataFetchService {
         }
     }
 
+    @Override
+    public ResponseEntity<byte[]> getFileFromDms(Long documentId) {
+
+        try {
+
+            String dmsUrl =
+                    "https://ticket.app.surajinformatics.in/dms-service/api/v1/documents/download/"
+                            + documentId;
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            ResponseEntity<byte[]> dmsResponse =
+                    restTemplate.exchange(
+                            dmsUrl,
+                            HttpMethod.GET,
+                            null,
+                            byte[].class
+                    );
+
+            return ResponseEntity
+                    .status(dmsResponse.getStatusCode())
+                    .headers(dmsResponse.getHeaders())
+                    .body(dmsResponse.getBody());
+
+        } catch (Exception e) {
+            log.error("Exception in downloadTaskFile", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 
 }

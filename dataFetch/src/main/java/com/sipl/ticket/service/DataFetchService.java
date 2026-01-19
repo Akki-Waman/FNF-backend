@@ -1,6 +1,7 @@
 package com.sipl.ticket.service;
 
 import com.sipl.ticket.core.dto.response.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,5 +21,7 @@ public interface DataFetchService {
     ApiResponseDTO<OperationalUnitResponseDTO> getAllOperationalUnitsByDivisions(Long divisionId);
 
     ApiResponseDTO<GstSlabDto> getAllGstSlabs();
+
+    ResponseEntity<byte[]> getFileFromDms(Long documentId);
 
 }
