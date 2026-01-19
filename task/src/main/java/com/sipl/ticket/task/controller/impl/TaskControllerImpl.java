@@ -127,4 +127,13 @@ public class TaskControllerImpl implements TaskController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> getTaskById(Long taskId) {
+        log.info("<<START>> getTaskById <<START>>");
+        ApiResponseDTO<CombinedTaskResponseDto> response =
+                taskService.getTaskById(taskId);
+        log.info("<<END>> getTaskById <<END>>");
+        return ResponseEntity.ok(response);
+    }
+
 }

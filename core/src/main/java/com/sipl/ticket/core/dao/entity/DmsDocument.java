@@ -21,7 +21,7 @@ public class DmsDocument {
     private Long documentId;
 
     @Column(name = "application_id")
-    private Long applicationId;
+    private String  applicationId;
 
     @Column(name = "file_name")
     private String fileName;

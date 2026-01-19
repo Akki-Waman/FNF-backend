@@ -1146,4 +1146,60 @@ public class TaskServiceImpl implements TaskService {
         );
     }
 
+    @Override
+    public ApiResponseDTO<CombinedTaskResponseDto> getTaskById(Long taskId) {
+
+        try {
+
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new RuntimeException("Task not found"));
+
+            List<TaskAssignee> assignees =
+                    taskAssigneeRepository.findByTaskTaskId(taskId);
+
+            List<TaskFollower> followers =
+                    taskFollowerRepository.findByTaskTaskId(taskId);
+
+            List<TaskTag> tags =
+                    taskTagRepository.findByTaskTaskId(taskId);
+
+            List<TaskAttachment> attachments =
+                    taskAttachmentRepository.findByTaskTaskId(taskId);
+
+            CombinedTaskResponseDto responseDto =
+                    new CombinedTaskResponseDto(
+                            taskMapper.toDto(task),
+                            taskAssigneeMapper.mapToDtoList(assignees),
+                            taskFollowerMapper.mapToDtoList(followers),
+                            taskTagMapper.mapToDtoList(tags),
+                            taskAttachmentMapper.mapToDtoList(attachments)
+                    );
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    null,
+                    null,
+                    "Task details fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Exception in getTaskById", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
+
+
 }
