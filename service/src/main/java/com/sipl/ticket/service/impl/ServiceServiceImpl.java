@@ -9,8 +9,10 @@ import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ServiceExcelGenerator;
 import com.sipl.ticket.core.mapper.ServiceMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ServiceService;
 import lombok.RequiredArgsConstructor;
@@ -91,43 +93,30 @@ public class ServiceServiceImpl implements ServiceService {
     )
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
-        ServiceEntity service =
-                repository.findById(dto.getServiceId()).orElse(null);
-
-        if (service == null) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Service not found",
-                    HttpStatus.NOT_FOUND,
-                    true
-            );
+        if (dto == null || dto.getServiceId() == null) {
+            throw new IllegalArgumentException("Service ID is required");
         }
 
-        if (Boolean.TRUE.equals(service.getIsDelete())) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Cannot update deleted service",
-                    HttpStatus.BAD_REQUEST,
-                    true
-            );
-        }
+        ServiceEntity service = repository.findById(dto.getServiceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service"));
+
+        EntityStateValidator.checkNotDeleted(
+                service.getIsDelete(),
+                "Service",
+                service.getServiceName()
+        );
 
         boolean isUpdated = false;
 
         if (dto.getServiceName() != null && !dto.getServiceName().trim().isEmpty()) {
+            String name = dto.getServiceName().trim();
 
             if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
-                    dto.getServiceName(), dto.getServiceId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Service name already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
+                    name, dto.getServiceId())) {
+                throw new IllegalStateException("Service '" + name + "' already exists");
             }
 
-            service.setServiceName(dto.getServiceName().trim());
+            service.setServiceName(name);
             isUpdated = true;
         }
 
@@ -137,12 +126,7 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         if (!isUpdated) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "No fields provided to update",
-                    HttpStatus.BAD_REQUEST,
-                    true
-            );
+            throw new IllegalArgumentException("No fields provided to update");
         }
 
         ServiceEntity saved = repository.save(service);
@@ -154,6 +138,7 @@ public class ServiceServiceImpl implements ServiceService {
                 false
         );
     }
+
 
 
     @Override

@@ -7,8 +7,10 @@ import com.sipl.ticket.core.dto.request.OriginsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.OriginDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.OriginsExcelGenerator;
 import com.sipl.ticket.core.mapper.OriginsMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.OriginsService;
 import lombok.RequiredArgsConstructor;
@@ -110,6 +112,7 @@ public class OriginsServiceImpl implements OriginsService {
         }
     }
 
+    @Override
     @ActivityLoggable(
             action = "UPDATE",
             module = "ORIGINS",
@@ -120,97 +123,61 @@ public class OriginsServiceImpl implements OriginsService {
         log.info("Updating origin, id={}, name={}, isActive={}",
                 dto != null ? dto.getOriginId() : null,
                 dto != null ? dto.getOriginName() : null,
-                dto != null ? dto.getIsActive() : null);
+                dto != null ? dto.getIsActive() : null
+        );
 
-        try {
-            if (dto == null || dto.getOriginId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Origin ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Origins origin = repository.findById(dto.getOriginId()).orElse(null);
-
-            if (origin == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Origin not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.TRUE.equals(origin.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted origin",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            boolean isUpdated = false;
-
-            if (dto.getOriginName() != null && !dto.getOriginName().trim().isEmpty()) {
-
-                String name = dto.getOriginName().trim();
-
-                boolean exists = repository.findActiveByOriginName(name)
-                        .stream()
-                        .anyMatch(o ->
-                                o.getOriginName().equalsIgnoreCase(name)
-                                        && !o.getOriginId().equals(dto.getOriginId())
-                        );
-
-                if (exists) {
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Origin with the name '" + name + "' already exists.",
-                            HttpStatus.CONFLICT,
-                            true
-                    );
-                }
-
-                origin.setOriginName(name);
-                isUpdated = true;
-            }
-
-            if (dto.getIsActive() != null) {
-                origin.setIsActive(dto.getIsActive());
-                isUpdated = true;
-            }
-
-            if (!isUpdated) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No fields provided to update",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Origins updated = repository.save(origin);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Origin updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateOrigin unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getOriginId() == null) {
+            throw new IllegalArgumentException("Origin ID is required");
         }
+
+        Origins origin = repository.findById(dto.getOriginId())
+                .orElseThrow(() -> new ResourceNotFoundException("Origin"));
+
+        EntityStateValidator.checkNotDeleted(
+                origin.getIsDelete(),
+                "Origin",
+                origin.getOriginName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getOriginName() != null && !dto.getOriginName().trim().isEmpty()) {
+            String name = dto.getOriginName().trim();
+
+            boolean exists = repository.findActiveByOriginName(name)
+                    .stream()
+                    .anyMatch(o ->
+                            o.getOriginName().equalsIgnoreCase(name)
+                                    && !o.getOriginId().equals(dto.getOriginId())
+                    );
+
+            if (exists) {
+                throw new IllegalStateException("Origin '" + name + "' already exists");
+            }
+
+            origin.setOriginName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            origin.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Origins updated = repository.save(origin);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Origin updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
 
     @Override

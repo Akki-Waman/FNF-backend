@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.DepartmentExcelGenerator;
 import com.sipl.ticket.core.mapper.DepartmentMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
@@ -89,96 +91,67 @@ public class DepartmentServiceImpl implements DepartmentService {
             module = "DEPARTMENT",
             description = "Department {0} updated successfully"
     )
-    public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(DepartmentRequestDto dto) {
+    public ApiResponseDTO<DepartmentResponseDTO> updateDepartment(
+            DepartmentRequestDto dto
+    ) {
 
         log.info("Updating department, id={}, name={}, isActive={}",
                 dto != null ? dto.getDepartmentId() : null,
                 dto != null ? dto.getDepartmentName() : null,
-                dto != null ? dto.getIsActive() : null);
+                dto != null ? dto.getIsActive() : null
+        );
 
-        try {
-            if (dto == null || dto.getDepartmentId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Department department = repository
-                    .findById(dto.getDepartmentId())
-                    .orElse(null);
-
-            if (department == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-            if (Boolean.TRUE.equals(department.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted department",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-
-            if (dto.getDepartmentName() != null &&
-                    !dto.getDepartmentName().trim().isEmpty()) {
-
-                String name = dto.getDepartmentName().trim();
-
-                if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
-                        name, dto.getDepartmentId())) {
-
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Department with the name '" + name + "' already exists",
-                            HttpStatus.CONFLICT,
-                            true
-                    );
-                }
-
-                department.setDepartmentName(name);
-            }
-
-            if (dto.getIsActive() != null) {
-                department.setIsActive(dto.getIsActive());
-            }
-
-            if (dto.getDepartmentName() == null && dto.getIsActive() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No fields provided to update",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Department updated = repository.save(department);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Department updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateDepartment unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getDepartmentId() == null) {
+            throw new IllegalArgumentException("Department ID is required");
         }
+
+        Department department = repository.findById(dto.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Department"));
+
+        EntityStateValidator.checkNotDeleted(
+                department.getIsDelete(),
+                "Department",
+                department.getDepartmentName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getDepartmentName() != null &&
+                !dto.getDepartmentName().trim().isEmpty()) {
+
+            String name = dto.getDepartmentName().trim();
+
+            if (repository.existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
+                    name, dto.getDepartmentId())) {
+
+                throw new IllegalStateException(
+                        "Department '" + name + "' already exists"
+                );
+            }
+
+            department.setDepartmentName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            department.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Department updated = repository.save(department);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Department updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
 
 
