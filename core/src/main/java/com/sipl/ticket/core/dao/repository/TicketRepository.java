@@ -46,14 +46,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Page<Ticket> searchTickets(@Param("query") String query, @Param("branchId") Integer branchId, Pageable pageable);
 
     @Query(
-            "SELECT sm.valueDesc, COUNT(t.id) " +
+            "SELECT sm.valueDesc, COUNT(t.ticketId) " +
                     "FROM Ticket t " +
                     "JOIN Masters sm ON sm.columnValue = t.status " +
                     "WHERE sm.columnCode = 2 " +
+                    "AND t.isDeleted = false " +
+                    "AND sm.isActive = true " +
                     "GROUP BY sm.valueDesc, sm.columnValue " +
                     "ORDER BY sm.columnValue"
     )
     List<Object[]> countTicketsByStatus();
+
 
     @Query("SELECT t.ticketId FROM Ticket t WHERE t.isDeleted = false")
     List<Long> findAllActiveTicketIds();
