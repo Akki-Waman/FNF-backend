@@ -1,7 +1,9 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.CityExcelGenerator;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CityService;
 import com.sipl.ticket.core.dao.entity.City;
@@ -126,6 +128,120 @@ public class CityServiceImpl implements CityService {
         }
     }
 
+//    @ActivityLoggable(
+//            action = "UPDATE",
+//            module = "CITY",
+//            description = "City {0} updated successfully"
+//    )
+//    public ApiResponseDTO<CityResponseDto> updateCity(CityRequestDto dto) {
+//
+//        try {
+//            if (dto.getCityId() == null ||
+//                    dto.getCityName() == null ||
+//                    dto.getCityName().trim().isEmpty()) {
+//
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "City ID and name are required",
+//                        HttpStatus.BAD_REQUEST,
+//                        true
+//                );
+//            }
+//
+//            if (dto.getStateId() == null) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "State ID is required",
+//                        HttpStatus.BAD_REQUEST,
+//                        true
+//                );
+//            }
+//
+//            City city = repository.findById(dto.getCityId()).orElse(null);
+//
+//            if (city == null) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "City not found",
+//                        HttpStatus.NOT_FOUND,
+//                        true
+//                );
+//            }
+//
+//            if (Boolean.TRUE.equals(city.getIsDeleted())) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "City is deleted",
+//                        HttpStatus.BAD_REQUEST,
+//                        true
+//                );
+//            }
+//
+//            if (Boolean.FALSE.equals(city.getIsActive())) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "Inactive city cannot be updated",
+//                        HttpStatus.BAD_REQUEST,
+//                        true
+//                );
+//            }
+//
+//            State state = stateRepository.findById(dto.getStateId()).orElse(null);
+//
+//            if (state == null) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "State not found",
+//                        HttpStatus.NOT_FOUND,
+//                        true
+//                );
+//            }
+//
+//            if (Boolean.FALSE.equals(state.getIsActive())) {
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "Cannot assign city to inactive state",
+//                        HttpStatus.BAD_REQUEST,
+//                        true
+//                );
+//            }
+//
+//            String name = dto.getCityName().trim();
+//
+//            if (repository.existsByCityNameIgnoreCaseAndState_StateIdAndCityIdNot(
+//                    name, dto.getStateId(), dto.getCityId())) {
+//
+//                return new ApiResponseDTO<>(
+//                        null,
+//                        "City '" + name + "' already exists in this state",
+//                        HttpStatus.CONFLICT,
+//                        true
+//                );
+//            }
+//
+//            city.setCityName(name);
+//            city.setState(state);
+//            City updated = repository.save(city);
+//
+//            return new ApiResponseDTO<>(
+//                    mapper.toDto(updated),
+//                    "City updated successfully",
+//                    HttpStatus.OK,
+//                    false
+//            );
+//
+//        } catch (Exception e) {
+//            log.error("updateCity error", e);
+//            return new ApiResponseDTO<>(
+//                    null,
+//                    "Internal server error",
+//                    HttpStatus.INTERNAL_SERVER_ERROR,
+//                    true
+//            );
+//        }
+//    }
+
+    @Override
     @ActivityLoggable(
             action = "UPDATE",
             module = "CITY",
@@ -133,110 +249,49 @@ public class CityServiceImpl implements CityService {
     )
     public ApiResponseDTO<CityResponseDto> updateCity(CityRequestDto dto) {
 
-        try {
-            if (dto.getCityId() == null ||
-                    dto.getCityName() == null ||
-                    dto.getCityName().trim().isEmpty()) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "City ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            if (dto.getStateId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "State ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            City city = repository.findById(dto.getCityId()).orElse(null);
-
-            if (city == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "City not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.TRUE.equals(city.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "City is deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(city.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive city cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            State state = stateRepository.findById(dto.getStateId()).orElse(null);
-
-            if (state == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "State not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(state.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot assign city to inactive state",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getCityName().trim();
-
-            if (repository.existsByCityNameIgnoreCaseAndState_StateIdAndCityIdNot(
-                    name, dto.getStateId(), dto.getCityId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "City '" + name + "' already exists in this state",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            city.setCityName(name);
-            city.setState(state);
-            City updated = repository.save(city);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "City updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateCity error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getCityId() == null) {
+            throw new IllegalArgumentException("City ID is required");
         }
+
+        City city = repository.findById(dto.getCityId())
+                .orElseThrow(() -> new ResourceNotFoundException("City"));
+
+        EntityStateValidator.checkNotDeleted(
+                city.getIsDeleted(),
+                "City",
+                city.getCityName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getCityName() != null &&
+                !dto.getCityName().trim().isEmpty()) {
+
+            city.setCityName(dto.getCityName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getStateId() != null) {
+
+            State state = stateRepository.findById(dto.getStateId())
+                    .orElseThrow(() -> new ResourceNotFoundException("State"));
+
+            city.setState(state);
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        City updated = repository.save(city);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "City updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
