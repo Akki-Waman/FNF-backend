@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SearchClientRequestDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ClientExcelGenerator;
 import com.sipl.ticket.core.mapper.ClientMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,50 +81,37 @@ public class ClientServiceImpl implements ClientService {
     )
     public ApiResponseDTO<ClientResponseDto> updateClient(ClientRequestDto dto) {
 
-        log.info("Updating client id={}", dto.getClientId());
+        log.info("Updating client id={}",
+                dto != null ? dto.getClientId() : null
+        );
 
-        try {
-            Client client = repository.findById(dto.getClientId()).orElse(null);
-
-            if (client == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Client not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-            if (Boolean.TRUE.equals(client.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted client",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            mapper.partialUpdate(dto, client);
-            Client updated = repository.save(client);
-
-            log.info("Client updated successfully, id={}", updated.getClientId());
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Client updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateClient unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getClientId() == null) {
+            throw new IllegalArgumentException("Client ID is required");
         }
+
+        Client client = repository.findById(dto.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client"));
+
+        EntityStateValidator.checkNotDeleted(
+                client.getIsDelete(),
+                "Client",
+                client.getClientName()
+        );
+
+        mapper.partialUpdate(dto, client);
+
+        Client updated = repository.save(client);
+
+        log.info("Client updated successfully, id={}", updated.getClientId());
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Client updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<ClientResponseDto> getById(Long id) {
