@@ -91,64 +91,94 @@ public class CountryServiceImpl implements CountryService {
             module = "COUNTRY",
             description = "Country {0} updated successfully"
     )
-    public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
+    public ApiResponseDTO<CountryResponseDto> updateCountry(
+            Long id,
+            CountryRequestDto dto
+    ) {
 
-        try {
-            Country country = repository.findById(id).orElse(null);
-
-            if (country == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Country not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.TRUE.equals(country.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Country is deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            if (dto.getCountryName() != null) {
-                String name = dto.getCountryName().trim();
-                if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(name, id)) {
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Duplicate country name",
-                            HttpStatus.CONFLICT,
-                            true
-                    );
-                }
-                country.setCountryName(name);
-            }
-
-            if (dto.getIsActive() != null) country.setIsActive(dto.getIsActive());
-            if (dto.getIsForeign() != null) country.setIsForeign(dto.getIsForeign());
-            if (dto.getTaxType() != null) country.setTaxType(dto.getTaxType().trim());
-
-            Country updated = repository.save(country);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Country updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateCountry error", e);
+        if (id == null || dto == null) {
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Country ID is required",
+                    HttpStatus.BAD_REQUEST,
                     true
             );
         }
+
+        Country country = repository.findById(id).orElse(null);
+
+        if (country == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Country not found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        if (Boolean.TRUE.equals(country.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Country is deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        boolean isUpdated = false;
+
+        if (dto.getCountryName() != null &&
+                !dto.getCountryName().trim().isEmpty()) {
+
+            String name = dto.getCountryName().trim();
+
+            if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(name, id)) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Country '" + name + "' already exists",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
+
+            country.setCountryName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            country.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (dto.getIsForeign() != null) {
+            country.setIsForeign(dto.getIsForeign());
+            isUpdated = true;
+        }
+
+        if (dto.getTaxType() != null &&
+                !dto.getTaxType().trim().isEmpty()) {
+
+            country.setTaxType(dto.getTaxType().trim());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No fields provided to update",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        Country updated = repository.save(country);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Country updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
