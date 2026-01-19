@@ -31,4 +31,5 @@ public interface TicketService {
 
     ApiResponseDTO<Long> getAllTicketIds();
 
+    ApiResponseDTO<CombinedTicketResponseDto> getByTicketId(Long ticketId);
 }

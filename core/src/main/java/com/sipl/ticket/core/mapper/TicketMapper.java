@@ -51,6 +51,7 @@ public interface TicketMapper extends AuditEntityMapper {
             @Context MasterContext context
     );
 
+
     List<TicketsResponseDTO> toTicketDtoList(
             List<Ticket> tickets,
             @Context MasterContext context
@@ -59,13 +60,7 @@ public interface TicketMapper extends AuditEntityMapper {
     TicketCombinedResponseDto toCombinedDto(Ticket ticket);
 
     default String mapTags(Ticket ticket) {
-        if (ticket.getTicketTags() == null) {
-            return "";
-        }
-        return ticket.getTicketTags()
-                .stream()
-                .map(tt -> tt.getTags().getTagName())
-                .collect(Collectors.joining(", "));
+        return null;
     }
 }
 

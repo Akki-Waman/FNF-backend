@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -978,6 +979,46 @@ public class TicketServiceImpl implements TicketService {
             );
         }
     }
+
+    @Override
+    public ApiResponseDTO<CombinedTicketResponseDto> getByTicketId(Long ticketId) {
+        try {
+            log.info("Fetching ticket details for ticketId={}", ticketId);
+            Ticket ticket = ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Ticket not found with id: " + ticketId));
+            Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
+            Map<Integer, String> statusMap = masterService.getTicketStatusMap();
+            MasterContext masterContext = new MasterContext(priorityMap, statusMap);
+            TicketsResponseDTO ticketDto = ticketMapper.toTicketDto(ticket, masterContext);
+            List<TicketTagResponseDTO> tagDtos =
+                    ticketTagMapper.toDtoList(ticketTagRepository.findByTicketId(ticketId));
+            List<TicketCcResponseDTO> ccDtos =
+                    ticketCcMapper.toDtoList(ticketCcRepository.findByTicketId(ticketId));
+            List<TicketAttachmentResponseDTO> attachmentDtos = null;
+            CombinedTicketResponseDto response = new CombinedTicketResponseDto(
+                    ticketDto,
+                    tagDtos,
+                    ccDtos,
+                    attachmentDtos
+            );
+            return new ApiResponseDTO<>(
+                    response,
+                    "Ticket details fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+        } catch (EntityNotFoundException ex) {
+            log.error("Ticket not found for ticketId={}", ticketId, ex);
+            return new ApiResponseDTO<>(null, ex.getMessage(), HttpStatus.NOT_FOUND, true);
+        } catch (Exception ex) {
+            log.error("Unexpected error while fetching ticketId={}", ticketId, ex);
+            return new ApiResponseDTO<>(null, "Internal Server Error",
+                    HttpStatus.INTERNAL_SERVER_ERROR, true);
+        }
+    }
+
+
 }
 
 

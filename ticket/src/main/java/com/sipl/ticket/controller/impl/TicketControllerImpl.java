@@ -100,6 +100,14 @@ public class TicketControllerImpl implements TicketController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> getByTicketId(Long ticketId) {
+        log.info("<<START>> getByTicketId controller");
+        ApiResponseDTO<CombinedTicketResponseDto> response =
+                ticketService.getByTicketId(ticketId);
+        log.info("<<END>> getByTicketId controller");
+
+        return ResponseEntity.ok(response);    }
 
 
 }

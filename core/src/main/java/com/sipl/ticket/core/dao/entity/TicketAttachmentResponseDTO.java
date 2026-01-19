@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class TicketAttachmentResponseDTO {
     private Long attachmentId;
-    private TicketsResponseDTO ticket;
+    private Long ticket;
     private String fileName;
     private String filePath;
     private Integer fileSizeKB;

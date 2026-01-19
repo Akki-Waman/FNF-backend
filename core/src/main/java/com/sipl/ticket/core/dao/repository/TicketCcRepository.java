@@ -1,7 +1,9 @@
 package com.sipl.ticket.core.dao.repository;
 
+import com.opencsv.bean.CsvToBean;
 import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dao.entity.TicketCc;
+import com.sipl.ticket.core.dto.response.TicketCcResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +17,7 @@ public interface TicketCcRepository extends JpaRepository<TicketCc, Long> {
 
     @Query("SELECT tc.cc FROM TicketCc tc WHERE tc.ticket.ticketId = :ticketId")
     List<String> findCcEmailsByTicketId(@Param("ticketId") Long ticketId);
+
+    @Query("FROM TicketCc tc WHERE tc.ticket.ticketId = :ticketId")
+    List<TicketCc> findByTicketId(@Param("ticketId") Long ticketId);
 }
