@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.LocationExcelGenerator;
 import com.sipl.ticket.core.mapper.LocationMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.LocationService;
 import lombok.RequiredArgsConstructor;
@@ -93,95 +95,55 @@ public class LocationServiceImpl implements LocationService {
         log.info("Updating location, id={}, name={}, isActive={}",
                 dto != null ? dto.getLocationId() : null,
                 dto != null ? dto.getLocationName() : null,
-                dto != null ? dto.getIsActive() : null);
+                dto != null ? dto.getIsActive() : null
+        );
 
-        try {
-            if (dto == null || dto.getLocationId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Locations location = repository
-                    .findById(dto.getLocationId())
-                    .orElse(null);
-
-            if (location == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-            if (Boolean.TRUE.equals(location.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted location",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-
-            boolean isUpdated = false;
-
-            if (dto.getLocationName() != null &&
-                    !dto.getLocationName().trim().isEmpty()) {
-
-                String name = dto.getLocationName().trim();
-
-                if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
-                        name, dto.getLocationId())) {
-
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Location '" + name + "' already exists",
-                            HttpStatus.CONFLICT,
-                            true
-                    );
-                }
-
-                location.setLocationName(name);
-                isUpdated = true;
-            }
-
-            if (dto.getIsActive() != null) {
-                location.setIsActive(dto.getIsActive());
-                isUpdated = true;
-            }
-
-            if (!isUpdated) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No fields provided to update",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Locations updated = repository.save(location);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Location updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateLocation error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getLocationId() == null) {
+            throw new IllegalArgumentException("Location ID is required");
         }
+
+        Locations location = repository.findById(dto.getLocationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Location"));
+
+        EntityStateValidator.checkNotDeleted(
+                location.getIsDeleted(),
+                "Location",
+                location.getLocationName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getLocationName() != null && !dto.getLocationName().trim().isEmpty()) {
+            String name = dto.getLocationName().trim();
+
+            if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
+                    name, dto.getLocationId())) {
+                throw new IllegalStateException("Location '" + name + "' already exists");
+            }
+
+            location.setLocationName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            location.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Locations updated = repository.save(location);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Location updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<LocationResponseDTO> getById(Long id) {

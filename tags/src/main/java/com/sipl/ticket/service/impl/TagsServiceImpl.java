@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.request.TagsSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TagExcelGenerator;
 import com.sipl.ticket.core.mapper.TagsMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.TagsService;
 import lombok.RequiredArgsConstructor;
@@ -92,81 +94,41 @@ public class TagsServiceImpl implements TagsService {
     )
     public ApiResponseDTO<TagResponseDto> updateTag(TagsRequestDto dto) {
 
-        try {
-            if (dto.getTagId() == null ||
-                    dto.getTagName() == null ||
-                    dto.getTagName().trim().isEmpty()) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Tags tag = repository.findById(dto.getTagId()).orElse(null);
-
-            if (tag == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-            if (Boolean.TRUE.equals(tag.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted tag",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-
-            if (Boolean.FALSE.equals(tag.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive tag cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getTagName().trim();
-
-            if (repository.existsByTagNameIgnoreCaseAndTagIdNot(
-                    name, dto.getTagId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            tag.setTagName(name);
-            Tags updated = repository.save(tag);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Tag updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateTag error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getTagId() == null || dto.getTagName() == null || dto.getTagName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tag ID and name are required");
         }
+
+        Tags tag = repository.findById(dto.getTagId())
+                .orElseThrow(() -> new ResourceNotFoundException("Tag"));
+
+        EntityStateValidator.checkNotDeleted(
+                tag.getIsDelete(),
+                "Tag",
+                tag.getTagName()
+        );
+
+        if (Boolean.FALSE.equals(tag.getIsActive())) {
+            throw new IllegalStateException("Inactive tag cannot be updated");
+        }
+
+        String name = dto.getTagName().trim();
+
+        if (repository.existsByTagNameIgnoreCaseAndTagIdNot(name, dto.getTagId())) {
+            throw new IllegalStateException("Tag '" + name + "' already exists");
+        }
+
+        tag.setTagName(name);
+
+        Tags updated = repository.save(tag);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Tag updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<TagResponseDto> getById(Long id) {

@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.request.ShiftSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ShiftExcelGenerator;
 import com.sipl.ticket.core.mapper.ShiftMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ShiftService;
 import lombok.RequiredArgsConstructor;
@@ -99,85 +101,73 @@ public class ShiftServiceImpl implements ShiftService {
     )
     public ApiResponseDTO<ShiftResponseDTO> updateShift(ShiftRequestDto dto) {
 
-        log.info("Updating shift, id={}, name={}", dto.getShiftId(), dto.getShiftName());
+        log.info("Updating shift, id={}, name={}",
+                dto != null ? dto.getShiftId() : null,
+                dto != null ? dto.getShiftName() : null
+        );
 
-        try {
+        if (dto == null || dto.getShiftId() == null) {
+            throw new IllegalArgumentException("Shift ID is required");
+        }
 
-            Shift shift = repository.findById(dto.getShiftId()).orElse(null);
+        Shift shift = repository.findById(dto.getShiftId())
+                .orElseThrow(() -> new ResourceNotFoundException("Shift"));
 
-            if (shift == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Shift not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
+        EntityStateValidator.checkNotDeleted(
+                shift.getIsDeleted(),
+                "Shift",
+                shift.getShiftName()
+        );
 
-            if (Boolean.FALSE.equals(shift.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive shift cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-            if (Boolean.TRUE.equals(shift.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted shift",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-            if (Boolean.FALSE.equals(shift.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive shift cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        if (Boolean.FALSE.equals(shift.getIsActive())) {
+            throw new IllegalStateException("Inactive shift cannot be updated");
+        }
 
+        boolean isUpdated = false;
 
+        if (dto.getShiftName() != null && !dto.getShiftName().trim().isEmpty()) {
 
             String name = dto.getShiftName().trim();
 
-            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(
-                    name)) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Shift with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
+            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(name)) {
+                throw new IllegalStateException(
+                        "Shift '" + name + "' already exists"
                 );
             }
 
             shift.setShiftName(name);
-            shift.setDescription(dto.getDescription());
-            shift.setStartTime(dto.getStartTime());
-            shift.setEndTime(dto.getEndTime());
-
-            Shift updatedShift = repository.save(shift);
-
-            return new ApiResponseDTO<>(
-                    mapper.toResponseDto(updatedShift),
-                    "Shift updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateShift unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+            isUpdated = true;
         }
+
+        if (dto.getDescription() != null) {
+            shift.setDescription(dto.getDescription());
+            isUpdated = true;
+        }
+
+        if (dto.getStartTime() != null) {
+            shift.setStartTime(dto.getStartTime());
+            isUpdated = true;
+        }
+
+        if (dto.getEndTime() != null) {
+            shift.setEndTime(dto.getEndTime());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Shift updatedShift = repository.save(shift);
+
+        return new ApiResponseDTO<>(
+                mapper.toResponseDto(updatedShift),
+                "Shift updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<ShiftResponseDTO> getById(Long id) {
