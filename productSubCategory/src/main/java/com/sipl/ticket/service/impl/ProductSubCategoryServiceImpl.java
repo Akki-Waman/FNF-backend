@@ -10,10 +10,8 @@ import com.sipl.ticket.core.dto.request.ProductSubCategorySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ProductSubCategoryDto;
-import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ProductSubCategoryExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductSubCategoryMapper;
-import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ProductSubCategoryService;
 import lombok.RequiredArgsConstructor;
@@ -117,49 +115,86 @@ public class ProductSubCategoryServiceImpl
     public ApiResponseDTO<ProductSubCategoryDto> updateProductSubCategory(
             ProductSubCategoryRequestDto dto) {
 
-        if (dto == null || dto.getProductSubCategoryId() == null) {
-            throw new IllegalArgumentException("Product sub category ID is required");
-        }
-
-        ProductSubCategories subCategory =
-                repository.findById(dto.getProductSubCategoryId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException("Product sub category"));
-
-        EntityStateValidator.checkNotDeleted(
-                subCategory.getIsDeleted(),
-                "Product sub category",
-                subCategory.getProductSubCategoryName()
+        log.info(
+                "Updating product sub category, id={}, name={}",
+                dto.getProductSubCategoryId(),
+                dto.getProductSubCategoryName()
         );
 
-        boolean isUpdated = false;
+        try {
+            if (dto == null || dto.getProductSubCategoryId() == null ||
+                    dto.getProductSubCategoryName() == null ||
+                    dto.getProductSubCategoryName().trim().isEmpty()) {
 
-        if (dto.getProductSubCategoryName() != null
-                && !dto.getProductSubCategoryName().trim().isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product sub category ID and name are required",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
-            subCategory.setProductSubCategoryName(
-                    dto.getProductSubCategoryName().trim()
+            ProductSubCategories subCategory =
+                    repository.findById(dto.getProductSubCategoryId()).orElse(null);
+
+            if (subCategory == null) {
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product sub category not found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+
+            String name = dto.getProductSubCategoryName().trim();
+
+            if (repository.existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNot(
+                    name, dto.getProductSubCategoryId())) {
+
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product sub category with the name '" + name + "' already exists.",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
+            ProductCategories category =
+                    productCategoryRepository.findById(dto.getProductCategoryId())
+                            .orElse(null);
+            if (category == null || Boolean.TRUE.equals(category.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Product category not found or deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            // 🔹 Update fields
+            subCategory.setProductSubCategoryName(name);
+            Boolean active = Boolean.TRUE.equals(dto.getIsActive());
+            subCategory.setIsActive(active);
+            subCategory.setIsDeleted(!active);
+            subCategory.setProductCategories(category);
+            ProductSubCategories updated = repository.save(subCategory);
+
+            return new ApiResponseDTO<>(
+                    mapper.toDto(updated),
+                    "Product sub category updated successfully",
+                    HttpStatus.OK,
+                    false
             );
-            isUpdated = true;
+
+        } catch (Exception e) {
+            log.error("updateProductSubCategory unexpected error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
-
-        if (dto.getIsActive() != null) {
-            subCategory.setIsActive(dto.getIsActive());
-            isUpdated = true;
-        }
-
-        if (!isUpdated) {
-            throw new IllegalArgumentException("No fields provided to update");
-        }
-
-        ProductSubCategories updated = repository.save(subCategory);
-
-        return new ApiResponseDTO<>(
-                mapper.toDto(updated),
-                "Product sub category updated successfully",
-                HttpStatus.OK,
-                false
-        );
     }
 
     @Override
