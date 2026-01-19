@@ -119,10 +119,6 @@ public class ShiftServiceImpl implements ShiftService {
                 shift.getShiftName()
         );
 
-        if (Boolean.FALSE.equals(shift.getIsActive())) {
-            throw new IllegalStateException("Inactive shift cannot be updated");
-        }
-
         boolean isUpdated = false;
 
         if (dto.getShiftName() != null && !dto.getShiftName().trim().isEmpty()) {
@@ -158,6 +154,7 @@ public class ShiftServiceImpl implements ShiftService {
             throw new IllegalArgumentException("No fields provided to update");
         }
 
+        shift.setIsActive(dto.getIsActive());
         Shift updatedShift = repository.save(shift);
 
         return new ApiResponseDTO<>(
