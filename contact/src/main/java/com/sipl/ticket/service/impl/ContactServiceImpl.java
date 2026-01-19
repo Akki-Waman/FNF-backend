@@ -10,8 +10,10 @@ import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ContactExcelGenerator;
 import com.sipl.ticket.core.mapper.ContactMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,112 +117,53 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    @ActivityLoggable(
-            action = "UPDATE",
-            module = "CONTACT",
-            description = "Contact {0} updated successfully"
-    )
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
-        log.info("Updating contact [id={}, name={}, isActive={}]",
-                dto != null ? dto.getContactId() : null,
-                dto != null ? dto.getContactName() : null,
-                dto != null ? dto.getIsActive() : null
+        if (dto == null || dto.getContactId() == null) {
+            throw new IllegalArgumentException("Contact ID is required");
+        }
+
+        Contact contact = contactRepository.findById(dto.getContactId())
+                .orElseThrow(() -> new ResourceNotFoundException("Contact"));
+
+        EntityStateValidator.checkNotDeleted(
+                contact.getIsDelete(),
+                "Contact",
+                contact.getContactName()
         );
 
-        try {
-            if (dto == null || dto.getContactId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Contact ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        boolean isUpdated = false;
 
-            Contact contact = contactRepository.findById(dto.getContactId()).orElse(null);
+        if (dto.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(dto.getDepartmentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department"));
 
-            if (contact == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Contact not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            // ❌ Deleted contact cannot be updated
-            if (Boolean.TRUE.equals(contact.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Cannot update deleted contact",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            boolean isUpdated = false;
-
-            // ✅ Update department ONLY if provided
-            if (dto.getDepartmentId() != null) {
-                Department department = departmentRepository
-                        .findById(dto.getDepartmentId())
-                        .orElse(null);
-
-                if (department == null) {
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Department not found",
-                            HttpStatus.NOT_FOUND,
-                            true
-                    );
-                }
-
-                contact.setDepartment(department);
-                isUpdated = true;
-            }
-
-            // ✅ Partial update (name, email, mobile, isActive etc.)
-            contactMapper.partialUpdate(dto, contact);
-
-            if (dto.getContactName() != null ||
-                    dto.getEmailAddress() != null ||
-                    dto.getMobileNo() != null ||
-                    dto.getIsActive() != null) {
-
-                isUpdated = true;
-            }
-
-            // ❌ Nothing to update
-            if (!isUpdated) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No fields provided to update",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Contact updated = contactRepository.save(contact);
-
-            return new ApiResponseDTO<>(
-                    contactMapper.toResponseDto(updated),
-                    "Contact updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateContact unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+            contact.setDepartment(department);
+            isUpdated = true;
         }
-    }
 
+        contactMapper.partialUpdate(dto, contact);
+
+        if (dto.getContactName() != null ||
+                dto.getEmailAddress() != null ||
+                dto.getMobileNo() != null ||
+                dto.getIsActive() != null) {
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Contact updated = contactRepository.save(contact);
+
+        return new ApiResponseDTO<>(
+                contactMapper.toResponseDto(updated),
+                "Contact updated successfully",
+                HttpStatus.OK,
+                false
+        );
+    }
 
 
     @Override

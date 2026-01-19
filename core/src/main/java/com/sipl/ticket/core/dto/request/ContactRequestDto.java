@@ -15,11 +15,9 @@ public class ContactRequestDto {
 
     private Long contactId;
 
-    @NotBlank(message = "Contact name is required")
     @Size(max = 150)
     private String contactName;
 
-    @Email(message = "Invalid email format")
     @Size(max = 150)
     private String emailAddress;
 
@@ -29,10 +27,8 @@ public class ContactRequestDto {
     )
     private String mobileNo;
 
-    @NotNull(message = "Department ID is mandatory")
     private Long departmentId;
 
-    @NotNull(message = "Active status is mandatory")
     private Boolean isActive;
 
     private String departmentName;
