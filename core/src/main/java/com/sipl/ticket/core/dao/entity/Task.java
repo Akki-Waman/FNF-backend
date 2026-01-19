@@ -79,4 +79,5 @@ public class Task extends AuditEntity {
     @Column(name = "total_tracked_hours", precision = 10, scale = 2)
     private BigDecimal totalTrackedHours;
 
+    private String comment;
 }
