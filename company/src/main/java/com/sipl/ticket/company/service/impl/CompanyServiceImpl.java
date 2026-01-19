@@ -9,8 +9,10 @@ import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.CompanyExcelGenerator;
 import com.sipl.ticket.core.mapper.CompanyMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,97 +96,46 @@ public class CompanyServiceImpl implements CompanyService {
     )
     public ApiResponseDTO<CompanyDto> updateCompany(CompaniesRequestDto dto) {
 
-        log.info("Updating company, id={}, name={}, isActive={}",
-                dto != null ? dto.getCompanyId() : null,
-                dto != null ? dto.getCompanyName() : null,
-                dto != null ? dto.getIsActive() : null);
-
-        try {
-            if (dto == null || dto.getCompanyId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Companies company = repository.findById(dto.getCompanyId()).orElse(null);
-
-            if (company == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.TRUE.equals(company.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company is deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            boolean isUpdated = false;
-
-            if (dto.getCompanyName() != null &&
-                    !dto.getCompanyName().trim().isEmpty()) {
-
-                String name = dto.getCompanyName().trim();
-
-                if (repository.existsByCompanyNameIgnoreCaseAndCompanyIdNot(
-                        name, dto.getCompanyId())) {
-
-                    return new ApiResponseDTO<>(
-                            null,
-                            "Company '" + name + "' already exists",
-                            HttpStatus.CONFLICT,
-                            true
-                    );
-                }
-
-                company.setCompanyName(name);
-                isUpdated = true;
-            }
-
-            if (dto.getIsActive() != null) {
-                company.setIsActive(dto.getIsActive());
-                isUpdated = true;
-            }
-
-            if (!isUpdated) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No fields provided to update",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Companies updated = repository.save(company);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Company updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateCompany error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getCompanyId() == null) {
+            throw new IllegalArgumentException("Company ID is required");
         }
-    }
 
+        Companies company = repository.findById(dto.getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company"));
+
+        EntityStateValidator.checkNotDeleted(
+                company.getIsDeleted(),
+                "Company",
+                company.getCompanyName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getCompanyName() != null &&
+                !dto.getCompanyName().trim().isEmpty()) {
+
+            company.setCompanyName(dto.getCompanyName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            company.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Companies updated = repository.save(company);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Company updated successfully",
+                HttpStatus.OK,
+                false
+        );
+    }
 
     @Override
     public ApiResponseDTO<CompanyDto> getById(Long id) {

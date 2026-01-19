@@ -9,8 +9,10 @@ import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.BranchExcelGenerator;
 import com.sipl.ticket.core.mapper.BranchMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,6 +129,7 @@ public class BranchServiceImpl implements BranchService {
         return null;
     }
 
+    @Override
     @ActivityLoggable(
             action = "UPDATE",
             module = "BRANCH",
@@ -135,54 +138,38 @@ public class BranchServiceImpl implements BranchService {
     public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
         if (dto == null || dto.getBranchId() == null) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Branch ID is required",
-                    HttpStatus.BAD_REQUEST,
-                    true
-            );
+            throw new IllegalArgumentException("Branch ID is required");
         }
 
-        Branches branch = repository.findById(dto.getBranchId()).orElse(null);
+        Branches branch = repository.findById(dto.getBranchId())
+                .orElseThrow(() -> new ResourceNotFoundException("Branch"));
 
-        if (branch == null) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Branch not found",
-                    HttpStatus.NOT_FOUND,
-                    true
-            );
-        }
-
-        if (Boolean.TRUE.equals(branch.getIsDeleted())) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Branch is deleted",
-                    HttpStatus.BAD_REQUEST,
-                    true
-            );
-        }
-
-
-        if (dto.getEmail() != null &&
-                repository.existsByEmailIgnoreCaseAndBranchIdNot(
-                        dto.getEmail(), dto.getBranchId())) {
-
-            return new ApiResponseDTO<>(
-                    null,
-                    "Email already exists",
-                    HttpStatus.CONFLICT,
-                    true
-            );
-        }
+        EntityStateValidator.checkNotDeleted(
+                branch.getIsDeleted(),
+                "Branch",
+                branch.getBranchName()
+        );
 
         boolean isUpdated = false;
 
-        if (dto.getEmail() != null ||
-                dto.getBranchName() != null ||
-                dto.getAddress() != null) {
+        if (dto.getBranchName() != null &&
+                !dto.getBranchName().trim().isEmpty()) {
 
-            mapper.partialUpdate(dto, branch);
+            branch.setBranchName(dto.getBranchName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getEmail() != null &&
+                !dto.getEmail().trim().isEmpty()) {
+
+            branch.setEmail(dto.getEmail().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getAddress() != null &&
+                !dto.getAddress().trim().isEmpty()) {
+
+            branch.setAddress(dto.getAddress().trim());
             isUpdated = true;
         }
 
@@ -192,24 +179,18 @@ public class BranchServiceImpl implements BranchService {
         }
 
         if (!isUpdated) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "No fields provided to update",
-                    HttpStatus.BAD_REQUEST,
-                    true
-            );
+            throw new IllegalArgumentException("No fields provided to update");
         }
 
-        Branches saved = repository.save(branch);
+        Branches updated = repository.save(branch);
 
         return new ApiResponseDTO<>(
-                mapper.toDto(saved),
+                mapper.toDto(updated),
                 "Branch updated successfully",
                 HttpStatus.OK,
                 false
         );
     }
-
 
 
     @Override

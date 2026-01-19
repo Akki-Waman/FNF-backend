@@ -8,8 +8,10 @@ import com.sipl.ticket.core.dto.request.UnitSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.UnitExcelGenerator;
 import com.sipl.ticket.core.mapper.UnitMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
@@ -79,75 +81,46 @@ public class UnitServiceImpl implements UnitService {
             );
         }
     }
-
     @Override
-    @CacheEvict(value = "units", allEntries = true)
-    @ActivityLoggable(
-            action = "UPDATE",
-            module = "UNIT",
-            description = "Unit {0} updated successfully"
-    )
     public ApiResponseDTO<UnitDto> updateUnit(Long unitId, UnitRequestDto dto) {
-        try {
-            if (unitId == null || dto.getUnitName() == null || dto.getUnitName().trim().isEmpty()) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
 
-            Unit unit = repository.findById(unitId).orElse(null);
-
-            if (unit == null || Boolean.TRUE.equals(unit.getIsDelete())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(unit.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive unit cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getUnitName().trim();
-
-            if (repository.existsByUnitNameIgnoreCaseAndUnitIdNot(name, unitId)) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            unit.setUnitName(name);
-            Unit updated = repository.save(unit);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Unit updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateUnit error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || unitId == null) {
+            throw new IllegalArgumentException("Unit ID is required");
         }
+
+        Unit unit = repository.findById(unitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Unit"));
+
+        EntityStateValidator.checkNotDeleted(
+                unit.getIsDelete(),
+                "Unit",
+                unit.getUnitName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getUnitName() != null && !dto.getUnitName().trim().isEmpty()) {
+            unit.setUnitName(dto.getUnitName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            unit.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Unit updated = repository.save(unit);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Unit updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override

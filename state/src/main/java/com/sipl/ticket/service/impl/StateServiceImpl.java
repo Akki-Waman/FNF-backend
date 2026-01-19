@@ -97,7 +97,6 @@ public class StateServiceImpl implements StateService {
         }
     }
 
-    // ================= UPDATE =================
     @Override
     @CacheEvict(value = "states", allEntries = true)
     @ActivityLoggable(
@@ -107,69 +106,89 @@ public class StateServiceImpl implements StateService {
     )
     public ApiResponseDTO<StateResponseDto> updateState(StateRequestDto dto) {
 
-        log.info("Request received to update State, id={}", dto.getStateId());
+        if (dto == null || dto.getStateId() == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "State ID is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
 
-        try {
-            State state = stateRepository.findById(dto.getStateId()).orElse(null);
+        State state = stateRepository.findById(dto.getStateId()).orElse(null);
 
-            if (state == null) {
-                return new ApiResponseDTO<>(null, "State not found", HttpStatus.NOT_FOUND, true);
-            }
+        if (state == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "State not found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
 
-            if (Boolean.TRUE.equals(state.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "State is deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        if (Boolean.TRUE.equals(state.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "State is deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
 
-            // existing logic remains
+        boolean isUpdated = false;
+
+        // ===== update state name =====
+        if (dto.getStateName() != null && !dto.getStateName().trim().isEmpty()) {
+
             if (Boolean.FALSE.equals(state.getIsActive())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive state cannot be updated",
+                        "Inactive state name cannot be updated",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String stateName = dto.getStateName().trim();
-            boolean exists =
-                    stateRepository.existsByStateNameIgnoreCaseAndStateIdNot(
-                            stateName,
-                            dto.getStateId()
-                    );
+            String name = dto.getStateName().trim();
 
-            if (exists) {
+            if (stateRepository.existsByStateNameIgnoreCaseAndStateIdNot(
+                    name, dto.getStateId())) {
+
                 return new ApiResponseDTO<>(
                         null,
-                        "State '" + stateName + "' already exists",
+                        "State '" + name + "' already exists",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
-            state.setStateName(stateName);
-            State updated = stateRepository.save(state);
+            state.setStateName(name);
+            isUpdated = true;
+        }
 
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "State updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
+        // ===== activate / deactivate =====
+        if (dto.getIsActive() != null) {
+            state.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
 
-        } catch (Exception e) {
-            log.error("Error occurred while updating state", e);
+        if (!isUpdated) {
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No fields provided to update",
+                    HttpStatus.BAD_REQUEST,
                     true
             );
         }
+
+        State updated = stateRepository.save(state);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "State updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     // ================= GET BY ID =================
