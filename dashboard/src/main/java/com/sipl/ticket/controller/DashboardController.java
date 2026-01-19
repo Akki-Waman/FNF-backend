@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller;
 
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
 import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
 import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
 import io.swagger.annotations.Api;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "Dashboard APIs")
 public interface DashboardController {
     @GetMapping("/ticket-status")
-    ResponseEntity<ApiResponseDTO<ChartSeriesDTO>> getTicketStatus();
+    ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketStatus();
 
     @GetMapping("/ticket-priority")
-    ResponseEntity<ApiResponseDTO<ChartSeriesDTO>> getTicketPriorityStatus();
+    ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketPriorityStatus();
 }

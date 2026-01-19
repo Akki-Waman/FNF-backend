@@ -4,8 +4,8 @@ import com.sipl.ticket.core.dao.entity.Masters;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
-import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
+import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
+import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
 import com.sipl.ticket.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class DashboardServiceImpl implements DashboardService {
 
 
     @Override
-    public ApiResponseDTO<ChartSeriesDTO> getTicketStatus() {
+    public ApiResponseDTO<ChartDataResponseDTO> getTicketStatus() {
         log.info("Fetching Ticket Summary KPI...");
         try{
             List<Object[]> ticketCounts = ticketRepository.countTicketsByStatus();
@@ -49,7 +49,7 @@ public class DashboardServiceImpl implements DashboardService {
                 series.add(countMap.getOrDefault(statusLabel, 0L).intValue());
             }
 
-            ChartSeriesDTO statusDTO = new ChartSeriesDTO(
+            ChartDataResponseDTO statusDTO = new ChartDataResponseDTO(
                     labels,
                     series
             );
@@ -81,9 +81,10 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public ApiResponseDTO<ChartSeriesDTO> getTicketPriorityStatus() {
+    public ApiResponseDTO<ChartDataResponseDTO> getTicketPriorityStatus() {
         log.info("Fetching Ticket Priority KPI...");
         try {
+            
             Integer columnId=3;
             List<Object[]> ticketCounts = ticketRepository.countTicketsByPriority(columnId);
 
@@ -105,7 +106,7 @@ public class DashboardServiceImpl implements DashboardService {
                 series.add(countMap.getOrDefault(label, 0L).intValue());
             }
 
-            ChartSeriesDTO dto = new ChartSeriesDTO(lables, series);
+            ChartDataResponseDTO dto = new ChartDataResponseDTO(lables, series);
 
             return new ApiResponseDTO<>(dto, null, null,
                     "Ticket priority summary fetched successfully",

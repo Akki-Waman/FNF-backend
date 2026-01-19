@@ -1,15 +1,18 @@
 package com.sipl.ticket.core.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
 
 import java.util.List;
 
+@Getter
+@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChartSeriesDTO {
-    private List<String> labels;
-    private List<Integer> series;
+    private String name;
+    private List<Double> data;
+
 }
