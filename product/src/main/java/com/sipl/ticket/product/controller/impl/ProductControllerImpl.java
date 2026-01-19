@@ -70,10 +70,10 @@ public class ProductControllerImpl implements ProductController {
         return responseEntity;
     }
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductDto>>>
+    public ResponseEntity<ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>>
     searchProducts(@RequestBody ProductSearchRequestDto requestDto) {
         log.info("<<START>> searchProducts called <<START>>");
-        ApiResponseDTO<PagedResponse<ProductDto>> response =
+        ApiResponseDTO<PagedResponse<CombinedProductResponseDto>> response =
                 productService.searchProducts(requestDto);
         log.info("<<START>> searchProducts called <<START>>");
         return ResponseEntity.ok(response);

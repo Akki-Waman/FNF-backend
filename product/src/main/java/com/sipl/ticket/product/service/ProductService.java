@@ -19,7 +19,7 @@ public interface ProductService {
 
     ApiResponseDTO<ProductDto> getAllProduct(Integer branchId);
 
-    ApiResponseDTO<PagedResponse<ProductDto>>searchProducts(ProductSearchRequestDto requestDto);
+    ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>searchProducts(ProductSearchRequestDto requestDto);
 
     void exportProductsExcel(HttpServletResponse response,Integer branchId);
 

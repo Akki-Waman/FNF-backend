@@ -64,7 +64,7 @@ public interface ProductController {
             response = ProductDto.class
     )
     @PostMapping("/search")
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ProductDto>>> searchProducts(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>> searchProducts(
             @RequestBody ProductSearchRequestDto requestDto
     );
 
