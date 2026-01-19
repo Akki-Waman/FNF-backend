@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dao.repository.TicketRepository;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
 import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
+import com.sipl.ticket.core.dto.response.ChartItemDTO;
 import com.sipl.ticket.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -27,38 +29,27 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public ApiResponseDTO<ChartDataResponseDTO> getTicketStatus() {
-        log.info("Fetching Ticket Summary KPI...");
-        try{
-            List<Object[]> ticketCounts = ticketRepository.countTicketsByStatus();
+        log.info("Fetching Ticket Status KPI...");
 
-            Map<String, Long> countMap = new HashMap<>();
-            for (Object[] row : ticketCounts) {
-                String statusName = row[0].toString();
-                Long count = ((Number) row[1]).longValue();
-                countMap.put(statusName, count);
-            }
+        try {
+            Integer columnId = 2; // Status
+            List<ChartItemDTO> items = ticketRepository.getTicketsByStatus(columnId);
 
-            List<Masters> statuses = mastersRepository.findAllActiveStatuses(2);
+            log.debug("Fetched {} status items from DB", items.size());
 
-            List<String> labels = new ArrayList<>();
-            List<Integer> series = new ArrayList<>();
+            List<String> labels = items.stream().map(ChartItemDTO::getLabel).collect(Collectors.toList());
+            List<Long> series = items.stream().map(ChartItemDTO::getSeries).collect(Collectors.toList());
 
-            for (Masters master : statuses) {
-                String statusLabel = master.getValueDesc();
-                labels.add(statusLabel);
-                series.add(countMap.getOrDefault(statusLabel, 0L).intValue());
-            }
+            log.debug("Status labels: {}", labels);
+            log.debug("Status series: {}", series);
 
-            ChartDataResponseDTO statusDTO = new ChartDataResponseDTO(
-                    labels,
-                    series
-            );
+            ChartDataResponseDTO dto = new ChartDataResponseDTO(labels, series);
 
             return new ApiResponseDTO<>(
-                    statusDTO,
+                    dto,
                     null,
                     null,
-                    "Ticket summary fetched successfully",
+                    "Ticket status summary fetched successfully",
                     HttpStatus.OK,
                     false,
                     null,
@@ -66,12 +57,12 @@ public class DashboardServiceImpl implements DashboardService {
             );
 
         } catch (Exception e) {
-            log.error("Error fetching ticket summary KPI", e);
+            log.error("Error fetching ticket status KPI", e);
             return new ApiResponseDTO<>(
                     null,
                     null,
                     null,
-                    "Failed to fetch ticket summary",
+                    "Failed to fetch ticket status summary",
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true,
                     null,
@@ -83,41 +74,44 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public ApiResponseDTO<ChartDataResponseDTO> getTicketPriorityStatus() {
         log.info("Fetching Ticket Priority KPI...");
+
         try {
-            
-            Integer columnId=3;
-            List<Object[]> ticketCounts = ticketRepository.countTicketsByPriority(columnId);
+            Integer columnId = 3; // Priority
+            List<ChartItemDTO> items = ticketRepository.getTicketsByPriority(columnId);
 
-            Map<String, Long> countMap = new HashMap<>();
-            for (Object[] row : ticketCounts) {
-                String priority = row[0].toString();
-                Long count = ((Number) row[1]).longValue();
-                countMap.put(priority, count);
-            }
+            log.debug("Fetched {} priority items from DB", items.size());
 
-            List<Masters> priorities = mastersRepository.findAllActiveStatuses(3);
+            List<String> labels = items.stream().map(ChartItemDTO::getLabel).collect(Collectors.toList());
+            List<Long> series = items.stream().map(ChartItemDTO::getSeries).collect(Collectors.toList());
 
-            List<String> lables = new ArrayList<>();
-            List<Integer> series = new ArrayList<>();
+            log.debug("Priority labels: {}", labels);
+            log.debug("Priority series: {}", series);
 
-            for (Masters master : priorities) {
-                String label = master.getValueDesc();
-                lables.add(label);
-                series.add(countMap.getOrDefault(label, 0L).intValue());
-            }
+            ChartDataResponseDTO dto = new ChartDataResponseDTO(labels, series);
 
-            ChartDataResponseDTO dto = new ChartDataResponseDTO(lables, series);
-
-            return new ApiResponseDTO<>(dto, null, null,
+            return new ApiResponseDTO<>(
+                    dto,
+                    null,
+                    null,
                     "Ticket priority summary fetched successfully",
-                    HttpStatus.OK, false, null, null);
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
 
         } catch (Exception e) {
             log.error("Error fetching ticket priority KPI", e);
-
-            return new ApiResponseDTO<>(null, null, null,
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
                     "Failed to fetch ticket priority summary",
-                    HttpStatus.INTERNAL_SERVER_ERROR, true, null, null);
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
         }
     }
 

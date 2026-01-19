@@ -1,6 +1,7 @@
 package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Ticket;
+import com.sipl.ticket.core.dto.response.ChartItemDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -75,14 +76,22 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("service") String service,
             Pageable pageable
     );
-    @Query(
-            "SELECT sm.valueDesc, COUNT(t.id) " +
-                    "FROM Ticket t " +
-                    "JOIN Masters sm ON sm.columnValue = t.status " +
-                    "WHERE sm.columnCode = :columnId " +
-                    "GROUP BY sm.valueDesc, sm.columnValue " +
-                    "ORDER BY sm.columnValue"
-    )
-    List<Object[]> countTicketsByPriority(@Param("columnId") Integer columnId);
+
+    @Query("SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(sm.valueDesc, COALESCE(COUNT(t.ticketId), 0)) " +
+            "FROM Masters sm " +
+            "LEFT JOIN Ticket t ON t.status = sm.columnValue AND t.isDeleted = false " +
+            "WHERE sm.columnCode = :columnId AND sm.isActive = true " +
+            "GROUP BY sm.valueDesc, sm.columnValue " +
+            "ORDER BY sm.columnValue")
+    List<ChartItemDTO> getTicketsByStatus(@Param("columnId") Integer columnId);
+
+    @Query("SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(sm.valueDesc, COALESCE(COUNT(t.ticketId), 0)) " +
+            "FROM Masters sm " +
+            "LEFT JOIN Ticket t ON t.priority = sm.columnValue AND t.isDeleted = false " +
+            "WHERE sm.columnCode = :columnId AND sm.isActive = true " +
+            "GROUP BY sm.valueDesc, sm.columnValue " +
+            "ORDER BY sm.columnValue")
+    List<ChartItemDTO> getTicketsByPriority(@Param("columnId") Integer columnId);
 
 }
+

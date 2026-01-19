@@ -19,18 +19,18 @@ public class DashboardControllerImpl implements DashboardController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketStatus() {
-        log.info("<<START>> getTicketStatus controller <<START>>");
+        log.info("<<START>> getTicketStatus <<START>>");
         ApiResponseDTO<ChartDataResponseDTO> apiResponse =
                 dashboardService.getTicketStatus();
-        log.info("<<END>> getTicketStatus controller <<END>>");
+        log.info("<<END>> getTicketStatus <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
     @Override
     public ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketPriorityStatus() {
-        log.info("<<START>> getTicketPriorityStatus controller <<START>>");
+        log.info("<<START>> getTicketPriorityStatus <<START>>");
         ApiResponseDTO<ChartDataResponseDTO> apiResponse =
                 dashboardService.getTicketPriorityStatus();
-        log.info("<<END>> getTicketPriorityStatus controller <<END>>");
+        log.info("<<END>> getTicketPriorityStatus <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
 
