@@ -26,8 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1012,4 +1015,132 @@ public class TaskServiceImpl implements TaskService {
             );
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "TASK",
+            description = "Task timer updated for task {0}"
+    )
+    public ApiResponseDTO<TaskDto> startStopTaskTimer(Long taskId) {
+
+        try {
+
+            Task task = getTask(taskId);
+            LocalDateTime now = LocalDateTime.now();
+
+            if (isFirstTimeStart(task)) {
+                return startTimer(task, now);
+            }
+
+            if (isStopRequired(task)) {
+                return stopTimer(task, now);
+            }
+
+            return buildSuccessResponse(
+                    task,
+                    "Task timer has already been started and stopped"
+            );
+
+        } catch (Exception e) {
+            log.error("Exception in startStopTaskTimer", e);
+            return buildErrorResponse(e.getMessage());
+        }
+    }
+
+    private Task getTask(Long taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+    }
+
+    private boolean isFirstTimeStart(Task task) {
+        return task.getTimerStartTime() == null;
+    }
+
+    private boolean isStopRequired(Task task) {
+        return task.getTimerStartTime() != null
+                && task.getTimerStopTime() == null;
+    }
+
+    private ApiResponseDTO<TaskDto> startTimer(Task task, LocalDateTime now) {
+
+        task.setTimerStartTime(now);
+        task.setTimerStopTime(null);
+
+        taskRepository.save(task);
+
+        return buildSuccessResponse(
+                task,
+                "Task timer started successfully"
+        );
+    }
+
+    private ApiResponseDTO<TaskDto> stopTimer(Task task, LocalDateTime now) {
+
+        task.setTimerStopTime(now);
+
+        BigDecimal hours = calculateTrackedHours(
+                task.getTimerStartTime(),
+                task.getTimerStopTime()
+        );
+
+        task.setTotalTrackedHours(
+                getExistingTrackedHours(task).add(hours)
+        );
+
+        taskRepository.save(task);
+
+        return buildSuccessResponse(
+                task,
+                "Task timer stopped successfully"
+        );
+    }
+
+    private BigDecimal calculateTrackedHours(
+            LocalDateTime start,
+            LocalDateTime stop) {
+
+        long minutes = ChronoUnit.MINUTES.between(start, stop);
+
+        return BigDecimal.valueOf(minutes)
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal getExistingTrackedHours(Task task) {
+        return task.getTotalTrackedHours() != null
+                ? task.getTotalTrackedHours()
+                : BigDecimal.ZERO;
+    }
+
+    private ApiResponseDTO<TaskDto> buildSuccessResponse(
+            Task task,
+            String message) {
+
+        return new ApiResponseDTO<>(
+                taskMapper.toDto(task),
+                null,
+                null,
+                message,
+                HttpStatus.OK,
+                false,
+                null,
+                null
+        );
+    }
+
+    private ApiResponseDTO<TaskDto> buildErrorResponse(String message) {
+
+        return new ApiResponseDTO<>(
+                null,
+                null,
+                null,
+                message,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                true,
+                null,
+                null
+        );
+    }
+
 }

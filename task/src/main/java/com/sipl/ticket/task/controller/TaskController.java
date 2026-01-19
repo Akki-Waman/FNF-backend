@@ -71,4 +71,13 @@ public interface TaskController {
     @GetMapping("/tasks/ids")
     ResponseEntity<ApiResponseDTO<Long>> getAllTaskIds();
 
+    @ApiOperation(
+            value = "Start or Stop task timer",
+            notes = "Start timer if not started, otherwise stop timer and calculate tracked hours"
+    )
+    @PostMapping("/timer/{taskId}")
+    public ResponseEntity<ApiResponseDTO<TaskDto>> startStopTaskTimer(
+            @PathVariable Long taskId
+    );
+
 }
