@@ -163,10 +163,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             }
 
             category.setProductCategoryName(name);
-            Boolean active = Boolean.TRUE.equals(dto.getIsActive());
-            category.setIsActive(active);
-            category.setIsDeleted(!active);
-          ProductCategories updatedCategory = repository.save(category);
+            category.setIsActive(dto.getIsActive());
+            ProductCategories updatedCategory = repository.save(category);
 
             return new ApiResponseDTO<>(
                     mapper.toDto(updatedCategory),

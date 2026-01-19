@@ -173,9 +173,7 @@ public class ProductSubCategoryServiceImpl
             }
             // 🔹 Update fields
             subCategory.setProductSubCategoryName(name);
-            Boolean active = Boolean.TRUE.equals(dto.getIsActive());
-            subCategory.setIsActive(active);
-            subCategory.setIsDeleted(!active);
+            subCategory.setIsActive(dto.getIsActive());
             subCategory.setProductCategories(category);
             ProductSubCategories updated = repository.save(subCategory);
 
