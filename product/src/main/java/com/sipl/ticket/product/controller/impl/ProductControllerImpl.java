@@ -91,4 +91,17 @@ public class ProductControllerImpl implements ProductController {
         return ResponseEntity.ok().build();
     }
 
+    @Override
+    public ResponseEntity<?> downloadProductFile(String fileName) {
+        log.info("<<START>> downloadProductFile <<START>>");
+
+        ResponseEntity<?> response =
+                productService.downloadProductFile(fileName);
+
+        log.info("<<END>> downloadProductFile <<END>>");
+        return response;
+    }
+
+
+
 }

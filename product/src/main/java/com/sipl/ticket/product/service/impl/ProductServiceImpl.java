@@ -15,10 +15,12 @@ import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
 import com.sipl.ticket.core.helper.ProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductMapper;
 import com.sipl.ticket.core.mapper.ProductUnitMapper;
+import com.sipl.ticket.core.util.ApkUtil;
 import com.sipl.ticket.core.util.FileUploadUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.product.service.ProductService;
 import com.sipl.ticket.product.service.ProductUnitService;
+import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,13 +28,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Cacheable;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +65,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductUnitRepository productUnitRepository;
     private final BranchRepository branchesRepository;
     private final ProductUnitMapper productUnitMapper;
+    private final ApkUtil apkUtil;
 
 
     @Override
@@ -77,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
                     objectMapper.readValue(productRequestDtoString, NewProductRequestDto.class);
             if (productRequestDto.getProductDto() == null) {
                 return new ApiResponseDTO<>(
-                        null,null,null,"Product DTO cannot be null.", HttpStatus.BAD_REQUEST, true,null, null);
+                        null, null, null, "Product DTO cannot be null.", HttpStatus.BAD_REQUEST, true, null, null);
             }
             if (productRequestDto.getProductDto().getProductCategory() == null) {
                 return new ApiResponseDTO<>(
@@ -437,7 +445,6 @@ public class ProductServiceImpl implements ProductService {
 //    }
 
 
-
     @Override
     @ActivityLoggable(
             action = "UPDATE",
@@ -674,10 +681,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
     @Override
     @Transactional(readOnly = true)
-    public void exportProductsExcel(HttpServletResponse response,Integer branchId) {
+    public void exportProductsExcel(HttpServletResponse response, Integer branchId) {
 
         log.info("Exporting active products to Excel");
 
@@ -697,6 +703,27 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Failed to export products Excel", e);
         }
     }
+
+    @Override
+    public ResponseEntity<Resource> downloadProductFile(String fileName) {
+        log.info("<<START>> downloadProductFile <<START>>");
+
+        Resource file = apkUtil.downloadFile(fileName);
+
+        if (file == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\"")
+                .body(file);
+    }
+
+
+
 
 }
 
