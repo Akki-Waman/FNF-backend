@@ -11,7 +11,8 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = AuditUserMasterMapper.class
+        uses = {AuditUserMasterMapper.class,
+        TicketMapper.class}
 )
 public interface TicketAttachmentMapper {
     @Mapping(target = "attachmentId", ignore = true)
@@ -23,4 +24,6 @@ public interface TicketAttachmentMapper {
 
     List<TicketAttachmentResponseDTO> mapTagsListToDtoList(List<TicketAttachment> ticketAttachmentList);
 
+    @Mapping(source = "ticket.ticketId", target = "ticketId")
+    List<TicketAttachmentResponseDTO> toDtoList(List<TicketAttachment> byTicketId);
 }

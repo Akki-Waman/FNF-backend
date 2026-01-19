@@ -15,7 +15,8 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = AuditUserMasterMapper.class
+        uses = {AuditUserMasterMapper.class,
+                TicketMapper.class}
 )
 public interface TicketCcMapper {
     @Mapping(target = "ticketCcId", ignore = true)
@@ -25,4 +26,6 @@ public interface TicketCcMapper {
     TicketCcResponseDTO toDto(TicketCc ticketCc);
 
     List<TicketCcResponseDTO> mapTagsListToDtoList(List<TicketCc> ticketCcList);
+
+    List<TicketCcResponseDTO> toDtoList(List<TicketCc> byTicketId);
 }
