@@ -278,7 +278,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
         try {
             List<ProductCategoryDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "productCategoryId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "productCategoryName"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
                     .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))

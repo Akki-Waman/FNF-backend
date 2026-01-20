@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -230,7 +231,7 @@ public class CountryServiceImpl implements CountryService {
 
         try {
             List<CountryResponseDto> countries =
-                    repository.findAll()
+                    repository.findAll(Sort.by(Sort.Direction.ASC, "countryName"))
                             .stream()
                             .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
                             .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))

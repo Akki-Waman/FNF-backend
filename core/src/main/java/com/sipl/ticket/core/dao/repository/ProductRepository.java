@@ -33,7 +33,8 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
             "from Products p " +
                     "where p.isActive = true " +
                     "and p.isDelete = false " +
-                    "and (:branchId is null or p.branch.branchId = :branchId)"
+                    "and (:branchId is null or p.branch.branchId = :branchId) "+
+            "order by p.productName asc"
     )
     List<Products> findByIsActiveTrue(
             @Param("branchId") Integer branchId

@@ -298,7 +298,7 @@ public class ProductSubCategoryServiceImpl
 
         try {
             List<ProductSubCategoryDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "productSubCategoryId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "productSubCategoryName"))
                     .stream()
                     .filter(sc -> Boolean.TRUE.equals(sc.getIsActive()))
                     .filter(sc -> Boolean.FALSE.equals(sc.getIsDeleted()))
