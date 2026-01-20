@@ -97,5 +97,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "ORDER BY sm.columnValue")
     List<ChartItemDTO> getTicketsByPriority(@Param("columnId") Integer columnId);
 
+    @Query(
+            "SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(" +
+                    "COALESCE(CONCAT(u.firstName, ' ', u.lastName), 'Unknown'), " +
+                    "COUNT(t.ticketId)" +
+                    ") " +
+                    "FROM Ticket t " +
+                    "LEFT JOIN t.assignedTo u " +
+                    "WHERE t.isDeleted = false " +
+                    "GROUP BY u.firstName, u.lastName " +
+                    "ORDER BY COUNT(t.ticketId) DESC"
+    )
+    List<ChartItemDTO> getTicketsByAssignee();
 }
 

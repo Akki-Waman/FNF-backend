@@ -40,4 +40,15 @@ public class DashboardControllerImpl implements DashboardController {
         log.info("<<END>> getCalendarTasks <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
+
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketAssignee() {
+        log.info("<<START>> getTicketAssignee <<START>>");
+        ApiResponseDTO<ChartDataResponseDTO> apiResponse =
+                dashboardService.getTicketAssignee();
+        log.info("<<END>> getTicketAssignee <<END>>");
+        return ResponseEntity.ok(apiResponse);
+    }
+
 }
