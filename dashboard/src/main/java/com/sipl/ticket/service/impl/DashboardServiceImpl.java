@@ -1,22 +1,20 @@
 package com.sipl.ticket.service.impl;
 
-import com.sipl.ticket.core.dao.entity.Masters;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
+import com.sipl.ticket.core.dao.repository.TaskRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.dto.request.TaskFilterRequestDTO;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
-import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
-import com.sipl.ticket.core.dto.response.ChartItemDTO;
 import com.sipl.ticket.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -25,6 +23,7 @@ import java.util.stream.Collectors;
 public class DashboardServiceImpl implements DashboardService {
     private final TicketRepository ticketRepository;
     private final MastersRepository mastersRepository;
+    private final TaskRepository taskRepository;
 
 
     @Override
@@ -115,5 +114,48 @@ public class DashboardServiceImpl implements DashboardService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<TaskResponseDTO> getCalendarTasks(TaskFilterRequestDTO dto) {
+
+        log.info("getCalendarTasks() START");
+
+        try {
+            if (dto.getStartDate() == null || dto.getEndDate() == null) {
+                log.warn("StartDate or EndDate missing");
+                return new ApiResponseDTO<>(
+                        null,
+                        "StartDate and EndDate is required",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+            LocalDateTime startDateTime = dto.getStartDate().atStartOfDay();
+            LocalDateTime endDateTime = dto.getEndDate().atTime(23, 59, 59);
+
+            log.info("Fetching tasks from {} to {}", startDateTime, endDateTime);
+
+            List<TaskResponseDTO> tasks = taskRepository.findTask(startDateTime, endDateTime);
+
+            log.info("Fetched {} tasks", tasks.size());
+
+            return new ApiResponseDTO<>(
+                    tasks,
+                    HttpStatus.OK,
+                    "Tasks fetched successfully",
+                    false,
+                    LocalDateTime.now()
+            );
+
+        } catch (Exception e) {
+            log.error("getCalendarTasks() ERROR: {}", e.getMessage(), e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Failed to fetch tasks",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
 }
 
