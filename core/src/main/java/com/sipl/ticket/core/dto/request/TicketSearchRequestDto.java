@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TicketSearchRequestDto extends SearchRequestDto{
     private String query;
-
+    private Integer ticketStatus;
 }
