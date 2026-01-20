@@ -18,5 +18,5 @@ public interface DashboardController {
     ResponseEntity<ApiResponseDTO<ChartDataResponseDTO>> getTicketPriorityStatus();
 
     @PostMapping("/tasks/calendar")
-    ResponseEntity<ApiResponseDTO<TaskResponseDTO>> getTasks(@RequestBody TaskFilterRequestDTO dto);
+    ResponseEntity<ApiResponseDTO<TaskResponseDTO>> getCalendarTasks(@RequestBody TaskFilterRequestDTO dto);
 }

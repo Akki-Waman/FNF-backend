@@ -10,5 +10,5 @@ public interface DashboardService {
 
     ApiResponseDTO<ChartDataResponseDTO> getTicketPriorityStatus();
 
-    ApiResponseDTO<TaskResponseDTO> getTasks(TaskFilterRequestDTO dto);
+    ApiResponseDTO<TaskResponseDTO> getCalendarTasks(TaskFilterRequestDTO dto);
 }

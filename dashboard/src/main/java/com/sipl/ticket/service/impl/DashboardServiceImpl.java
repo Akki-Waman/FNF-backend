@@ -115,7 +115,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public ApiResponseDTO<TaskResponseDTO> getTasks(TaskFilterRequestDTO dto) {
+    public ApiResponseDTO<TaskResponseDTO> getCalendarTasks(TaskFilterRequestDTO dto) {
 
         log.info("getTasks() START");
 
