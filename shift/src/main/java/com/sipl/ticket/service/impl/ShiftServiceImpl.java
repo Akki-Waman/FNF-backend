@@ -125,9 +125,9 @@ public class ShiftServiceImpl implements ShiftService {
 
             String name = dto.getShiftName().trim();
 
-            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(name)) {
+            if (repository.existsByShiftNameAndIdNot(name,dto.getShiftId())) {
                 throw new IllegalStateException(
-                        "Shift '" + name + "' already exists"
+                            "Shift '" + name + "' already exists"
                 );
             }
 

@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.UnitDto;
 import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +34,7 @@ public class UnitControllerImpl implements UnitController {
                 unitService.getUnitById(unitId);
 
         log.info("<<End>> getUnit <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class UnitControllerImpl implements UnitController {
                 unitService.getAllUnits();
 
         log.info("<<End>> getAllUnits <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class UnitControllerImpl implements UnitController {
                 unitService.createUnit(requestDto);
 
         log.info("<<End>> createUnit <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class UnitControllerImpl implements UnitController {
                 unitService.updateUnit(unitId, requestDto);
 
         log.info("<<End>> updateUnit <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -83,7 +84,7 @@ public class UnitControllerImpl implements UnitController {
                 unitService.deleteUnit(unitId);
 
         log.info("<<End>> deleteUnit <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override

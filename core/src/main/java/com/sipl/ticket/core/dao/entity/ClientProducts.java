@@ -53,7 +53,7 @@ public class ClientProducts extends AuditEntity {
     @Column(name = "serial_number", unique = true)
     private String serialNumber;
 
-    @Column(name = "imei_no", unique = true)
+    @Column(name = "imei_no", nullable = true)
     private String imeiNo;
 
     @Column(name = "mdm_asset_no", length = 50)
