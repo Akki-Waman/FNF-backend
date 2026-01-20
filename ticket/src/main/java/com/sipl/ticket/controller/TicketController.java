@@ -32,7 +32,7 @@ public interface TicketController {
             value = "Delete multiple tickets",
             notes = "Delete tickets by providing list of ticket IDs"
     )
-    @DeleteMapping("/delete")
+    @PostMapping("/delete")
     ResponseEntity<ApiResponseDTO<Void>> deleteTickets(
             @RequestBody DeleteTicketsRequestDTO requestDTO
     );
