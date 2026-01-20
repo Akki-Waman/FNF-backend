@@ -20,6 +20,7 @@ public interface TicketAttachmentMapper {
     TicketAttachment toEntity(TicketAttachmentResponseDTO dto, Ticket ticket,  Users uploadedBy);
 
     @InheritConfiguration(name = "toDto")
+    @Mapping(source = "ticket.ticketId", target = "ticket")
     TicketAttachmentResponseDTO toDto(TicketAttachment ticketAttachment);
 
     List<TicketAttachmentResponseDTO> mapTagsListToDtoList(List<TicketAttachment> ticketAttachmentList);
