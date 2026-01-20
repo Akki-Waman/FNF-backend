@@ -304,7 +304,7 @@ public class BranchServiceImpl implements BranchService {
 
         try {
             List<BranchDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "branchId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "branchName"))
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
                     .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))

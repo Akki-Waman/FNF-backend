@@ -288,7 +288,7 @@ public class OriginsServiceImpl implements OriginsService {
         log.info("Fetching all active origins");
 
         try {
-            List<OriginDto> list = repository.findAll()
+            List<OriginDto> list = repository.findAll(Sort.by(Sort.Direction.ASC, "originName"))
                     .stream()
                     .filter(o ->
                             Boolean.TRUE.equals(o.getIsActive()) &&

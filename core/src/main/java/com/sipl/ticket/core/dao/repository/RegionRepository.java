@@ -10,5 +10,10 @@ import java.util.List;
 @Repository
 public interface RegionRepository extends JpaRepository<Region, Long> {
 
+    @Query(
+            "from Region r " +
+                    "where r.isActive = true " +
+                    "order by r.regionName asc"
+    )
     List<Region> findByIsActiveTrue();
 }

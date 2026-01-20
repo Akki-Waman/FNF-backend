@@ -11,6 +11,11 @@ import java.util.List;
 
 @Repository
 public interface DivisionsRepository extends JpaRepository<Divisions, Long> {
+    @Query(
+            "from Divisions d " +
+                    "where d.isActive = true " +
+                    "order by d.divisionName asc"
+    )
     List<Divisions> findByIsActiveTrue();
 
     @Query("SELECT d FROM Divisions d WHERE d.zone.zoneId = :zoneId AND d.isActive = true")

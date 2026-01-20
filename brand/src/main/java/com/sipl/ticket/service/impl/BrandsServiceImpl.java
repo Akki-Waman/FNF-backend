@@ -263,7 +263,7 @@ public class BrandsServiceImpl implements BrandsService {
         log.info("Fetching all active brands");
 
         try {
-            List<BrandDto> list = repository.findAll()
+            List<BrandDto> list = repository.findAll(Sort.by(Sort.Direction.ASC, "brandName"))
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
                     .map(mapper::toDto)
