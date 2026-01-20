@@ -45,6 +45,18 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
             Pageable pageable
     );
 
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+                    "FROM Shift s " +
+                    "WHERE LOWER(s.shiftName) = LOWER(:shiftName) " +
+                    "AND s.shiftId <> :shiftId " +
+                    "AND s.isActive = true " +
+                    "AND (s.isDeleted = false OR s.isDeleted IS NULL)"
+    )
+    boolean existsByShiftNameAndIdNot(
+            @Param("shiftName") String shiftName,
+            @Param("shiftId") Long shiftId
+    );
 
 }
 

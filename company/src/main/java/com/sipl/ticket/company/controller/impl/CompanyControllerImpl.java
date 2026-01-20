@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,7 +33,7 @@ public class CompanyControllerImpl implements CompanyController {
                 companiesService.saveCompany(dto);
 
         log.info("<<End>> saveCompany <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class CompanyControllerImpl implements CompanyController {
                 companiesService.updateCompany(dto);
 
         log.info("<<End>> updateCompany <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class CompanyControllerImpl implements CompanyController {
                 companiesService.getById(companyId);
 
         log.info("<<End>> getCompanyById <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class CompanyControllerImpl implements CompanyController {
                 companiesService.deleteById(companyId);
 
         log.info("<<End>> deleteCompany <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -83,7 +84,7 @@ public class CompanyControllerImpl implements CompanyController {
                 companiesService.getAllCompanies();
 
         log.info("<<End>> getAllCompanies <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -93,7 +94,7 @@ public class CompanyControllerImpl implements CompanyController {
         ApiResponseDTO<PagedResponse<CompanyDto>> response =
                 companiesService.searchCompanies(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @Override
     public void downloadExcel(HttpServletResponse response) {
