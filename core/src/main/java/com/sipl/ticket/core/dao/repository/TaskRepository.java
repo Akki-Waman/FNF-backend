@@ -67,28 +67,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t.taskId FROM Task t WHERE t.isDeleted = false")
     List<Long> findAllActiveTaskIds();
 
-//    @Query(
-//            "SELECT new com.sipl.ticket.core.dto.response.TaskScheduledResponseDTO(" +
-//                    "t.taskId, " +
-//                    "tk.ticketId, " +
-//                    "t.subject, " +
-//                    "tk.subject, " +
-//                    "t.priority, " +
-//                    "t.status, " +
-//                    "t.startDate, " +
-//                    "t.dueDate, " +
-//                    "t.createdTime" +
-//                    ") " +
-//                    "FROM Task t " +
-//                    "JOIN t.ticket tk " +
-//                    "WHERE t.isDeleted = false " +
-//                    "AND t.createdTime >= :startDateTime " +
-//                    "AND t.createdTime <= :endDateTime"
-//    )
-//    List<TaskResponseDTO> findTask(
-//            @Param("startDateTime") LocalDateTime startDateTime,
-//            @Param("endDateTime") LocalDateTime endDateTime
-//    );
 @Query("SELECT new com.sipl.ticket.core.dto.response.TaskResponseDTO(" +
         "t.taskId, " +
         "tk.ticketId, " +
