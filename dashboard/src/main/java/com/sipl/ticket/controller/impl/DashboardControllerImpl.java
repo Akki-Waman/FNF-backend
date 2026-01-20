@@ -1,10 +1,8 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.DashboardController;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.ChartDataResponseDTO;
-import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
-import com.sipl.ticket.core.dto.response.ChartSeriesDTO;
+import com.sipl.ticket.core.dto.request.TaskFilterRequestDTO;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,5 +32,12 @@ public class DashboardControllerImpl implements DashboardController {
         return ResponseEntity.ok(apiResponse);
     }
 
-
+    @Override
+    public ResponseEntity<ApiResponseDTO<TaskResponseDTO>> getTasks(TaskFilterRequestDTO dto) {
+        log.info("<<START>> getTasks <<START>>");
+        ApiResponseDTO<TaskResponseDTO> apiResponse =
+                dashboardService.getTasks(dto);
+        log.info("<<END>> getTasks <<END>>");
+        return ResponseEntity.ok(apiResponse);
+    }
 }

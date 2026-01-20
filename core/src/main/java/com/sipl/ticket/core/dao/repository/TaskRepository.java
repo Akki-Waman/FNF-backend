@@ -2,7 +2,7 @@ package com.sipl.ticket.core.dao.repository;
 
 import com.sipl.ticket.core.dao.entity.Task;
 
-import com.sipl.ticket.core.dao.entity.Ticket;
+import com.sipl.ticket.core.dto.response.TaskResponseDTO;
 import com.sipl.ticket.core.dto.response.TaskStatusCountDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,6 +66,54 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query("SELECT t.taskId FROM Task t WHERE t.isDeleted = false")
     List<Long> findAllActiveTaskIds();
+
+//    @Query(
+//            "SELECT new com.sipl.ticket.core.dto.response.TaskScheduledResponseDTO(" +
+//                    "t.taskId, " +
+//                    "tk.ticketId, " +
+//                    "t.subject, " +
+//                    "tk.subject, " +
+//                    "t.priority, " +
+//                    "t.status, " +
+//                    "t.startDate, " +
+//                    "t.dueDate, " +
+//                    "t.createdTime" +
+//                    ") " +
+//                    "FROM Task t " +
+//                    "JOIN t.ticket tk " +
+//                    "WHERE t.isDeleted = false " +
+//                    "AND t.createdTime >= :startDateTime " +
+//                    "AND t.createdTime <= :endDateTime"
+//    )
+//    List<TaskResponseDTO> findTask(
+//            @Param("startDateTime") LocalDateTime startDateTime,
+//            @Param("endDateTime") LocalDateTime endDateTime
+//    );
+@Query("SELECT new com.sipl.ticket.core.dto.response.TaskResponseDTO(" +
+        "t.taskId, " +
+        "tk.ticketId, " +
+        "t.subject, " +
+        "tk.subject, " +
+        "pri.valueDesc, " +
+        "sts.valueDesc, " +
+        "t.startDate, " +
+        "t.dueDate, " +
+        "t.createdTime" +
+        ") " +
+        "FROM Task t " +
+        "JOIN t.ticket tk " +
+        "LEFT JOIN Masters pri ON pri.columnValue = t.priority AND pri.columnCode = 6 AND pri.isActive = true " +
+        "LEFT JOIN Masters sts ON sts.columnValue = t.status AND sts.columnCode = 1 AND sts.isActive = true " +
+        "WHERE t.isDeleted = false " +
+        "AND t.createdTime >= :startDateTime " +
+        "AND t.createdTime <= :endDateTime")
+List<TaskResponseDTO> findTask(
+        @Param("startDateTime") LocalDateTime startDateTime,
+        @Param("endDateTime") LocalDateTime endDateTime
+);
+
+
+
 }
 
 
