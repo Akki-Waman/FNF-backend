@@ -1,19 +1,21 @@
 package com.sipl.ticket.report.service.impl;
 
-import com.sipl.ticket.core.dao.entity.ClientProducts;
-import com.sipl.ticket.core.dao.entity.Masters;
-import com.sipl.ticket.core.dao.entity.ServiceEntity;
-import com.sipl.ticket.core.dao.entity.Ticket;
+import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
+import com.sipl.ticket.core.dao.repository.TicketResponseRepository;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
+import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
+import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,7 +24,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,6 +37,7 @@ public class ReportServiceImpl implements ReportService {
 
     private final TicketRepository ticketRepository;
     private final MastersRepository mastersRepository;
+    private final TicketResponseRepository ticketResponseRepository;
     private static final Integer TICKET_STATUS_COLUMN_CODE = 2;
 
     @Override
@@ -98,6 +103,7 @@ public class ReportServiceImpl implements ReportService {
             );
         }
     }
+
 
     private ResponsePenaltyResponseDTO mapToResponsePenaltyDto(Ticket ticket) {
 
@@ -200,5 +206,87 @@ public class ReportServiceImpl implements ReportService {
                 ? masters.getValueDesc()
                 : String.valueOf(ticket.getStatus());
     }
+
+    @Override
+    public ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>> staffTicketReport(
+            StaffTicketRequestDTO requestDto) {
+        log.info("<<START>> staffTicketReport <<START>>");
+        log.info("Request received: {}", requestDto);
+        try {
+            log.debug("Fetching tickets from repository");
+            List<Ticket> tickets = ticketRepository.findTicketsForStaffReport(
+                    requestDto.getQuery(),
+                    requestDto.getFromDate() != null ? requestDto.getFromDate().atStartOfDay() : null,
+                    requestDto.getToDate() != null ? requestDto.getToDate().atTime(23, 59, 59) : null,
+                    requestDto.getBranchId(),
+                    requestDto.getIsActive()
+            );
+            log.info("Total tickets fetched: {}", tickets.size());
+            Map<Users, List<Ticket>> ticketsByUser =
+                    tickets.stream().collect(Collectors.groupingBy(Ticket::getAssignedTo));
+            List<StaffTicketResponseDTO> content = new ArrayList<>();
+            for (Map.Entry<Users, List<Ticket>> entry : ticketsByUser.entrySet()) {
+                Users user = entry.getKey();
+                List<Ticket> userTickets = entry.getValue();
+                log.debug("Processing user: {}, ticketCount={}",
+                        user.getUserName(), userTickets.size());
+                int totalAssigned = userTickets.size();
+                int openTickets = (int) userTickets.stream()
+                        .filter(t -> t.getStatus() == 1)
+                        .count();
+                int closedTickets = (int) userTickets.stream()
+                        .filter(t -> t.getStatus() == 2)
+                        .count();
+                List<TicketResponse> responses =
+                        ticketResponseRepository.findByTicketIn(userTickets);
+                int totalReplies = responses.size();
+                Double avgReplyHours = responses.stream()
+                        .filter(r -> r.getResponseTimeHours() != null)
+                        .mapToDouble(TicketResponse::getResponseTimeHours)
+                        .average()
+                        .orElse(0.0);
+                avgReplyHours = Math.round(avgReplyHours * 100.0) / 100.0;
+                content.add(new StaffTicketResponseDTO(
+                        user.getUserName(),
+                        totalAssigned,
+                        openTickets,
+                        closedTickets,
+                        totalReplies,
+                        avgReplyHours
+                ));
+            }
+            log.info("Staff ticket report prepared, total users: {}", content.size());
+            int pageNumber = 0;
+            int pageSize = content.size();
+            long totalElements = content.size();
+            int totalPages = totalElements > 0 ? 1 : 0;
+            boolean isLast = true;
+            PagedResponse<StaffTicketResponseDTO> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageNumber,
+                            totalElements,
+                            totalPages,
+                            pageSize,
+                            isLast
+                    );
+            log.info("<<END>> staffTicketReport completed successfully <<END>>");
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Staff ticket report fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+        } catch (Exception e) {
+            log.error("Error occurred in staffTicketReport", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
 
 }

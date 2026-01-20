@@ -1,9 +1,11 @@
 package com.sipl.ticket.report.controller.impl;
 
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
+import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
+import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
 import com.sipl.ticket.report.controller.ReportController;
 import com.sipl.ticket.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -30,4 +32,15 @@ public class ReportControllerImpl implements ReportController {
                 .status(HttpStatus.OK)
                 .body(response);
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>>> staffTicketReport(StaffTicketRequestDTO requestDto) {
+        log.info("<<START>> staffTicketReport <<START>>");
+
+        ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>> response =
+                reportService.staffTicketReport(requestDto);
+        log.info("<<END>> staffTicketReport <<END>>");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);    }
 }
