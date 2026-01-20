@@ -117,7 +117,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public ApiResponseDTO<TaskResponseDTO> getCalendarTasks(TaskFilterRequestDTO dto) {
 
-        log.info("getTasks() START");
+        log.info("getCalendarTasks() START");
 
         try {
             if (dto.getStartDate() == null || dto.getEndDate() == null) {
@@ -148,7 +148,7 @@ public class DashboardServiceImpl implements DashboardService {
             );
 
         } catch (Exception e) {
-            log.error("getTasks() ERROR: {}", e.getMessage(), e);
+            log.error("getCalendarTasks() ERROR: {}", e.getMessage(), e);
             return new ApiResponseDTO<>(
                     null,
                     "Failed to fetch tasks",

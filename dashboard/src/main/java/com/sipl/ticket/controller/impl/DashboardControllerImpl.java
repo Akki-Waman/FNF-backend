@@ -34,10 +34,10 @@ public class DashboardControllerImpl implements DashboardController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<TaskResponseDTO>> getCalendarTasks(TaskFilterRequestDTO dto) {
-        log.info("<<START>> getTasks <<START>>");
+        log.info("<<START>> getCalendarTasks <<START>>");
         ApiResponseDTO<TaskResponseDTO> apiResponse =
                 dashboardService.getCalendarTasks(dto);
-        log.info("<<END>> getTasks <<END>>");
+        log.info("<<END>> getCalendarTasks <<END>>");
         return ResponseEntity.ok(apiResponse);
     }
 }
