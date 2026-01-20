@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DashboardServiceImpl implements DashboardService {
     private final TicketRepository ticketRepository;
+
     private final MastersRepository mastersRepository;
     private final TaskRepository taskRepository;
 
@@ -157,5 +158,46 @@ public class DashboardServiceImpl implements DashboardService {
             );
         }
     }
+
+    @Override
+    public ApiResponseDTO<ChartDataResponseDTO> getTicketAssignee() {
+        log.info("Fetching Ticket Assignee KPI...");
+
+        try {
+            List<ChartItemDTO> items = ticketRepository.getTicketsByAssignee();
+            log.debug("Fetched {} assignee items", items.size());
+
+            List<String> labels = items.stream().map(ChartItemDTO::getLabel).collect(Collectors.toList());
+            List<Long> series = items.stream().map(ChartItemDTO::getSeries).collect(Collectors.toList());
+
+            ChartDataResponseDTO dto = new ChartDataResponseDTO(labels, series);
+
+            return new ApiResponseDTO<>(
+                    dto,
+                    null,
+                    null,
+                    "Ticket assignee summary fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            log.error("Error fetching Ticket Assignee KPI", e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    null,
+                    null,
+                    "Failed to fetch ticket assignee summary",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true,
+                    null,
+                    null
+            );
+        }
+    }
+
 }
 

@@ -41,10 +41,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "SELECT t FROM Ticket t " +
                     "WHERE t.isDeleted = false " +
                     "AND ( :branchId IS NULL OR t.branch.branchId = :branchId ) " +
+                    "AND ( :status IS NULL OR t.status = :status ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR t.searchText LIKE CONCAT('%', LOWER(:query), '%') )"
     )
-    Page<Ticket> searchTickets(@Param("query") String query, @Param("branchId") Integer branchId, Pageable pageable);
+    Page<Ticket> searchTickets(@Param("query") String query, @Param("branchId") Integer branchId,@Param("status") Integer status, Pageable pageable);
 
     @Query(
             "SELECT sm.valueDesc, COUNT(t.ticketId) " +
@@ -97,7 +98,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "ORDER BY sm.columnValue")
     List<ChartItemDTO> getTicketsByPriority(@Param("columnId") Integer columnId);
 
-
     @Query(
             "SELECT t FROM Ticket t " +
                     "WHERE t.isDeleted = false " +
@@ -121,5 +121,17 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("isActive") Boolean isActive
     );
 
+    @Query(
+            "SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(" +
+                    "COALESCE(CONCAT(u.firstName, ' ', u.lastName), 'Unknown'), " +
+                    "COUNT(t.ticketId)" +
+                    ") " +
+                    "FROM Ticket t " +
+                    "LEFT JOIN t.assignedTo u " +
+                    "WHERE t.isDeleted = false " +
+                    "GROUP BY u.firstName, u.lastName " +
+                    "ORDER BY COUNT(t.ticketId) DESC"
+    )
+    List<ChartItemDTO> getTicketsByAssignee();
 }
 
