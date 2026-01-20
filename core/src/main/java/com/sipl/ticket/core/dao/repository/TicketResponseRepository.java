@@ -22,4 +22,10 @@ public interface TicketResponseRepository extends JpaRepository<TicketResponse, 
             "    WHERE tr.ticket.ticketId = :ticketId " +
             "    ORDER BY tr.createdTime DESC")
     List<LocalDateTime> findLastReplyTime(@Param("ticketId") Long ticketId);
+
+    @Query(
+            "SELECT tr FROM TicketResponse tr " +
+                    "WHERE tr.ticket IN :tickets"
+    )
+    List<TicketResponse> findByTicketIn(@Param("tickets") List<Ticket> tickets);
 }

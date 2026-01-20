@@ -1,9 +1,11 @@
 package com.sipl.ticket.report.controller;
 
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
+import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
+import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +25,16 @@ public interface ReportController {
     public ResponseEntity<ApiResponseDTO<PagedResponse<ResponsePenaltyResponseDTO>>>
     searchResponsePenaltyReport(
             @RequestBody ResponsePenaltyRequestDTO requestDto
+    );
+
+
+    @PostMapping("/staff-ticket")
+    @ApiOperation(
+            value = "Search Response Staff ticket Report",
+            notes = "Fetch response staff ticket report with pagination"
+    )
+    public ResponseEntity<ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>>>
+    staffTicketReport(
+            @RequestBody StaffTicketRequestDTO requestDto
     );
 }

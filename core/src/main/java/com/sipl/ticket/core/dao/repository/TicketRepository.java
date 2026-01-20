@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +97,29 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             "GROUP BY sm.valueDesc, sm.columnValue " +
             "ORDER BY sm.columnValue")
     List<ChartItemDTO> getTicketsByPriority(@Param("columnId") Integer columnId);
+
+    @Query(
+            "SELECT t FROM Ticket t " +
+                    "WHERE t.isDeleted = false " +
+                    "AND (:isActive IS NULL OR t.isDeleted = false) " +
+                    "AND (:branchId IS NULL OR t.branch.branchId = :branchId) " +
+                    "AND ( " +
+                    "     :query IS NULL OR " +
+                    "     t.searchText LIKE CONCAT('%', :query, '%') OR " +   // FIXED
+                    "     LOWER(t.subject) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "     LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "     LOWER(t.assignedTo.userName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                    ") " +
+                    "AND (:fromDate IS NULL OR t.createdTime >= :fromDate) " +
+                    "AND (:toDate IS NULL OR t.createdTime <= :toDate)"
+    )
+    List<Ticket> findTicketsForStaffReport(
+            @Param("query") String query,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            @Param("branchId") Integer branchId,
+            @Param("isActive") Boolean isActive
+    );
 
     @Query(
             "SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(" +
