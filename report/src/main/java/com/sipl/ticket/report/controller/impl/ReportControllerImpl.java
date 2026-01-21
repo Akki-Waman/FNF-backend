@@ -1,11 +1,9 @@
 package com.sipl.ticket.report.controller.impl;
 
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
-import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.report.controller.ReportController;
 import com.sipl.ticket.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +57,18 @@ public class ReportControllerImpl implements ReportController {
         log.info("<<END>> exportResponsePenaltyReport <<END>>");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>>> searchResolutionPenaltyReport(ResolutionPenaltyRequestDTO requestDto) {
+        log.info("<<START>> searchResolutionPenaltyReport <<START>>");
+
+        ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>> response =
+                reportService.searchResolutionPenaltyReport(requestDto);
+        log.info("<<END>> searchResolutionPenaltyReport <<END>>");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 
 }
