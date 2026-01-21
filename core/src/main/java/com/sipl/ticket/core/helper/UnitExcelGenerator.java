@@ -1,11 +1,13 @@
 package com.sipl.ticket.core.helper;
 
+import com.sipl.ticket.core.dto.response.AuditDto;
 import com.sipl.ticket.core.dto.response.UnitDto;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class UnitExcelGenerator {
@@ -23,7 +25,6 @@ public class UnitExcelGenerator {
 
         int rowIndex = 0;
 
-        /* ================= TITLE ================= */
         Font titleFont = workbook.createFont();
         titleFont.setBold(true);
         titleFont.setFontHeightInPoints((short) 18);
@@ -37,11 +38,10 @@ public class UnitExcelGenerator {
         titleCell.setCellValue("Units List");
         titleCell.setCellStyle(titleStyle);
 
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
 
-        rowIndex++; // empty row
+        rowIndex++;
 
-        /* ================= HEADER ================= */
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerFont.setFontHeightInPoints((short) 14);
@@ -52,7 +52,15 @@ public class UnitExcelGenerator {
         setBorders(headerStyle);
 
         Row headerRow = sheet.createRow(rowIndex++);
-        String[] headers = {"Unit ID", "Unit Name"};
+
+        String[] headers = {
+                "Unit ID",
+                "Unit Name",
+                "Created By",
+                "Modified By",
+                "Created Time",
+                "Modified Time"
+        };
 
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -60,24 +68,40 @@ public class UnitExcelGenerator {
             cell.setCellStyle(headerStyle);
         }
 
-        /* ================= DATA ================= */
         CellStyle dataStyle = workbook.createCellStyle();
         dataStyle.setAlignment(HorizontalAlignment.LEFT);
         setBorders(dataStyle);
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
         for (UnitDto u : units) {
             Row row = sheet.createRow(rowIndex++);
 
-            Cell c1 = row.createCell(0);
-            c1.setCellValue(u.getUnitId());
-            c1.setCellStyle(dataStyle);
+            row.createCell(0).setCellValue(u.getUnitId());
+            row.createCell(1).setCellValue(u.getUnitName());
 
-            Cell c2 = row.createCell(1);
-            c2.setCellValue(u.getUnitName());
-            c2.setCellStyle(dataStyle);
+            row.createCell(2).setCellValue(
+                    u.getCreatedBy() != null ? u.getCreatedBy() : "");
+
+            row.createCell(3).setCellValue(
+                    u.getModifiedBy() != null ? u.getModifiedBy() : "");
+
+            row.createCell(4).setCellValue(
+                    u.getCreatedTime() != null
+                            ? u.getCreatedTime().format(formatter)
+                            : "");
+
+            row.createCell(5).setCellValue(
+                    u.getModifiedTime() != null
+                            ? u.getModifiedTime().format(formatter)
+                            : "");
+
+            for (int i = 0; i < 6; i++) {
+                row.getCell(i).setCellStyle(dataStyle);
+            }
         }
 
-        /* ================= FILTER ================= */
+
         sheet.setAutoFilter(
                 new CellRangeAddress(
                         headerRow.getRowNum(),
@@ -85,7 +109,6 @@ public class UnitExcelGenerator {
                         0,
                         headers.length - 1));
 
-        /* ================= AUTO SIZE ================= */
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }
