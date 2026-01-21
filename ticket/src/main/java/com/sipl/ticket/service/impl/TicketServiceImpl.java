@@ -995,7 +995,7 @@ public class TicketServiceImpl implements TicketService {
                     ticketTagMapper.toDtoList(ticketTagRepository.findByTicketId(ticketId));
             List<TicketCcResponseDTO> ccDtos =
                     ticketCcMapper.toDtoList(ticketCcRepository.findByTicketId(ticketId));
-            List<TicketAttachmentResponseDTO> attachmentDtos = null;
+            List<TicketAttachmentResponseDTO> attachmentDtos =  ticketAttachmentMapper.toDtoList(ticketAttachmentRepository.findByTicketId(ticketId));
             CombinedTicketResponseDto response = new CombinedTicketResponseDto(
                     ticketDto,
                     tagDtos,
