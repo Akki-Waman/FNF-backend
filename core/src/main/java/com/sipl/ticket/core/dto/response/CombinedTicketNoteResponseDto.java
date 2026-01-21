@@ -10,9 +10,10 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CombinedTicketResponseDto {
+public class CombinedTicketNoteResponseDto {
     private TicketsResponseDTO ticketsResponseDTO;
     private List<TicketTagResponseDTO> ticketTagResponseDTOS;
     private List<TicketCcResponseDTO> ticketCcResponseDTOS;
     private List<TicketAttachmentResponseDTO> attachments;
+    private List<TicketNoteResponseDTO> ticketNotes;
 }

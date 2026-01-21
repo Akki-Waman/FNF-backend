@@ -65,6 +65,8 @@ public class TicketServiceImpl implements TicketService {
     private final MasterService masterService;
     private final TicketResponseRepository ticketResponseRepository;
     private final MastersRepository mastersRepository;
+    private final TicketNoteMapper ticketNoteMapper;
+    private final TicketNoteRepository ticketNoteRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -981,7 +983,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public ApiResponseDTO<CombinedTicketResponseDto> getByTicketId(Long ticketId) {
+    public ApiResponseDTO<CombinedTicketNoteResponseDto> getByTicketId(Long ticketId) {
         try {
             log.info("Fetching ticket details for ticketId={}", ticketId);
             Ticket ticket = ticketRepository.findById(ticketId)
@@ -996,11 +998,13 @@ public class TicketServiceImpl implements TicketService {
             List<TicketCcResponseDTO> ccDtos =
                     ticketCcMapper.toDtoList(ticketCcRepository.findByTicketId(ticketId));
             List<TicketAttachmentResponseDTO> attachmentDtos =  ticketAttachmentMapper.toDtoList(ticketAttachmentRepository.findByTicketId(ticketId));
-            CombinedTicketResponseDto response = new CombinedTicketResponseDto(
+            List<TicketNoteResponseDTO> ticketNotes =  ticketNoteMapper.mapTicketNoteListToDtoList(ticketNoteRepository.findByTicketId(ticketId));
+            CombinedTicketNoteResponseDto response = new CombinedTicketNoteResponseDto(
                     ticketDto,
                     tagDtos,
                     ccDtos,
-                    attachmentDtos
+                    attachmentDtos,
+                    ticketNotes
             );
             return new ApiResponseDTO<>(
                     response,
