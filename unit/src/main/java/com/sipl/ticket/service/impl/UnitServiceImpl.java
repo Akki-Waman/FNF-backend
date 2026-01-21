@@ -243,35 +243,54 @@ public class UnitServiceImpl implements UnitService {
         }
     }
 
-    // ================= EXPORT =================
 
     @Override
     public void exportUnitsExcel(HttpServletResponse response) {
-        log.info("Exporting active units to Excel");
+
+        log.info("<<START>> Export Units Excel");
 
         try {
-            List<UnitDto> units = repository.findAll()
+            List<Unit> unitList = repository.findAll()
                     .stream()
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
                     .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
-                    .map(u -> {
-                        UnitDto dto = new UnitDto();
-                        dto.setUnitId(u.getUnitId());
-                        dto.setUnitName(u.getUnitName());
-                        dto.setIsActive(u.getIsActive());
-                        return dto;
-                    })
                     .collect(Collectors.toList());
+
+            log.info("Total active & not-deleted units fetched from DB: {}", unitList.size());
+
+            if (!unitList.isEmpty()) {
+                Unit sample = unitList.get(0);
+                log.debug("Sample Unit from DB -> id={}, createdBy={}, createdTime={}",
+                        sample.getUnitId(),
+                        sample.getCreatedBy() != null ? sample.getCreatedBy().getUserName() : "NULL",
+                        sample.getCreatedTime());
+            }
+
+            List<UnitDto> units = mapper.mapUnitListToDtoList(unitList);
+
+            log.info("Units mapped to DTOs: {}", units.size());
+
+            units.forEach(u -> {
+                log.debug("UnitDto -> id={}, createdBy={}, createdTime={}, modifiedBy={}, modifiedTime={}",
+                        u.getUnitId(),
+                        u.getCreatedBy(),
+                        u.getCreatedTime(),
+                        u.getModifiedBy(),
+                        u.getModifiedTime());
+            });
 
             UnitExcelGenerator.generateExcel(units, response);
 
-            log.info("Units Excel export completed, totalRecords={}", units.size());
+            log.info("<<SUCCESS>> Units Excel exported. Records={}", units.size());
 
         } catch (Exception e) {
-            log.error("exportUnitsExcel error", e);
+            log.error("<<ERROR>> Failed to export Units Excel", e);
             throw new RuntimeException("Failed to export units Excel", e);
         }
     }
+
+
+
 
     // ================= SEARCH =================
 
