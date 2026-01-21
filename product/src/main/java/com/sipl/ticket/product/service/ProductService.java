@@ -27,6 +27,7 @@ public interface ProductService {
 
     ResponseEntity<Resource> downloadProductFile(String fileName);
 
+    ApiResponseDTO<Void> processExcelFile(MultipartFile file);
 
 
 
