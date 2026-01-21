@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,6 +84,17 @@ public interface ProductController {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     ResponseEntity<?> downloadProductFile(
             @PathVariable("fileName") String fileName);
+
+    @ApiOperation(
+            value = "Upload excel sheet of products and unit and save in products and products unit table.",
+            notes = "Upload excel sheet of products and unit and save in products and products unit table.")
+    @PostMapping(
+            value = "/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    ResponseEntity<ApiResponseDTO<Void>> uploadFile(
+            @ApiParam(value = "Excel file", required = true)
+            @RequestPart("file") MultipartFile file);
 
 
 

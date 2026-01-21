@@ -66,6 +66,7 @@ public class ProductServiceImpl implements ProductService {
     private final BranchRepository branchesRepository;
     private final ProductUnitMapper productUnitMapper;
     private final ApkUtil apkUtil;
+    private final ExcelReaderService excelReaderService;
 
 
     @Override
@@ -723,7 +724,57 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Override
+    public ApiResponseDTO<Void> processExcelFile(MultipartFile file) {
+        File tempFile = null;
 
+        try {
+            if (file == null || file.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        "Uploaded file is empty",
+                        HttpStatus.BAD_REQUEST,
+                        true);
+            }
+
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String filePath =
+                    tempDir + File.separator + file.getOriginalFilename();
+
+            tempFile = new File(filePath);
+            file.transferTo(tempFile);
+
+            excelReaderService.readAndSaveExcelData(filePath);
+
+            return new ApiResponseDTO<>(
+                    "Excel file processed successfully",
+                    HttpStatus.OK,
+                    false);
+
+        } catch (RuntimeException e) {
+            log.error("Runtime exception in processExcelFile", e);
+            return new ApiResponseDTO<>(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true);
+
+        } catch (Exception e) {
+            log.error("Exception in processExcelFile", e);
+            return new ApiResponseDTO<>(
+                    "An error occurred while processing the Excel file",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true);
+
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                boolean deleted = tempFile.delete();
+                if (!deleted) {
+                    log.warn(
+                            "Failed to delete temporary file: {}",
+                            tempFile.getAbsolutePath());
+                }
+            }
+        }
+    }
 
 }
 
