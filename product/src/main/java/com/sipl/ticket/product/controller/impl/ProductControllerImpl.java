@@ -104,16 +104,21 @@ public class ProductControllerImpl implements ProductController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<Void>> uploadFile(MultipartFile file) {
+
         log.info("<<START>> uploadFile called <<START>>");
 
-        ApiResponseDTO<Void> apiResponseDTO =
-                productService.processExcelFile(file);
+        productService.processExcelFile(file);
 
-        ResponseEntity<ApiResponseDTO<Void>> response =
-                new ResponseEntity<>(apiResponseDTO, apiResponseDTO.getStatus());
+        ApiResponseDTO<Void> response =
+                new ApiResponseDTO<>(
+                        "Excel file processed successfully",
+                        HttpStatus.OK,
+                        false
+                );
 
         log.info("<<END>> uploadFile <<END>>");
-        return response;
+        return ResponseEntity.ok(response);
     }
+
 
 }
