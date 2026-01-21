@@ -68,7 +68,7 @@ public interface TicketController {
     ResponseEntity<ApiResponseDTO<Long>> getAllTicketIds();
 
     @GetMapping("/get/{ticketId}")
-    ResponseEntity<ApiResponseDTO<CombinedTicketResponseDto>> getByTicketId(
+    ResponseEntity<ApiResponseDTO<CombinedTicketNoteResponseDto>> getByTicketId(
             @PathVariable Long ticketId
     );
 
