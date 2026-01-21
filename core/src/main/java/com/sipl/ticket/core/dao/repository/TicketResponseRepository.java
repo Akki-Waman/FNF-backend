@@ -3,6 +3,8 @@ package com.sipl.ticket.core.dao.repository;
 import com.opencsv.bean.CsvToBean;
 import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dao.entity.TicketResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +30,6 @@ public interface TicketResponseRepository extends JpaRepository<TicketResponse, 
                     "WHERE tr.ticket IN :tickets"
     )
     List<TicketResponse> findByTicketIn(@Param("tickets") List<Ticket> tickets);
+
+
 }
