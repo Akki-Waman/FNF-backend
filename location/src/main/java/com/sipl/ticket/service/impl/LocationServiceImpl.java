@@ -199,14 +199,15 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            if (Boolean.FALSE.equals(location.getIsActive())) {
+            if (Boolean.TRUE.equals(location.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location already inactive",
+                        "Location already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
+
             location.setIsDeleted(true);
             location.setIsActive(false);
             repository.save(location);

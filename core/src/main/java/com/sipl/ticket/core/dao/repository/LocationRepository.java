@@ -28,11 +28,14 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
                     "WHERE l.isDeleted = false " +
                     "AND ( :isActive IS NULL OR l.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "      OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') )"
+                    "   OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "   OR CAST(l.id AS string) LIKE CONCAT('%', :query, '%') " +
+                    ")"
     )
     Page<Locations> searchLocations(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }

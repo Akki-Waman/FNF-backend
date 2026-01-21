@@ -235,7 +235,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         try {
             List<CompanyDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "companyId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "companyName"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
                     .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))

@@ -140,14 +140,6 @@ public class StateServiceImpl implements StateService {
         // ===== update state name =====
         if (dto.getStateName() != null && !dto.getStateName().trim().isEmpty()) {
 
-            if (Boolean.FALSE.equals(state.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive state name cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
 
             String name = dto.getStateName().trim();
 
