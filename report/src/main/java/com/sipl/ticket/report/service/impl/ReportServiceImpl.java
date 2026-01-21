@@ -4,12 +4,10 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
 import com.sipl.ticket.core.dao.repository.TicketResponseRepository;
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
-import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
+import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.ResponsePenaltyExportHelper;
 import com.sipl.ticket.report.service.ReportService;
@@ -136,12 +134,12 @@ public class ReportServiceImpl implements ReportService {
         );
 
         dto.setIssueResolved(
-                Optional.ofNullable(ticket.getResolutionDateTime())
+                Optional.ofNullable(ticket.getResponseDateTime())
                         .map(LocalDateTime::toLocalDate)
                         .orElse(null)
         );
 
-        dto.setResolutionTime(convertHoursToDays(ticket.getResolutionTimeHours()));
+        dto.setResolutionTime(convertHoursToDays(ticket.getResponseTimeHours()));
 
         dto.setPenaltyPercentage(
                 Optional.ofNullable(ticket.getResponsePenaltyPercentage())
@@ -339,5 +337,130 @@ public class ReportServiceImpl implements ReportService {
         log.info("<<END>> exportResponsePenaltyReport <<END>>");
     }
 
+    @Override
+    public ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>> searchResolutionPenaltyReport(ResolutionPenaltyRequestDTO dto) {
+
+        try {
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
+            );
+
+            Page<Ticket> pageResult =
+                    ticketRepository.searchResponsePenaltyReport(
+                            dto.getQuery(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No response penalty records found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<ResolutionPenaltyResponseDTO> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(this::mapToResolutionPenaltyDto)
+                            .collect(Collectors.toList());
+
+            PagedResponse<ResolutionPenaltyResponseDTO> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Response penalty report fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchResponsePenaltyReport error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private ResolutionPenaltyResponseDTO mapToResolutionPenaltyDto(Ticket ticket) {
+
+        ResolutionPenaltyResponseDTO dto = new ResolutionPenaltyResponseDTO();
+
+        dto.setTicketId(ticket.getTicketId());
+        dto.setSubject(ticket.getSubject());
+
+        dto.setUnitName(
+                Optional.ofNullable(ticket.getClientProducts())
+                        .map(ClientProducts::getGroupName)
+                        .orElse(null)
+        );
+
+        dto.setDeviceName(
+                Optional.ofNullable(ticket.getClientProducts())
+                        .map(ClientProducts::getDeviceName)
+                        .orElse(null)
+        );
+
+        dto.setService(
+                Optional.ofNullable(ticket.getService())
+                        .map(ServiceEntity::getServiceName)
+                        .orElse(null)
+        );
+
+        dto.setIssueLogged(
+                Optional.ofNullable(ticket.getCreatedTime())
+                        .map(LocalDateTime::toLocalDate)
+                        .orElse(null)
+        );
+
+        dto.setIssueResolved(
+                Optional.ofNullable(ticket.getResolutionDateTime())
+                        .map(LocalDateTime::toLocalDate)
+                        .orElse(null)
+        );
+
+        dto.setResolutionTime(convertHoursToDays(ticket.getResolutionTimeHours()));
+
+        dto.setPenaltyPercentage(
+                Optional.ofNullable(ticket.getResolutionPenaltyPercentage())
+                        .map(BigDecimal::doubleValue)
+                        .orElse(null)
+        );
+
+        dto.setStatus(setTicketStatus(ticket));
+        dto.setTaskStatus(null); //TODO: don't what exact value is need to set
+
+        dto.setWithInWeek(
+                ticket.getResolutionDateTime() != null &&
+                        ticket.getCreatedTime() != null &&
+                        Duration.between(
+                                ticket.getCreatedTime(),
+                                ticket.getResolutionDateTime()
+                        ).toDays() <= 7
+        );
+
+        dto.setPenaltyDays(
+                ticket.getResponsePenaltyTime() != null
+                        ? convertHoursToDays(ticket.getResolutionPenaltyTime())
+                        : null
+        );
+
+        return dto;
+    }
 
 }

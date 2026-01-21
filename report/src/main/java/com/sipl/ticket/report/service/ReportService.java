@@ -1,11 +1,9 @@
 package com.sipl.ticket.report.service;
 
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
-import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
+import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -23,5 +21,8 @@ public interface ReportService {
             String format,
             HttpServletResponse response
     );
+
+    ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>>
+    searchResolutionPenaltyReport(ResolutionPenaltyRequestDTO requestDto);
 
 }

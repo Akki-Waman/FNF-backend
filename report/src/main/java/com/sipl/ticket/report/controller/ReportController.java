@@ -1,11 +1,9 @@
 package com.sipl.ticket.report.controller;
 
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
-import com.sipl.ticket.core.dto.response.ApiResponseDTO;
-import com.sipl.ticket.core.dto.response.PagedResponse;
-import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
-import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
+import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +44,16 @@ public interface ReportController {
             @RequestBody ResponsePenaltyRequestDTO requestDto,
             @RequestParam String format,
             HttpServletResponse response
+    );
+
+    @PostMapping("/resolution-penalty")
+    @ApiOperation(
+            value = "Search Resolution Penalty Report",
+            notes = "Fetch resolution penalty report with pagination"
+    )
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>>>
+    searchResolutionPenaltyReport(
+            @RequestBody ResolutionPenaltyRequestDTO requestDto
     );
 
 }
