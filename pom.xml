@@ -45,6 +45,7 @@
         <module>dataFetch</module>
         <module>report</module>
         <module>dashboard</module>
+        <module>ticketNote</module>
 
     </modules>
 
@@ -356,6 +357,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>ticketResponse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticketNote</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
