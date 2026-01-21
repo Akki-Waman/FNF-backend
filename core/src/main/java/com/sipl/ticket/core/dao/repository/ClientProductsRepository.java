@@ -28,7 +28,7 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
             Long clientProductId
     );
 
-    List<ClientProducts> findByIsActiveTrue();
+    List<ClientProducts> findByIsActiveTrueOrderByDeviceNameAsc();
 
     @Query(
             "SELECT cp FROM ClientProducts cp " +
@@ -40,6 +40,7 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
                     "WHERE (:isActive IS NULL OR cp.isActive = :isActive) " +
                     "AND ( " +
                     "LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+                    "LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
                     "LOWER(cp.serialNumber) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
                     "LOWER(cp.imeiNo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
                     "LOWER(cp.platformModel) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

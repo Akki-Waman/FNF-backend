@@ -236,12 +236,8 @@ public class LocationServiceImpl implements LocationService {
 
         try {
             List<LocationResponseDTO> list =
-                    repository.findAll()
+                    repository.findAllByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc()
                             .stream()
-                            .filter(l ->
-                                    Boolean.TRUE.equals(l.getIsActive()) &&
-                                            Boolean.FALSE.equals(l.getIsDeleted())
-                            )
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
