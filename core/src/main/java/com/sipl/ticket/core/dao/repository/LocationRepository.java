@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.repository;
 
+import com.opencsv.bean.CsvToBean;
 import com.sipl.ticket.core.dao.entity.Locations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,4 +39,5 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             Pageable pageable
     );
 
+    List<Locations> findAllByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
 }

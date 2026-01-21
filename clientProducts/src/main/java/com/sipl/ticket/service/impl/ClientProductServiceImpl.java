@@ -261,7 +261,7 @@ public class ClientProductServiceImpl implements ClientProductService {
     public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts() {
         log.info("<<Start>> getAllClientProducts endpoint called <<Start>>");
         try {
-            List<ClientProducts> list = clientProductsRepository.findByIsActiveTrue();
+            List<ClientProducts> list = clientProductsRepository.findByIsActiveTrueOrderByDeviceNameAsc();
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
