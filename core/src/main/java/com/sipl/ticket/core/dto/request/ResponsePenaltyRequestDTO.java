@@ -12,4 +12,5 @@ public class ResponsePenaltyRequestDTO extends SearchRequestDto{
     private String unitName;
     private String deviceName;
     private String service;
+    private String query;
 }

@@ -54,10 +54,7 @@ public class ReportServiceImpl implements ReportService {
 
             Page<Ticket> pageResult =
                     ticketRepository.searchResponsePenaltyReport(
-                            dto.getTicketId(),
-                            dto.getUnitName(),
-                            dto.getDeviceName(),
-                            dto.getService(),
+                            dto.getQuery(),
                             pageable
                     );
 

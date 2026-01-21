@@ -69,18 +69,19 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "LEFT JOIN t.clientProducts cp " +
                     "LEFT JOIN t.service s " +
                     "WHERE t.isDeleted = false " +
-                    "AND (:ticketId IS NULL OR t.ticketId = :ticketId) " +
-                    "AND (:unitName IS NULL OR LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :unitName, '%'))) " +
-                    "AND (:deviceName IS NULL OR LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :deviceName, '%'))) " +
-                    "AND (:service IS NULL OR LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :service, '%'))) "
+                    "AND ( " +
+                    "   :query IS NULL OR :query = '' OR " +
+                    "   CAST(t.ticketId AS string) LIKE CONCAT('%', :query, '%') OR " +
+                    "   LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                    ")"
     )
     Page<Ticket> searchResponsePenaltyReport(
-            @Param("ticketId") Long ticketId,
-            @Param("unitName") String unitName,
-            @Param("deviceName") String deviceName,
-            @Param("service") String service,
+            @Param("query") String query,
             Pageable pageable
     );
+
 
     @Query("SELECT new com.sipl.ticket.core.dto.response.ChartItemDTO(sm.valueDesc, COALESCE(COUNT(t.ticketId), 0)) " +
             "FROM Masters sm " +
