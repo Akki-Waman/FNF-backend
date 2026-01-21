@@ -21,6 +21,10 @@ public interface TicketAttachmentMapper {
 
     @InheritConfiguration(name = "toDto")
     @Mapping(source = "ticket.ticketId", target = "ticket")
+    @Mapping(source = "dmsDocument.fileName", target = "fileName")
+    @Mapping(source = "dmsDocument.documentId", target = "documentId")
+    @Mapping(source = "dmsDocument.filePath", target = "filePath")
+    @Mapping(source = "dmsDocument.fileType", target = "contentType")
     TicketAttachmentResponseDTO toDto(TicketAttachment ticketAttachment);
 
     List<TicketAttachmentResponseDTO> mapTagsListToDtoList(List<TicketAttachment> ticketAttachmentList);

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class TicketAttachmentResponseDTO {
     private Long attachmentId;
     private Long ticket;
+    private Long documentId;
     private String fileName;
     private String filePath;
     private Integer fileSizeKB;
