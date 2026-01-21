@@ -1,5 +1,6 @@
 package com.sipl.ticket.controller;
 
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CombinedTaskResponseDto;
 import com.sipl.ticket.core.dto.response.CombinedTicketResponseDto;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RequestMapping("/api/v1/ticket-response")
@@ -27,4 +29,6 @@ public interface TicketResponseController {
             @RequestPart("ticketResponseRequestDto") String ticketResponseRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     );
+
+
 }

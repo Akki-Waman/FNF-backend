@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RequestMapping("/api/v1/reports")
 @RestController
 @CrossOrigin(origins = "*")
@@ -37,4 +39,13 @@ public interface ReportController {
     staffTicketReport(
             @RequestBody StaffTicketRequestDTO requestDto
     );
+
+    @PostMapping("/response-penalty/export")
+    @ApiOperation("Export Response Penalty Report (Excel / CSV / PDF)")
+    ResponseEntity<Void> exportResponsePenaltyReport(
+            @RequestBody ResponsePenaltyRequestDTO requestDto,
+            @RequestParam String format,
+            HttpServletResponse response
+    );
+
 }

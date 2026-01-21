@@ -9,9 +9,11 @@ import com.sipl.notification.enums.NotificationPriority;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketResponseRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.TicketResponseCombinedDto;
+import com.sipl.ticket.core.dto.response.TicketResponseDTO;
 import com.sipl.ticket.core.mapper.TicketResponseAttachmentMapper;
 import com.sipl.ticket.core.mapper.TicketResponseCcMapper;
 import com.sipl.ticket.core.mapper.TicketResponseMapper;
@@ -19,6 +21,7 @@ import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.service.TicketResponseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -475,6 +479,9 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         ticket.setResponsePenaltyTime(null);
         ticket.setResponsePenaltyPercentage(null);
     }
+
+
+
 
 }
 

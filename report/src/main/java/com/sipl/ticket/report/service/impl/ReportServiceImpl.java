@@ -11,6 +11,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
 import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
 import com.sipl.ticket.core.util.PaginationUtil;
+import com.sipl.ticket.core.util.ResponsePenaltyExportHelper;
 import com.sipl.ticket.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -283,6 +285,58 @@ public class ReportServiceImpl implements ReportService {
                     true
             );
         }
+    }
+
+
+    @Override
+    public void exportResponsePenaltyReport(
+            ResponsePenaltyRequestDTO dto,
+            String format,
+            HttpServletResponse response
+    ) {
+
+        log.info("<<START>> exportResponsePenaltyReport <<START>>");
+
+        if (format == null ||
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid export format");
+        }
+
+        try {
+            Pageable pageable = Pageable.unpaged();
+
+            Page<Ticket> pageResult =
+                    ticketRepository.searchResponsePenaltyReport(
+                            dto.getQuery(),
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                throw new RuntimeException("No data found for export");
+            }
+
+            List<ResponsePenaltyResponseDTO> data =
+                    pageResult.getContent()
+                            .stream()
+                            .map(this::mapToResponsePenaltyDto)
+                            .collect(Collectors.toList());
+
+            ResponsePenaltyExportHelper.export(data, format, response);
+
+            log.info(
+                    "Response Penalty export completed | records={}",
+                    data.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportResponsePenaltyReport failed", e);
+            throw new RuntimeException(
+                    "Failed to export response penalty report", e
+            );
+        }
+
+        log.info("<<END>> exportResponsePenaltyReport <<END>>");
     }
 
 

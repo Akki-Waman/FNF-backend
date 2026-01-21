@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -43,4 +45,20 @@ public class ReportControllerImpl implements ReportController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(response);    }
+
+    @Override
+    public ResponseEntity<Void> exportResponsePenaltyReport(
+            ResponsePenaltyRequestDTO requestDto,
+            String format,
+            HttpServletResponse response
+    ) {
+        log.info("<<START>> exportResponsePenaltyReport <<START>>");
+
+        reportService.exportResponsePenaltyReport(requestDto, format, response);
+
+        log.info("<<END>> exportResponsePenaltyReport <<END>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

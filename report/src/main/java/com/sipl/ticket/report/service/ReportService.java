@@ -8,6 +8,8 @@ import com.sipl.ticket.core.dto.response.ResponsePenaltyResponseDTO;
 import com.sipl.ticket.core.dto.response.StaffTicketResponseDTO;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ReportService {
 
@@ -15,4 +17,11 @@ public interface ReportService {
     searchResponsePenaltyReport(ResponsePenaltyRequestDTO requestDto);
 
     ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>> staffTicketReport(StaffTicketRequestDTO requestDto);
+
+    void exportResponsePenaltyReport(
+            ResponsePenaltyRequestDTO requestDto,
+            String format,
+            HttpServletResponse response
+    );
+
 }

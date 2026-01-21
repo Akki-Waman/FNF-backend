@@ -10,4 +10,6 @@ import java.util.List;
 @Service
 public interface TicketResponseService {
     ApiResponseDTO<TicketResponseCombinedDto> addTicketResponse(String ticketResponseRequestDto, List<MultipartFile> files);
+
+
 }
