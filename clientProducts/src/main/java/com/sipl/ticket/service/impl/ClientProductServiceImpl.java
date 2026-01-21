@@ -425,8 +425,7 @@ public class ClientProductServiceImpl implements ClientProductService {
         log.info("Fetching client product by id={}", id);
 
         try {
-            return clientProductsRepository.findById(id)
-                    .filter(cp -> Boolean.TRUE.equals(cp.getIsActive()))
+            return clientProductsRepository.findActiveById(id)
                     .map(cp -> new ApiResponseDTO<>(
                             clientProductMapper.toDto(cp),
                             "Client product found",
@@ -450,4 +449,5 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
+
 }
