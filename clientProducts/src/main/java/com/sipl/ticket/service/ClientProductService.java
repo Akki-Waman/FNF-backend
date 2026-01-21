@@ -25,4 +25,7 @@ public interface ClientProductService {
             ClientProductSearchRequestDto requestDto);
     void exportClientProductsExcel(HttpServletResponse response);
 
+    ApiResponseDTO<ClientProductsResponseDTO> getById(
+            Long clientProductId
+    );
 }

@@ -419,7 +419,35 @@ public class ClientProductServiceImpl implements ClientProductService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<ClientProductsResponseDTO> getById(Long id) {
 
+        log.info("Fetching client product by id={}", id);
 
+        try {
+            return clientProductsRepository.findActiveById(id)
+                    .map(cp -> new ApiResponseDTO<>(
+                            clientProductMapper.toDto(cp),
+                            "Client product found",
+                            HttpStatus.OK,
+                            false
+                    ))
+                    .orElseGet(() -> new ApiResponseDTO<>(
+                            null,
+                            "Client product not found",
+                            HttpStatus.NOT_FOUND,
+                            true
+                    ));
+
+        } catch (Exception e) {
+            log.error("getById unexpected error, id={}", id, e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
 
 }

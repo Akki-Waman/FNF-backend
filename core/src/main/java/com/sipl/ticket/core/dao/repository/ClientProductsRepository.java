@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClientProductsRepository extends JpaRepository<ClientProducts, Long> {
@@ -65,5 +66,13 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
                     "WHERE cp.isActive = true"
     )
     List<ClientProducts> findActiveForExport();
+
+    @Query(
+            "SELECT cp FROM ClientProducts cp " +
+                    "WHERE cp.clientProductId = :id " +
+                    "AND cp.isActive = true"
+    )
+    Optional<ClientProducts> findActiveById(@Param("id") Long id);
+
 
 }
