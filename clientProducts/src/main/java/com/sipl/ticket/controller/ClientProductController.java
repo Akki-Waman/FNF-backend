@@ -49,4 +49,8 @@ public interface ClientProductController {
     @GetMapping("/export")
     ResponseEntity<Void> exportClientProductsExcel(HttpServletResponse response);
 
+    @GetMapping("/get/{clientProductId}")
+    ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> getById(
+            @PathVariable Long clientProductId
+    );
 }

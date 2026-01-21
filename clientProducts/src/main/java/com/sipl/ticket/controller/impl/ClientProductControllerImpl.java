@@ -84,4 +84,17 @@ public class ClientProductControllerImpl implements ClientProductController {
     }
 
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> getById(
+            Long clientProductId) {
+
+        log.info("<<Start>> getById <<Start>>");
+
+        ApiResponseDTO<ClientProductsResponseDTO> response =
+                clientProductService.getById(clientProductId);
+
+        log.info("<<End>> getById <<End>>");
+        return ResponseEntity.ok(response);
+    }
+
 }
