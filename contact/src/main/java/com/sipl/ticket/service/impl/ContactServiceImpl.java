@@ -17,6 +17,7 @@ import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -115,7 +117,6 @@ public class ContactServiceImpl implements ContactService {
     }
 
 
-
     @Override
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
@@ -134,7 +135,10 @@ public class ContactServiceImpl implements ContactService {
 
         boolean isUpdated = false;
 
-        if (dto.getDepartmentId() != null) {
+        if (dto.getDepartmentId() != null &&
+                (contact.getDepartment() == null ||
+                        !dto.getDepartmentId().equals(contact.getDepartment().getDepartmentId()))) {
+
             Department department = departmentRepository.findById(dto.getDepartmentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Department"));
 
@@ -142,12 +146,17 @@ public class ContactServiceImpl implements ContactService {
             isUpdated = true;
         }
 
+        Contact beforeUpdate = new Contact();
+        BeanUtils.copyProperties(contact, beforeUpdate);
+
         contactMapper.partialUpdate(dto, contact);
 
-        if (dto.getContactName() != null ||
-                dto.getEmailAddress() != null ||
-                dto.getMobileNo() != null ||
-                dto.getIsActive() != null) {
+        if (!Objects.equals(beforeUpdate.getContactName(), contact.getContactName()) ||
+                !Objects.equals(beforeUpdate.getEmailAddress(), contact.getEmailAddress()) ||
+                !Objects.equals(beforeUpdate.getMobileNo(), contact.getMobileNo()) ||
+                !Objects.equals(beforeUpdate.getIsActive(), contact.getIsActive()) ||
+                !Objects.equals(beforeUpdate.getIsDelete(), contact.getIsDelete())) {
+
             isUpdated = true;
         }
 
