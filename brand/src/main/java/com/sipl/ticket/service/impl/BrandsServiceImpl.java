@@ -14,10 +14,8 @@ import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.BrandsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -62,6 +60,7 @@ public class BrandsServiceImpl implements BrandsService {
             Brands brand = new Brands();
             brand.setBrandName(name);
             brand.setIsActive(true);
+            brand.setIsDeleted(false);
 
             Brands savedBrand = repository.save(brand);
 
@@ -112,6 +111,15 @@ public class BrandsServiceImpl implements BrandsService {
                         null,
                         "Brand not found",
                         HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            if (Boolean.TRUE.equals(brand.getIsDeleted())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Brand is deleted",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
@@ -172,7 +180,6 @@ public class BrandsServiceImpl implements BrandsService {
         }
     }
 
-
     @Override
     public ApiResponseDTO<BrandDto> getById(Long id) {
 
@@ -181,6 +188,7 @@ public class BrandsServiceImpl implements BrandsService {
         try {
             return repository.findById(id)
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(b -> new ApiResponseDTO<>(
                             mapper.toDto(b),
                             "Brand found",
@@ -226,16 +234,17 @@ public class BrandsServiceImpl implements BrandsService {
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            if (Boolean.TRUE.equals(brand.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand is already inactive",
+                        "Brand already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             brand.setIsActive(false);
+            brand.setIsDeleted(true);
             repository.save(brand);
 
             return new ApiResponseDTO<>(
@@ -266,6 +275,7 @@ public class BrandsServiceImpl implements BrandsService {
             List<BrandDto> list = repository.findAll(Sort.by(Sort.Direction.ASC, "brandName"))
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -308,7 +318,6 @@ public class BrandsServiceImpl implements BrandsService {
                     dto.getSortBy(),
                     dto.getSortDir()
             );
-
 
             Page<Brands> pageResult =
                     repository.searchBrands(
@@ -358,6 +367,7 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
     @Override
     @Transactional(readOnly = true)
     public void exportBrandsCsv(HttpServletResponse response) {
@@ -368,6 +378,7 @@ public class BrandsServiceImpl implements BrandsService {
             List<BrandDto> brands = repository.findAll()
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -381,7 +392,4 @@ public class BrandsServiceImpl implements BrandsService {
             throw new RuntimeException("Failed to export brands CSV", e);
         }
     }
-
-
-
 }
