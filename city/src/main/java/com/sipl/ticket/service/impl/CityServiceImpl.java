@@ -283,7 +283,7 @@ public class CityServiceImpl implements CityService {
         if (!isUpdated) {
             throw new IllegalArgumentException("No fields provided to update");
         }
-
+        city.setIsActive(dto.getIsActive());
         City updated = repository.save(city);
 
         return new ApiResponseDTO<>(
@@ -363,8 +363,6 @@ public class CityServiceImpl implements CityService {
                         true
                 );
             }
-
-            city.setIsActive(false);
             city.setIsDeleted(true);
             repository.save(city);
 
