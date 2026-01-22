@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.core.util.EntityStateValidator;
 import org.springframework.http.HttpStatus;
 import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dao.entity.TicketNote;
@@ -156,15 +157,11 @@ public class TicketNoteServiceImpl implements TicketNoteService {
                         log.info("TicketNote not found for delete. ticketNoteId={}", ticketNoteId);
                         return new RuntimeException("Ticket note not found");
                     });
-            if (Boolean.TRUE.equals(ticketNote.getIsDeleted())) {
-                log.info("TicketNote already deleted. ticketNoteId={}", ticketNoteId);
-                return new ApiResponseDTO<>(
-                        null,
-                        "Ticket note already deleted",
-                        HttpStatus.OK,
-                        false
-                );
-            }
+            EntityStateValidator.checkNotDeleted(
+                    ticketNote.getIsDeleted(),
+                    "Ticket Note",
+                    String.valueOf(ticketNote.getTicketNoteId())
+            );
             ticketNote.setIsDeleted(true);
             log.info("Soft deleting TicketNote id={}", ticketNoteId);
             ticketNoteRepository.save(ticketNote);
