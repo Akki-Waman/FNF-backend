@@ -17,7 +17,16 @@ import java.util.Optional;
 public interface ProductSubCategoryRepository
         extends JpaRepository<ProductSubCategories, Long> {
 
-    boolean existsByProductSubCategoryNameIgnoreCase( @Param("name")String name);
+    @Query(
+            "SELECT CASE WHEN COUNT(psc) > 0 THEN true ELSE false END " +
+                    "FROM ProductSubCategories psc " +
+                    "WHERE LOWER(psc.productSubCategoryName) = LOWER(:name) " +
+                    "AND psc.isActive = true " +
+                    "AND psc.isDeleted = false"
+    )
+    boolean existsActiveByName(
+            @Param("name") String name
+    );
 
     boolean existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNot(
             @Param("name") String name, @Param("productSubCategoryId") Long productSubCategoryId
