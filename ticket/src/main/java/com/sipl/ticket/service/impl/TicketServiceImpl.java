@@ -136,18 +136,21 @@ public class TicketServiceImpl implements TicketService {
         ticket.setDepartment(department);
         ticket.setLocation(location);
         List<Shift> shifts = shiftRepository.findByBranchId(branch.getBranchId());
-        setCurrentShiftToTicket(shifts, ticket);
+        Shift shiftForTicket = getShiftForTicket(shifts);
+        if (shiftForTicket != null) {
+            ticket.setShift(shiftForTicket);
+        }
+
 
         return ticketRepository.save(ticket);
     }
-    private void setCurrentShiftToTicket(List<Shift> shifts, Ticket ticket) {
-        if (shifts == null || shifts.isEmpty()) return;
+    private Shift getShiftForTicket(List<Shift> shifts) {
+        if (shifts == null || shifts.isEmpty()) return null;
 
         LocalTime now = LocalTime.now();
 
         for (Shift s : shifts) {
             if (Boolean.TRUE.equals(s.getIsActive())) {
-
                 LocalTime start = s.getStartTime();
                 LocalTime end = s.getEndTime();
 
@@ -160,12 +163,13 @@ public class TicketServiceImpl implements TicketService {
                 if (inShift) {
                     Shift shift = new Shift();
                     shift.setShiftId(s.getShiftId());
-                    ticket.setShift(shift);
-                    return;
+                    return shift;
                 }
             }
         }
+        return null;
     }
+
 
     private void mapOptionalTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
         ticket.setPriority(dto.getPriority());
