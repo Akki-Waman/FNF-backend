@@ -57,7 +57,7 @@ public class BrandsServiceImpl implements BrandsService {
             if (repository.existsByBrandNameIgnoreCaseAndCompanyCompanyId(name, dto.getCompanyId())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand '" + name + "' already exists for this company.",
+                        "Brand '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );

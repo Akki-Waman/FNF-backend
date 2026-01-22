@@ -62,7 +62,7 @@ public class ServiceServiceImpl implements ServiceService {
 
                 return new ApiResponseDTO<>(
                         null,
-                        "Service '" + dto.getServiceName() + "' already exists for this company",
+                        "Service '" + dto.getServiceName() + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
