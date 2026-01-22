@@ -221,7 +221,7 @@ public class TagsServiceImpl implements TagsService {
 
         try {
             List<TagResponseDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "tagId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "tagName"))
                     .stream()
                     .filter(t ->
                             Boolean.TRUE.equals(t.getIsActive()) &&
