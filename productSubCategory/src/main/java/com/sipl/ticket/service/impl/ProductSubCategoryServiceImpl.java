@@ -251,26 +251,6 @@ public class ProductSubCategoryServiceImpl
                         true
                 );
             }
-
-            if (Boolean.TRUE.equals(subCategory.getIsDeleted())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product sub category already deleted",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(subCategory.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product sub category is already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            subCategory.setIsActive(false);
             subCategory.setIsDeleted(true);
             repository.save(subCategory);
 
