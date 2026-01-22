@@ -25,4 +25,7 @@ public class LocationResponseDTO extends AuditDto {
 //    private String plantCode;
 
     private Boolean isDeleted;
+
+    private Integer branchId;
+    private String branchName;
 }

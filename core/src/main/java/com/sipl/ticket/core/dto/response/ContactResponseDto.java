@@ -24,4 +24,6 @@ public class ContactResponseDto {
 
 
     private AuditDto auditDto;
+    private Integer branchId;
+    private String branchName;
 }

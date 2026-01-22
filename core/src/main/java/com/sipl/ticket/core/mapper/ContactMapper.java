@@ -14,7 +14,7 @@ public interface ContactMapper {
 
     @Mapping(target = "contactId", ignore = true)
     @Mapping(target = "department", ignore = true)
-
+    @Mapping(target = "branch", ignore = true)
     //  audit fields exist in ENTITY → safe to ignore
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
@@ -27,7 +27,8 @@ public interface ContactMapper {
 
     @Mapping(target = "departmentId", source = "department.departmentId")
     @Mapping(target = "departmentName", source = "department.departmentName")
-
+    @Mapping(target = "branchId", source = "branch.branchId")
+    @Mapping(target = "branchName", source = "branch.branchName")
         //  DO NOT IGNORE AUDIT FIELDS HERE (they don't exist in DTO)
 
     ContactResponseDto toResponseDto(Contact contact);
@@ -36,7 +37,7 @@ public interface ContactMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "department", ignore = true)
-
+    @Mapping(target = "branch", ignore = true)
     //  audit fields exist in ENTITY → safe to ignore
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)

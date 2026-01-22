@@ -53,4 +53,8 @@ public class Contact extends AuditEntity {
     private Boolean isDelete;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnore
+    private Branches branch;
 }

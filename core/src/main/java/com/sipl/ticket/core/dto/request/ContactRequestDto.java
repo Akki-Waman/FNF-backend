@@ -32,4 +32,7 @@ public class ContactRequestDto {
     private Boolean isActive;
 
     private String departmentName;
+
+    private Integer branchId;
+    private String branchName;
 }
