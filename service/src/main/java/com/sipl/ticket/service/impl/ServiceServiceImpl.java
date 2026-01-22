@@ -2,7 +2,9 @@ package com.sipl.ticket.service.impl;
 
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.entity.ServiceEntity;
+import com.sipl.ticket.core.dao.repository.CompanyRepository;
 import com.sipl.ticket.core.dao.repository.ServiceRepository;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
 import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
@@ -40,6 +42,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     private final ServiceRepository repository;
     private final ServiceMapper mapper;
+    private final CompanyRepository companyRepository;
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
@@ -59,8 +62,10 @@ public class ServiceServiceImpl implements ServiceService {
                         true
                 );
             }
-
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
             ServiceEntity service = mapper.toEntity(dto);
+            service.setCompany(company);
             service.setIsActive(true);
             service.setIsDelete(false);
 
@@ -218,6 +223,7 @@ public class ServiceServiceImpl implements ServiceService {
                 repository.searchServices(
                         dto.getQuery(),
                         dto.getIsActive(),
+                        dto.getCompanyId(),
                         pageable
                 );
 

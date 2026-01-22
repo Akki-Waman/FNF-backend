@@ -20,6 +20,8 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
            @Param("brandName") String brandName,@Param("brandId") Long brandId
     );
 
+    boolean existsByBrandNameIgnoreCaseAndCompanyCompanyId(String brandName, Long companyId);
+
     List<Brands> findByIsActiveTrue();
 
     @Query("From Brands b where b.brandId = :brandId")
@@ -29,6 +31,7 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
     @Query(
             "SELECT b FROM Brands b " +
                     "WHERE b.isDeleted = false " +
+                    "AND ( :companyId IS NULL OR b.company.companyId = :companyId ) " +
                     "AND ( :isActive IS NULL OR b.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(b.brandName) LIKE CONCAT('%', LOWER(:query), '%') )"
@@ -36,8 +39,11 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
     Page<Brands> searchBrands(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("companyId") Long companyId,
             Pageable pageable
     );
+
+
 
 
 }

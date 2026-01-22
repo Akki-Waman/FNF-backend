@@ -20,6 +20,7 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     @Query(
             "SELECT s FROM ServiceEntity s " +
                     "WHERE s.isDelete = false " +
+                    "AND ( :companyId IS NULL OR s.company.companyId = :companyId ) " +
                     "AND ( :isActive IS NULL OR s.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "   OR LOWER(s.serviceName) LIKE CONCAT('%', LOWER(:query), '%') " +
@@ -29,8 +30,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     Page<ServiceEntity> searchServices(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("companyId") Long companyId,
             Pageable pageable
     );
+
 
 
 
