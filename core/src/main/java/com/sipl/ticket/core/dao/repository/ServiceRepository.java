@@ -16,7 +16,17 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     boolean existsByServiceNameIgnoreCaseAndServiceIdNot(
             String serviceName, Long serviceId
     );
-    boolean existsByServiceNameIgnoreCaseAndCompanyCompanyId(String serviceName, Long companyId);
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM ServiceEntity s " +
+                    "WHERE LOWER(s.serviceName) = LOWER(:serviceName) " +
+                    "AND s.company.companyId = :companyId " +
+                    "AND s.isDelete = false"
+    )
+    boolean existsActiveServiceForCompany(
+            @Param("serviceName") String serviceName,
+            @Param("companyId") Long companyId
+    );
 
 
     @Query(

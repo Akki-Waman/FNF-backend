@@ -57,7 +57,7 @@ public class ServiceServiceImpl implements ServiceService {
 
             Companies company = companyRepository.findById(dto.getCompanyId())
                     .orElseThrow(() -> new RuntimeException("Company not found"));
-            if (repository.existsByServiceNameIgnoreCaseAndCompanyCompanyId(
+            if (repository.existsActiveServiceForCompany(
                     dto.getServiceName(), dto.getCompanyId())) {
 
                 return new ApiResponseDTO<>(

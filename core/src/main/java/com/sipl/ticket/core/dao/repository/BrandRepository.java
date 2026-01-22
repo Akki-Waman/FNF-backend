@@ -20,7 +20,17 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
            @Param("brandName") String brandName,@Param("brandId") Long brandId
     );
 
-    boolean existsByBrandNameIgnoreCaseAndCompanyCompanyId(String brandName, Long companyId);
+    @Query(
+            "SELECT CASE WHEN COUNT(b) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Brands b " +
+                    "WHERE LOWER(b.brandName) = LOWER(:brandName) " +
+                    "AND b.company.companyId = :companyId " +
+                    "AND b.isDeleted = false"
+    )
+    boolean existsActiveBrandForCompany(
+            @Param("brandName") String brandName,
+            @Param("companyId") Long companyId
+    );
 
     List<Brands> findByIsActiveTrue();
 

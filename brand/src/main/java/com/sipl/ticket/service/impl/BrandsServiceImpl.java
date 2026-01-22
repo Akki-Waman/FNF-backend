@@ -54,7 +54,7 @@ public class BrandsServiceImpl implements BrandsService {
             Companies company = companyRepository.findById(dto.getCompanyId())
                     .orElseThrow(() -> new RuntimeException("Company not found"));
 
-            if (repository.existsByBrandNameIgnoreCaseAndCompanyCompanyId(name, dto.getCompanyId())) {
+            if (repository.existsActiveBrandForCompany(name, dto.getCompanyId())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Brand '" + name + "' already exists.",
