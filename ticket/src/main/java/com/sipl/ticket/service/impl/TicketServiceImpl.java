@@ -135,41 +135,38 @@ public class TicketServiceImpl implements TicketService {
         ticket.setBranch(branch);
         ticket.setDepartment(department);
         ticket.setLocation(location);
-        List<Shift> shifts=shiftRepository.findByBranchId(branch.getBranchId());
-        Shift selectedShift = null;
-
-        if (shifts != null && !shifts.isEmpty()) {
-            LocalTime now = LocalTime.now();
-
-            for (Shift s : shifts) {
-                if (Boolean.TRUE.equals(s.getIsActive())) {
-
-                    LocalTime start = s.getStartTime();
-                    LocalTime end = s.getEndTime();
-
-                    boolean crossesMidnight = end.isBefore(start);
-
-                    boolean inShift = crossesMidnight
-                            ? (now.isAfter(start) || now.isBefore(end))
-                            : (now.isAfter(start) && now.isBefore(end));
-
-                    if (inShift) {
-                        selectedShift = s;
-                        break;
-                    }
-                }
-            }
-        }
-
+        List<Shift> shifts = shiftRepository.findByBranchId(branch.getBranchId());
+        Shift selectedShift = getCurrentShift(shifts);
         if (selectedShift != null) {
             Shift shift = new Shift();
             shift.setShiftId(selectedShift.getShiftId());
             ticket.setShift(shift);
         }
 
-
         return ticketRepository.save(ticket);
     }
+    private Shift getCurrentShift(List<Shift> shifts) {
+        if (shifts == null || shifts.isEmpty()) return null;
+        LocalTime now = LocalTime.now();
+        for (Shift s : shifts) {
+            if (Boolean.TRUE.equals(s.getIsActive())) {
+                LocalTime start = s.getStartTime();
+                LocalTime end = s.getEndTime();
+
+                boolean crossesMidnight = end.isBefore(start);
+
+                boolean inShift = crossesMidnight
+                        ? (now.isAfter(start) || now.isBefore(end))
+                        : (now.isAfter(start) && now.isBefore(end));
+
+                if (inShift) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
 
     private void mapOptionalTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
         ticket.setPriority(dto.getPriority());
