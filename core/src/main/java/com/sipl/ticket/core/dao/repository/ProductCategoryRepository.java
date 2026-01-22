@@ -37,7 +37,17 @@ public interface ProductCategoryRepository
             Pageable pageable
     );
 
+    @Query(
+            "SELECT pc " +
+                    "FROM ProductCategories pc " +
+                    "WHERE LOWER(pc.productCategoryName) = LOWER(:name) " +
+                    "AND pc.isActive = :isActive " +
+                    "AND pc.isDeleted = false"
+    )
+    Optional<ProductCategories> findByNameAndIsActive(
+            @Param("name") String name,
+            @Param("isActive") boolean isActive
+    );
 
-    Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive( String name, boolean b);
 }
 

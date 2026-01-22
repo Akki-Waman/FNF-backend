@@ -39,6 +39,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     private final ProductCategoryRepository repository;
     private final ProductCategoryMapper mapper;
 
+
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
     @ActivityLoggable(
@@ -55,7 +56,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
 
             Optional<ProductCategories> activeCategory =
-                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, true);
+                    repository.findByNameAndIsActive(name, true);
 
             if (activeCategory.isPresent()) {
                 return new ApiResponseDTO<>(
@@ -68,7 +69,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
 
             Optional<ProductCategories> inactiveCategory =
-                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, false);
+                    repository.findByNameAndIsActive(name, false);
 
             if (inactiveCategory.isPresent()) {
                 ProductCategories category = inactiveCategory.get();
@@ -78,7 +79,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
                 return new ApiResponseDTO<>(
                         mapper.toDto(updatedCategory),
-                        "Product category created successfully",
+                        "Product category reactivated successfully",
                         HttpStatus.OK,
                         false
                 );
@@ -87,6 +88,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             ProductCategories category = new ProductCategories();
             category.setProductCategoryName(name);
             category.setIsActive(true);
+            category.setIsDeleted(false);
 
             ProductCategories savedCategory = repository.save(category);
 
@@ -107,7 +109,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             );
         }
     }
-
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
@@ -239,6 +240,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                         true
                 );
             }
+            category.setIsActive(false);
             category.setIsDeleted(true);
             repository.save(category);
             return new ApiResponseDTO<>(

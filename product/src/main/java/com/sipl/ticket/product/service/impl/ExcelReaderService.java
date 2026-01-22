@@ -85,7 +85,7 @@ public class ExcelReaderService {
                 String categoryName = row.getCell(4).getStringCellValue();
                 ProductCategories category =
                         productCategoryRepository
-                                .findByProductCategoryNameIgnoreCaseAndIsActive(
+                                .findByNameAndIsActive(
                                         categoryName, true)
                                 .orElseThrow(() ->
                                         new RuntimeException(
