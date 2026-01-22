@@ -18,5 +18,6 @@ public class TicketResponseRequestDTO {
     private Boolean isPublic;
     private String statusBefore;
     private String statusAfter;
+    private Integer status;
     private List<String> ccEmails;
 }

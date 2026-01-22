@@ -18,6 +18,7 @@ import com.sipl.ticket.core.mapper.TicketResponseAttachmentMapper;
 import com.sipl.ticket.core.mapper.TicketResponseCcMapper;
 import com.sipl.ticket.core.mapper.TicketResponseMapper;
 import com.sipl.ticket.core.util.EmailUtil;
+import com.sipl.ticket.master.service.MasterService;
 import com.sipl.ticket.service.TicketResponseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,8 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final SettingRepository settingRepository;
     private final SlaProfileRepository slaProfileRepository;
     private final SlaRuleDetailsRepository slaRuleDetailsRepository;
+    private final MasterService masterService;
+
 
     public static final Long SLA_TYPE_RESPONSE_ID = 1L;
 
@@ -131,20 +134,21 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             description = "Ticket response {0} created successfully"
     )
     private TicketResponse saveTicketResponse(TicketResponseRequestDTO dto) {
-
         validateTicketResponseRequest(dto);
-
+        Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
+        Map<Integer, String> statusMap   = masterService.getTicketStatusMap();
+        MasterContext masterContext = new MasterContext(priorityMap, statusMap);
+        if (!statusMap.containsKey(dto.getStatus())) {
+            throw new IllegalArgumentException("Invalid status code: " + dto.getStatus());
+        }
+        TicketResponse ticketResponse =
+                ticketResponseMapper.toEntity(dto, masterContext);
         Ticket ticket = getTicket(dto.getTicket());
-
-        TicketResponse ticketResponse = new TicketResponse();
-        ticketResponse.setTicket(ticket);
-        ticketResponse.setResponseBody(dto.getResponseBody());
-        ticketResponse.setResponseType(dto.getResponseType());
+        ticketResponse.setTicket(ticketRepository.getReferenceById(dto.getTicket()));
         ticketResponse.setIsPublic(Boolean.TRUE.equals(dto.getIsPublic()));
-        ticketResponse.setStatusBefore(dto.getStatusBefore());
-        ticketResponse.setStatusAfter(dto.getStatusAfter());
+        ticket.setStatus(dto.getStatus());
+        ticketRepository.save(ticket);
         applyResponseSlaLogic(ticket);
-
         return ticketResponseRepository.save(ticketResponse);
     }
 

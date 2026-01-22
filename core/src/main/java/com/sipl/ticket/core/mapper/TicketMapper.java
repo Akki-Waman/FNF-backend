@@ -62,6 +62,11 @@ public interface TicketMapper extends AuditEntityMapper {
     default String mapTags(Ticket ticket) {
         return null;
     }
+
+    TicketCombinedResponseDto toCombinedResponseDto(
+            Ticket ticket,
+            @Context MasterContext masterContext
+    );
 }
 
 

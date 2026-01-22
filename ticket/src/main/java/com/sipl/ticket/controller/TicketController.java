@@ -4,6 +4,7 @@ package com.sipl.ticket.controller;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TicketStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -72,5 +73,10 @@ public interface TicketController {
             @PathVariable Long ticketId
     );
 
-
+    @ApiOperation(
+            value = "Update a existing ticket status",
+            notes = "Provide the necessary ticket information to save a new entry")
+    @PutMapping("/status")
+    public ResponseEntity<ApiResponseDTO<TicketCombinedResponseDto>> updateTicketStatus(
+            @RequestBody TicketStatusRequestDTO ticketStatusRequestDTO);
 }
