@@ -78,7 +78,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
                 return new ApiResponseDTO<>(
                         mapper.toDto(updatedCategory),
-                        "Product category reactivated successfully",
+                        "Product category created successfully",
                         HttpStatus.OK,
                         false
                 );
@@ -239,21 +239,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                         true
                 );
             }
-
-            if (Boolean.FALSE.equals(category.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product category is already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            category.setIsActive(false);
             category.setIsDeleted(true);
-
             repository.save(category);
-
             return new ApiResponseDTO<>(
                     null,
                     "Product category deleted successfully",
