@@ -2,7 +2,9 @@ package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Brands;
+import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.repository.BrandRepository;
+import com.sipl.ticket.core.dao.repository.CompanyRepository;
 import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
 import com.sipl.ticket.core.dto.request.BrandsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
@@ -35,6 +37,7 @@ public class BrandsServiceImpl implements BrandsService {
 
     private final BrandRepository repository;
     private final BrandsMapper mapper;
+    private final CompanyRepository companyRepository;
 
     @ActivityLoggable(
             action = "CREATE",
@@ -48,7 +51,10 @@ public class BrandsServiceImpl implements BrandsService {
         try {
             String name = dto.getBrandName().trim();
 
-            if (repository.existsByBrandNameIgnoreCase(name)) {
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+
+            if (repository.existsActiveBrandForCompany(name, dto.getCompanyId())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Brand '" + name + "' already exists.",
@@ -59,6 +65,7 @@ public class BrandsServiceImpl implements BrandsService {
 
             Brands brand = new Brands();
             brand.setBrandName(name);
+            brand.setCompany(company);
             brand.setIsActive(true);
             brand.setIsDeleted(false);
 
@@ -81,6 +88,10 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
+
+
+
 
     @ActivityLoggable(
             action = "UPDATE",
@@ -321,6 +332,7 @@ public class BrandsServiceImpl implements BrandsService {
                     repository.searchBrands(
                             dto.getQuery(),
                             dto.getIsActive(),
+                            dto.getCompanyId(),
                             pageable
                     );
 

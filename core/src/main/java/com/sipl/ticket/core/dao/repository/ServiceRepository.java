@@ -16,10 +16,23 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     boolean existsByServiceNameIgnoreCaseAndServiceIdNot(
             String serviceName, Long serviceId
     );
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM ServiceEntity s " +
+                    "WHERE LOWER(s.serviceName) = LOWER(:serviceName) " +
+                    "AND s.company.companyId = :companyId " +
+                    "AND s.isDelete = false"
+    )
+    boolean existsActiveServiceForCompany(
+            @Param("serviceName") String serviceName,
+            @Param("companyId") Long companyId
+    );
+
 
     @Query(
             "SELECT s FROM ServiceEntity s " +
                     "WHERE s.isDelete = false " +
+                    "AND ( :companyId IS NULL OR s.company.companyId = :companyId ) " +
                     "AND ( :isActive IS NULL OR s.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "   OR LOWER(s.serviceName) LIKE CONCAT('%', LOWER(:query), '%') " +
@@ -29,8 +42,10 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     Page<ServiceEntity> searchServices(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("companyId") Long companyId,
             Pageable pageable
     );
+
 
 
 

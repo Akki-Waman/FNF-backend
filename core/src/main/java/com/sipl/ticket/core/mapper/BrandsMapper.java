@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dao.entity.Brands;
 import com.sipl.ticket.core.dto.response.BrandDto;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public interface BrandsMapper extends AuditEntityMapper {
     Brands toEntity(BrandDto brandDto);
 
     @InheritConfiguration(name = "toDto")
+    @Mapping(source = "company.companyId", target = "companyId")
+    @Mapping(source = "company.companyName", target = "companyName")
     BrandDto toDto(Brands brands);
 
     List<BrandDto> mapBrandsListToDtoList(List<Brands> brandsList);

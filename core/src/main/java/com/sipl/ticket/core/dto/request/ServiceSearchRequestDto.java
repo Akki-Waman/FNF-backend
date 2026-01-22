@@ -6,4 +6,6 @@ import lombok.Data;
 public class ServiceSearchRequestDto extends SearchRequestDto {
 
     private String query;
+
+    private Long companyId;
 }

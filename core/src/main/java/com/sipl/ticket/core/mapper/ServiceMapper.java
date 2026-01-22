@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dto.request.ServiceRequestDto;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
@@ -18,6 +19,8 @@ public interface ServiceMapper extends AuditEntityMapper {
     ServiceEntity toEntity(ServiceRequestDto serviceRequestDto);
 
     @InheritConfiguration(name = "toDto")
+    @Mapping(source = "company.companyId", target = "companyId")
+    @Mapping(source = "company.companyName", target = "companyName")
     ServiceResponseDTO toDto(ServiceEntity service);
 
     List<ServiceResponseDTO> mapServicesListToDtoList(List<ServiceEntity> services);
