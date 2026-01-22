@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
                 DepartmentMapper.class,
                 ClientProductMapper.class,
                 ServiceMapper.class,
-                BranchMapper.class
+                BranchMapper.class,
+                ShiftMapper.class
         }
 )
 public interface TicketMapper extends AuditEntityMapper {

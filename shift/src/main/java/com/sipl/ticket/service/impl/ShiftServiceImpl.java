@@ -1,6 +1,7 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Shift;
 import com.sipl.ticket.core.dao.repository.ShiftRepository;
 import com.sipl.ticket.core.dto.request.ShiftRequestDto;
@@ -72,6 +73,12 @@ public class ShiftServiceImpl implements ShiftService {
             shift.setEndTime(dto.getEndTime());
             shift.setIsActive(true);
             shift.setIsDeleted(false);
+            if(dto.getBranchId() !=null)
+            {
+                Branches branches=new Branches();
+                branches.setBranchId(dto.getBranchId());
+                shift.setBranch(branches);
+            }
             Shift savedShift = repository.save(shift);
 
             return new ApiResponseDTO<>(
@@ -147,6 +154,14 @@ public class ShiftServiceImpl implements ShiftService {
 
         if (dto.getEndTime() != null) {
             shift.setEndTime(dto.getEndTime());
+            isUpdated = true;
+        }
+
+        if(dto.getBranchId() !=null)
+        {
+            Branches branches=new Branches();
+            branches.setBranchId(dto.getBranchId());
+            shift.setBranch(branches);
             isUpdated = true;
         }
 

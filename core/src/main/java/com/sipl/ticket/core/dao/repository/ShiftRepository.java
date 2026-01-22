@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
@@ -21,8 +25,8 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     )
     Page<Shift> findBySearchQuery(
             @Param("shiftName") String shiftName,
-            @Param("startTime") java.time.LocalTime startTime,
-            @Param("endTime") java.time.LocalTime endTime,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
             Pageable pageable
     );
 
@@ -58,5 +62,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
             @Param("shiftId") Long shiftId
     );
 
+    @Query("From Shift s where s.branch.branchId = :branchId")
+    List<Shift> findByBranchId(@Param("branchId") Integer branchId);
 }
 

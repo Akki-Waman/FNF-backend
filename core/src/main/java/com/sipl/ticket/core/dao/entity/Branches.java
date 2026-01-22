@@ -15,10 +15,9 @@ import javax.persistence.*;
 @Table(name = "branches")
 @Audited
 public class Branches extends AuditEntity {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="branch_id")
     private Integer branchId;
 
     @Column(nullable = false)

@@ -34,6 +34,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,7 @@ public class TicketServiceImpl implements TicketService {
     private final MastersRepository mastersRepository;
     private final TicketNoteMapper ticketNoteMapper;
     private final TicketNoteRepository ticketNoteRepository;
+    private final ShiftRepository shiftRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -133,6 +135,39 @@ public class TicketServiceImpl implements TicketService {
         ticket.setBranch(branch);
         ticket.setDepartment(department);
         ticket.setLocation(location);
+        List<Shift> shifts=shiftRepository.findByBranchId(branch.getBranchId());
+        Shift selectedShift = null;
+
+        if (shifts != null && !shifts.isEmpty()) {
+            LocalTime now = LocalTime.now();
+
+            for (Shift s : shifts) {
+                if (Boolean.TRUE.equals(s.getIsActive())) {
+
+                    LocalTime start = s.getStartTime();
+                    LocalTime end = s.getEndTime();
+
+                    boolean crossesMidnight = end.isBefore(start);
+
+                    boolean inShift = crossesMidnight
+                            ? (now.isAfter(start) || now.isBefore(end))
+                            : (now.isAfter(start) && now.isBefore(end));
+
+                    if (inShift) {
+                        selectedShift = s;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (selectedShift != null) {
+            Shift shift = new Shift();
+            shift.setShiftId(selectedShift.getShiftId());
+            ticket.setShift(shift);
+        }
+
+
         return ticketRepository.save(ticket);
     }
 
