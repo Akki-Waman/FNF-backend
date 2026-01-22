@@ -51,26 +51,17 @@ public class BrandsServiceImpl implements BrandsService {
         try {
             String name = dto.getBrandName().trim();
 
-            if (repository.existsByBrandNameIgnoreCase(name)) {
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+
+            if (repository.existsByBrandNameIgnoreCaseAndCompanyCompanyId(name, dto.getCompanyId())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand '" + name + "' already exists.",
+                        "Brand '" + name + "' already exists for this company.",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
-            if (dto.getCompanyId() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Companies company = companyRepository.findById(dto.getCompanyId())
-                    .orElseThrow(() -> new RuntimeException("Company not found"));
-
 
             Brands brand = new Brands();
             brand.setBrandName(name);
