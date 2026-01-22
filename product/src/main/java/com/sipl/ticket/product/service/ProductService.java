@@ -17,7 +17,7 @@ public interface ProductService {
 
     ApiResponseDTO<ProductDto> deleteProduct(Long productId);
 
-    ApiResponseDTO<ProductDto> getByProduct(Long productId);
+    ApiResponseDTO<CombinedProductResponseDto> getByProduct(Long productId);
 
     ApiResponseDTO<ProductDto> getAllProduct(Integer branchId);
 
