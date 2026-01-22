@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompanyDto {
+public class CompanyDto extends AuditDto {
     private Long companyId;
     private String companyName;
     private Boolean isActive;
