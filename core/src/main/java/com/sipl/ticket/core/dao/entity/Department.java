@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.envers.Audited;
 
@@ -30,4 +31,9 @@ public class Department extends AuditEntity {
 
     @Column(name = "is_delete",nullable = false)
     private Boolean isDelete = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnore
+    private Branches branch;
 }
