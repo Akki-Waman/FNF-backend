@@ -274,6 +274,7 @@ public class TagsServiceImpl implements TagsService {
                     repository.searchTags(
                             dto.getQuery(),
                             dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 

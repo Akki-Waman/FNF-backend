@@ -328,6 +328,7 @@ public class ClientProductServiceImpl implements ClientProductService {
                     clientProductsRepository.searchClientProducts(
                             keyword,
                             requestDto.getIsActive(),
+                            requestDto.getBranchId(),
                             pageable
                     );
 
