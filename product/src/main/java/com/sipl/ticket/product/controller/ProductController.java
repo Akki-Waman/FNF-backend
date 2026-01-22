@@ -49,7 +49,7 @@ public interface ProductController {
             notes = "Provide the product ID to fetch the corresponding product details.",
             response = ProductDto.class)
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponseDTO<ProductDto>> getByProduct(@PathVariable Long productId);
+    public ResponseEntity<ApiResponseDTO<CombinedProductResponseDto>> getByProduct(@PathVariable Long productId);
 
     @ApiOperation(
             value = "Retrieve all product details",

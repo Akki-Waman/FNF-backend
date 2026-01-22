@@ -51,10 +51,10 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ProductDto>> getByProduct(Long productId) {
+    public ResponseEntity<ApiResponseDTO<CombinedProductResponseDto>> getByProduct(Long productId) {
         log.info("<<START>> getByProduct called <<START>>");
-        ApiResponseDTO<ProductDto> apiResponse = productService.getByProduct(productId);
-        ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
+        ApiResponseDTO<CombinedProductResponseDto> apiResponse = productService.getByProduct(productId);
+        ResponseEntity<ApiResponseDTO<CombinedProductResponseDto>> responseEntity =
                 new ResponseEntity<>(apiResponse, HttpStatus.OK);
         log.info("<<END>> getByProduct  <<END>>");
         return responseEntity;

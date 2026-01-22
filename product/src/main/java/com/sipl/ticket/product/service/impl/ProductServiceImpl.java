@@ -12,6 +12,7 @@ import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.CustomException;
 import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductMapper;
 import com.sipl.ticket.core.mapper.ProductUnitMapper;
@@ -505,47 +506,41 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ApiResponseDTO<ProductDto> getByProduct(Long productId) {
+    public ApiResponseDTO<CombinedProductResponseDto> getByProduct(Long productId) {
+        log.info("Get product request received. productId={}", productId);
         try {
-            Optional<Products> products = productRepository.findByProductId(productId);
-            if (!products.isPresent()) {
-                return new ApiResponseDTO<>(
-                        null,
-                        null,
-                        null,
-                        "Product not found",
-                        HttpStatus.NOT_FOUND,
-                        true,
-                        null,
-                        null
-                );
+            Products product = productRepository.findByProductId(productId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Product not found")
+                    );
+            ProductDto productDto = productMapper.toDto(product);
+            CombinedProductResponseDto combinedDto =
+                    new CombinedProductResponseDto();
+            combinedDto.setProductDto(productDto);
+            log.debug("Fetching product units for productId={}", productId);
+            List<ProductUnit> productUnits =
+                    productUnitRepository.findAllByProductId(productId);
+            if (productUnits != null && !productUnits.isEmpty()) {
+                List<ProductUnitDto> productUnitDtos =
+                        productUnitMapper.toProductUnitDtoList(productUnits);
+                combinedDto.setProductUnitDtoList(productUnitDtos);
             }
-            Products productsToSave = products.get();
-            ProductDto productToBeSent = productMapper.toDto(productsToSave);
-
+            log.info("Product fetched successfully with units. productId={}", productId);
             return new ApiResponseDTO<>(
-                    productToBeSent,
-                    null,
-                    null,
-                    "Product found successfully.",
-                    HttpStatus.FOUND,
-                    true,
-                    null,
-                    null
+                    combinedDto,
+                    "Product found successfully",
+                    HttpStatus.OK,
+                    false
             );
         } catch (Exception e) {
-            log.error("Exception occured at getByProduct. ", e);
+            log.error("Error occurred while fetching product. productId={}", productId, e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
-        return new ApiResponseDTO<>(
-                null,
-                null,
-                null,
-                "INTERNAL_SERVER_ERROR",
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                true,
-                null,
-                null
-        );
     }
 
     @Override
