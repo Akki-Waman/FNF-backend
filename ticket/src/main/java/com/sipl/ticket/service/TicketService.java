@@ -3,6 +3,7 @@ package com.sipl.ticket.service;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TicketStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,4 +33,6 @@ public interface TicketService {
     ApiResponseDTO<Long> getAllTicketIds();
 
     ApiResponseDTO<CombinedTicketNoteResponseDto> getByTicketId(Long ticketId);
+
+    ApiResponseDTO<TicketCombinedResponseDto> updateTicketStatus(TicketStatusRequestDTO ticketStatusRequestDTO);
 }

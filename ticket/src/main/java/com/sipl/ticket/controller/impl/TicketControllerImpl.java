@@ -4,6 +4,7 @@ import com.sipl.ticket.controller.TicketController;
 import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TicketStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
@@ -107,7 +108,18 @@ public class TicketControllerImpl implements TicketController {
                 ticketService.getByTicketId(ticketId);
         log.info("<<END>> getByTicketId controller");
 
-        return ResponseEntity.ok(response);    }
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<TicketCombinedResponseDto>> updateTicketStatus(TicketStatusRequestDTO ticketStatusRequestDTO) {
+        log.info("<<START>> updateTicketStatus controller");
+        ApiResponseDTO<TicketCombinedResponseDto> response =
+                ticketService.updateTicketStatus(ticketStatusRequestDTO);
+        log.info("<<END>> updateTicketStatus controller");
+
+        return ResponseEntity.ok(response);
+    }
 
 
 }

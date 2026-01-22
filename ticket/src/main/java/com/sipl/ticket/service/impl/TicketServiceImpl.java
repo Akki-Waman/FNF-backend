@@ -12,6 +12,7 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TicketExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.EmailUtil;
@@ -1019,6 +1020,59 @@ public class TicketServiceImpl implements TicketService {
             log.error("Unexpected error while fetching ticketId={}", ticketId, ex);
             return new ApiResponseDTO<>(null, "Internal Server Error",
                     HttpStatus.INTERNAL_SERVER_ERROR, true);
+        }
+    }
+
+    @Override
+    public ApiResponseDTO<TicketCombinedResponseDto> updateTicketStatus(
+            TicketStatusRequestDTO dto) {
+        log.info("Update ticket status request received. ticketId={}, status={}",
+                dto != null ? dto.getTicketId() : null,
+                dto != null ? dto.getStatus() : null
+        );
+        try {
+            log.debug("Fetching ticket. ticketId={}", dto.getTicketId());
+            Ticket ticket = ticketRepository.findById(dto.getTicketId())
+                    .orElseThrow(() -> {
+                        log.warn("Ticket not found. ticketId={}", dto.getTicketId());
+                        return new ResourceNotFoundException("Ticket not found");
+                    });
+            Integer oldStatus = ticket.getStatus();
+            log.debug("Loading ticket master maps");
+            Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
+            Map<Integer, String> statusMap   = masterService.getTicketStatusMap();
+            if (!statusMap.containsKey(dto.getStatus())) {
+                log.warn("Invalid status code received. status={}", dto.getStatus());
+                throw new IllegalArgumentException(
+                        "Invalid status code: " + dto.getStatus()
+                );
+            }
+            MasterContext masterContext =
+                    new MasterContext(priorityMap, statusMap);
+            log.info("Updating ticket status. ticketId={}, oldStatus={}, newStatus={}",
+                    dto.getTicketId(), oldStatus, dto.getStatus());
+            ticket.setStatus(dto.getStatus());
+            Ticket updatedTicket = ticketRepository.save(ticket);
+            TicketCombinedResponseDto responseDto =
+                    ticketMapper.toCombinedResponseDto(updatedTicket, masterContext);
+
+            log.info("Ticket status updated successfully. ticketId={}", dto.getTicketId());
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    "Ticket status updated successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception ex) {
+            log.error("Error occurred while updating ticket status. ticketId={}",
+                    dto != null ? dto.getTicketId() : null, ex);
+
+            throw new RuntimeException(
+                    "Failed to update ticket status",
+                    ex
+            );
         }
     }
 
