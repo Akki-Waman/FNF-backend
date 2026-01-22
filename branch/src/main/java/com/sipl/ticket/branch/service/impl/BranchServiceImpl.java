@@ -68,6 +68,7 @@ public class BranchServiceImpl implements BranchService {
             }
 
             branch.setIsActive(true);
+            branch.setIsDeleted(false);
             branch.setIsClient(false);
 
             Branches saved = repository.save(branch);

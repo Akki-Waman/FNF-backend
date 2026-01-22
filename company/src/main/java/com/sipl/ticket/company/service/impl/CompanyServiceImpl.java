@@ -269,7 +269,8 @@ public class CompanyServiceImpl implements CompanyService {
                     dto.getSize(),
                     dto.getSortBy(),
                     dto.getSortDir()
-            );
+
+                    );
             Page<Companies> pageResult =
                     repository.searchCompanies(
                             dto.getQuery(),

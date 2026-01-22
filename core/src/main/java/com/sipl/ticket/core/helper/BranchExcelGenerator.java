@@ -13,17 +13,14 @@ public class BranchExcelGenerator {
     public static void generateExcel(List<BranchDto> branches,
                                      HttpServletResponse response) throws Exception {
 
-        response.setContentType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader(
-                "Content-Disposition", "attachment; filename=branches.xlsx");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=branches.xlsx");
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Branches");
 
         int rowIndex = 0;
 
-        // 0 to 11 = total 12 columns
         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 11));
         rowIndex++;
 
@@ -66,8 +63,7 @@ public class BranchExcelGenerator {
         CellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setAlignment(HorizontalAlignment.LEFT);
         dateStyle.setDataFormat(
-                workbook.createDataFormat()
-                        .getFormat("dd-MM-yyyy HH:mm:ss"));
+                workbook.createDataFormat().getFormat("dd-MM-yyyy HH:mm:ss"));
         setBorders(dateStyle);
 
         for (BranchDto dto : branches) {
@@ -111,12 +107,13 @@ public class BranchExcelGenerator {
             c7.setCellStyle(dataStyle);
 
             Cell c8 = row.createCell(8);
-            c8.setCellValue(dto.getCreatedBy());
+            c8.setCellValue(dto.getCreatedBy() != null ? dto.getCreatedBy() : "");
             c8.setCellStyle(dataStyle);
 
             Cell c9 = row.createCell(9);
-            c9.setCellValue(dto.getModifiedBy());
+            c9.setCellValue(dto.getModifiedBy() != null ? dto.getModifiedBy() : "");
             c9.setCellStyle(dataStyle);
+
 
             Cell c10 = row.createCell(10);
             if (dto.getCreatedTime() != null) {
