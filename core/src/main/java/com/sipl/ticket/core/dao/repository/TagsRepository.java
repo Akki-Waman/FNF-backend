@@ -19,14 +19,17 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
 
     @Query(
             "SELECT t FROM Tags t " +
+                    "LEFT JOIN t.branch b " +
                     "WHERE t.isDelete = false " +
                     "AND ( :isActive IS NULL OR t.isActive = :isActive ) " +
+                    "AND ( :branchId IS NULL OR b.branchId = :branchId ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "      OR LOWER(t.tagName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Tags> searchTags(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("branchId") Integer branchId,
             Pageable pageable
     );
 

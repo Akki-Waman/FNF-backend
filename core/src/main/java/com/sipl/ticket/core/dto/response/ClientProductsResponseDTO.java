@@ -56,4 +56,7 @@ public class ClientProductsResponseDTO extends AuditDto{
 
     private Boolean isActive = true;
 
+    private Integer branchId;
+    private String branchName;
+
 }

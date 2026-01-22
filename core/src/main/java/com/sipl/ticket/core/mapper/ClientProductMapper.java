@@ -23,6 +23,7 @@ public interface ClientProductMapper {
     @Mapping(target = "division", ignore = true)
     @Mapping(target = "unit", ignore = true)
     @Mapping(target = "clientProductId", ignore = true)
+    @Mapping(target = "branch", ignore = true)
     ClientProducts toEntity(ClientProductsRequestDTO clientProductsRequestDTO);
 
     @Mapping(source = "products", target = "product")
@@ -31,6 +32,8 @@ public interface ClientProductMapper {
     @Mapping(source = "modifiedBy.userName", target = "modifiedBy")
     @Mapping(source = "createdTime", target = "createdTime")
     @Mapping(source = "modifiedTime", target = "modifiedTime")
+    @Mapping(target = "branchId", source = "branch.branchId")
+    @Mapping(target = "branchName", source = "branch.branchName")
     ClientProductsResponseDTO toDto(ClientProducts clientProducts);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

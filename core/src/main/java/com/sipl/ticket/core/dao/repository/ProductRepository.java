@@ -45,7 +45,7 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
     @Query(
             "SELECT p " +
                     "FROM Products p " +
-                    "WHERE p.isActive = true " +
+                    "WHERE p.isActive = true AND p.isDelete = false " +
 
                     "AND ( :branchId IS NULL OR p.branch.branchId = :branchId ) " +
 

@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,4 +31,9 @@ public class Tags extends AuditEntity {
 
     @Column(name = "is_delete")
     private Boolean isDelete = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    @JsonIgnore
+    private Branches branch;
 }

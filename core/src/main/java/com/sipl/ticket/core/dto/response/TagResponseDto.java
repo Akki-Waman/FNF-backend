@@ -17,4 +17,7 @@ public class TagResponseDto extends AuditDto {
 
     @NotNull(message = "Is active is required")
     private Boolean isActive;
+
+    private Integer branchId;
+    private String branchName;
 }

@@ -37,7 +37,9 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
                     "LEFT JOIN cp.zone z " +
                     "LEFT JOIN cp.division d " +
                     "LEFT JOIN cp.unit u " +
+                    "LEFT JOIN cp.branch b " +
                     "WHERE (:isActive IS NULL OR cp.isActive = :isActive) " +
+                    "AND (:branchId IS NULL OR b.branchId = :branchId) " +
                     "AND ( " +
                     "LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
                     "LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -58,6 +60,7 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
     Page<ClientProducts> searchClientProducts(
             @Param("keyword") String keyword,
             @Param("isActive") Boolean isActive,
+            @Param("branchId") Integer branchId,
             Pageable pageable
     );
 
