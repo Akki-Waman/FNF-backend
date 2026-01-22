@@ -12,6 +12,11 @@ public class ZoneResponseDTO extends AuditDto{
     private Long zoneId;
     private String zoneName;
     private RegionResponseDTO region;
+
+    private Long companyId;
+
+    private String companyName;
+
     private Boolean isActive = true;
 
 }

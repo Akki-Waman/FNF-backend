@@ -13,5 +13,9 @@ public class RegionResponseDTO extends AuditDto{
 
     private String regionName;
 
+    private Long companyId;
+
+    private String companyName;
+
     private Boolean isActive = true;
 }
