@@ -154,4 +154,7 @@ public class Ticket extends AuditEntity{
     @Column(name = "penalty_allowed")
     private Boolean penaltyAllowed;
 
+    @ManyToOne
+    @JoinColumn(name = "shift_id")
+    private Shift shift;
 }

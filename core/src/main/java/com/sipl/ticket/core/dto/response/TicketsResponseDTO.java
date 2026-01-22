@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dto.response;
 
+import com.sipl.ticket.core.dao.entity.Shift;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -53,4 +54,5 @@ public class TicketsResponseDTO extends AuditDto {
     private LocalDateTime resolutionDateTime;
 
     private Boolean penaltyAllowed;
+    private ShiftResponseDTO shift;
 }

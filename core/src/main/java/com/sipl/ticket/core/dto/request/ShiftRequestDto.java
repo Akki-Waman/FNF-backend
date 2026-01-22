@@ -1,6 +1,7 @@
 package com.sipl.ticket.core.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sipl.ticket.core.dao.entity.Branches;
 import lombok.*;
 import java.time.LocalTime;
 
@@ -19,4 +20,5 @@ public class ShiftRequestDto {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
     private Boolean isActive;
+    private Integer branchId;
 }

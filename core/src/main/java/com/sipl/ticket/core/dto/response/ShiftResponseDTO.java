@@ -21,6 +21,7 @@ public class ShiftResponseDTO extends AuditDto {
         private LocalTime endTime;
         private Boolean isActive;
         private Boolean isDeleted;
+        private BranchDto branch;
 }
 
 
