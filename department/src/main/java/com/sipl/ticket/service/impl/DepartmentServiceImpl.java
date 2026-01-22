@@ -1,7 +1,9 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Department;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
 import com.sipl.ticket.core.dto.request.DepartmentSearchRequestDto;
@@ -36,6 +38,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository repository;
     private final DepartmentMapper mapper;
+    private final BranchRepository branchRepository;
 
     @Override
     @CacheEvict(value = "departments", allEntries = true)
@@ -49,18 +52,33 @@ public class DepartmentServiceImpl implements DepartmentService {
         log.info("Saving department with name: {}", dto.getDepartmentName());
 
         try {
+            if (dto.getDepartmentName() == null || dto.getDepartmentName().isBlank()) {
+                return new ApiResponseDTO<>(null, "Department name is required", HttpStatus.BAD_REQUEST, true);
+            }
+
+            if (dto.getBranchId() == null) {
+                return new ApiResponseDTO<>(null, "Branch ID is required", HttpStatus.BAD_REQUEST, true);
+            }
+
             String name = dto.getDepartmentName().trim();
 
-            if (repository.existsByDepartmentNameIgnoreCase(name)) {
+            Integer branchId = dto.getBranchId().intValue();
+
+            Branches branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
+
+
+            if (repository.existsActiveDepartmentForBranch(name, branchId)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Department '" + name + "' already exists.",
+                        "Department '" + name + "' already exists ",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
             Department department = mapper.toEntity(dto);
+            department.setBranch(branch);
             department.setIsActive(true);
             department.setIsDelete(false);
 
@@ -304,6 +322,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                     repository.searchDepartments(
                             dto.getQuery(),
                             dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 

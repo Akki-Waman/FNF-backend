@@ -33,6 +33,9 @@ public class LocationRequestDTO {
 
     private Boolean isActive;
 
+    private Integer branchId;
+
+    private Integer branchName;
     //private Long plantId;
 
 

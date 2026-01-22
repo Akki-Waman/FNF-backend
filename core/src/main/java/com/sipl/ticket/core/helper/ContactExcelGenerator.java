@@ -42,8 +42,6 @@ public class ContactExcelGenerator {
                 "Contact Name",
                 "Email Address",
                 "Mobile No",
-                "Department ID",
-                "Department Name",
                 "Created By",
                 "Modified By",
                 "Created Time",
@@ -87,39 +85,30 @@ public class ContactExcelGenerator {
             c3.setCellValue(dto.getMobileNo());
             c3.setCellStyle(dataStyle);
 
-            Cell c4 = row.createCell(4);
-            c4.setCellValue(dto.getDepartmentId());
-            c4.setCellStyle(dataStyle);
-
-            Cell c5 = row.createCell(5);
-            c5.setCellValue(dto.getDepartmentName());
-            c5.setCellStyle(dataStyle);
-
             Cell c6 = row.createCell(6);
-            c6.setCellValue(
-                    dto.getAuditDto() != null ? dto.getAuditDto().getCreatedBy() : "");
+            c6.setCellValue(dto.getCreatedBy() != null ? dto.getCreatedBy() : "");
             c6.setCellStyle(dataStyle);
 
             Cell c7 = row.createCell(7);
-            c7.setCellValue(
-                    dto.getAuditDto() != null ? dto.getAuditDto().getModifiedBy() : "");
+            c7.setCellValue(dto.getModifiedBy() != null ? dto.getModifiedBy() : "");
             c7.setCellStyle(dataStyle);
 
             Cell c8 = row.createCell(8);
-            if (dto.getAuditDto() != null && dto.getAuditDto().getCreatedTime() != null) {
-                c8.setCellValue(dto.getAuditDto().getCreatedTime());
+            if (dto.getCreatedTime() != null) {
+                c8.setCellValue(dto.getCreatedTime());
                 c8.setCellStyle(dateStyle);
             } else {
                 c8.setCellStyle(dataStyle);
             }
 
             Cell c9 = row.createCell(9);
-            if (dto.getAuditDto() != null && dto.getAuditDto().getModifiedTime() != null) {
-                c9.setCellValue(dto.getAuditDto().getModifiedTime());
+            if (dto.getModifiedTime() != null) {
+                c9.setCellValue(dto.getModifiedTime());
                 c9.setCellStyle(dateStyle);
             } else {
                 c9.setCellStyle(dataStyle);
             }
+
         }
 
         sheet.setAutoFilter(new CellRangeAddress(

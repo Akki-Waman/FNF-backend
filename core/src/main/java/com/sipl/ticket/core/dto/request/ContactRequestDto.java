@@ -27,11 +27,9 @@ public class ContactRequestDto {
     )
     private String mobileNo;
 
-    private Long departmentId;
 
     private Boolean isActive;
 
-    private String departmentName;
 
     private Integer branchId;
     private String branchName;

@@ -11,7 +11,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-    boolean existsByDepartmentNameIgnoreCase(String departmentName);
+    @Query(
+            "SELECT CASE WHEN COUNT(d) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Department d " +
+                    "WHERE LOWER(d.departmentName) = LOWER(:departmentName) " +
+                    "AND d.branch.branchId = :branchId " +
+                    "AND d.isDelete = false"
+    )
+    boolean existsActiveDepartmentForBranch(
+            @Param("departmentName") String departmentName,
+            @Param("branchId") Integer branchId
+    );
 
     boolean existsByDepartmentNameIgnoreCaseAndDepartmentIdNot(
             String departmentName, Long departmentId
@@ -20,15 +30,18 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query(
             "SELECT d FROM Department d " +
                     "WHERE d.isDelete = false " +
+                    "AND ( :branchId IS NULL OR d.branch.branchId = :branchId ) " +
                     "AND ( :isActive IS NULL OR d.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
-                    "OR LOWER(d.departmentName) LIKE CONCAT('%', LOWER(:query), '%') )"
+                    "   OR LOWER(d.departmentName) LIKE CONCAT('%', LOWER(:query), '%') )"
     )
     Page<Department> searchDepartments(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("branchId") Integer branchId,
             Pageable pageable
     );
+
 
 
 

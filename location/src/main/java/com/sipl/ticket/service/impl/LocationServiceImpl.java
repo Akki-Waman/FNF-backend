@@ -1,7 +1,9 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Locations;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.LocationRepository;
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
 import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
@@ -36,7 +38,7 @@ public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository repository;
     private final LocationMapper mapper;
-
+private final BranchRepository branchRepository;
     @Override
     @CacheEvict(value = "locations", allEntries = true)
     @ActivityLoggable(
@@ -48,11 +50,14 @@ public class LocationServiceImpl implements LocationService {
 
         try {
             String name = dto.getLocationName().trim();
+            Integer branchId = dto.getBranchId().intValue();
+            Branches branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
 
-            if (repository.existsByLocationNameIgnoreCase(name)) {
+            if (repository.existsActiveLocationForBranch(name, branchId)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location '" + name + "' already exists",
+                        "Location '" + name + "' already exists ",
                         HttpStatus.CONFLICT,
                         true
                 );
@@ -60,11 +65,11 @@ public class LocationServiceImpl implements LocationService {
 
             Locations location = new Locations();
             location.setLocationName(name);
+            location.setBranch(branch);
             location.setIsActive(true);
             location.setIsDeleted(false);
 
             Locations saved = repository.save(location);
-
             return new ApiResponseDTO<>(
                     mapper.toDto(saved),
                     "Location created successfully",
@@ -291,6 +296,7 @@ public class LocationServiceImpl implements LocationService {
                     repository.searchLocations(
                             dto.getQuery(),
                             dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 
