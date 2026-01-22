@@ -30,4 +30,6 @@ public class BranchDto extends AuditDto{
     private CityResponseDto city;
 
     private Boolean isClient;
+
+    private Boolean isDeleted;
 }

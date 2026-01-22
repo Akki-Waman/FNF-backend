@@ -198,14 +198,6 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
-            if (Boolean.FALSE.equals(company.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
 
             company.setIsActive(false);
             company.setIsDeleted(true);
@@ -279,7 +271,8 @@ public class CompanyServiceImpl implements CompanyService {
                     dto.getSize(),
                     dto.getSortBy(),
                     dto.getSortDir()
-            );
+
+                    );
             Page<Companies> pageResult =
                     repository.searchCompanies(
                             dto.getQuery(),
