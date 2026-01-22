@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContactResponseDto {
+public class ContactResponseDto extends AuditDto {
 
     private Long contactId;
     private String contactName;
@@ -17,13 +17,9 @@ public class ContactResponseDto {
     private String mobileNo;
 
 
-    private Long departmentId;
-    private String departmentName;
-
     private Boolean isActive;
 
 
-    private AuditDto auditDto;
     private Integer branchId;
     private String branchName;
 }

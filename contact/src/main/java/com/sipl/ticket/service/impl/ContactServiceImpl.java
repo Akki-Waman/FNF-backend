@@ -1,8 +1,10 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Contact;
 import com.sipl.ticket.core.dao.entity.Department;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.ContactRepository;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
@@ -41,7 +43,7 @@ public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
     private final DepartmentRepository departmentRepository;
     private final ContactMapper contactMapper;
-
+    private final BranchRepository branchRepository;
 
 
     @Override
@@ -60,42 +62,29 @@ public class ContactServiceImpl implements ContactService {
         );
 
         try {
-            if (dto == null || dto.getContactName() == null || dto.getContactName().trim().isEmpty()) {
-                log.warn("Contact creation failed – contact name is missing");
+
+            String name = dto.getContactName().trim();
+
+            Integer branchId = dto.getBranchId().intValue();
+
+            Branches branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
+
+            if (contactRepository.existsActiveContactInDepartment(name, branchId)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Contact name is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Department department = departmentRepository.findById(dto.getDepartmentId())
-                    .orElse(null);
-
-            if (department == null) {
-                log.warn(
-                        "Contact creation failed – department not found [departmentId={}]",
-                        dto.getDepartmentId()
-                );
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department not found",
-                        HttpStatus.NOT_FOUND,
+                        "Contact '" + name + "' already exists",
+                        HttpStatus.CONFLICT,
                         true
                 );
             }
 
             Contact contact = contactMapper.toEntity(dto);
-            contact.setDepartment(department);
+            contact.setBranch(branch);
             contact.setIsActive(true);
             contact.setIsDelete(false);
 
             Contact saved = contactRepository.save(contact);
-            log.info(
-                    "Contact created successfully [id={}]",
-                    saved.getContactId()
-            );
 
             return new ApiResponseDTO<>(
                     contactMapper.toResponseDto(saved),
@@ -113,8 +102,8 @@ public class ContactServiceImpl implements ContactService {
                     true
             );
         }
-
     }
+
 
 
     @Override
@@ -127,36 +116,29 @@ public class ContactServiceImpl implements ContactService {
         Contact contact = contactRepository.findById(dto.getContactId())
                 .orElseThrow(() -> new ResourceNotFoundException("Contact"));
 
-        EntityStateValidator.checkNotDeleted(
-                contact.getIsDelete(),
-                "Contact",
-                contact.getContactName()
-        );
+        if (Boolean.TRUE.equals(contact.getIsDelete())) {
+            throw new IllegalStateException("Contact is deleted");
+        }
 
         boolean isUpdated = false;
 
-        if (dto.getDepartmentId() != null &&
-                (contact.getDepartment() == null ||
-                        !dto.getDepartmentId().equals(contact.getDepartment().getDepartmentId()))) {
-
-            Department department = departmentRepository.findById(dto.getDepartmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Department"));
-
-            contact.setDepartment(department);
+        if (dto.getContactName() != null && !dto.getContactName().isBlank()) {
+            contact.setContactName(dto.getContactName().trim());
             isUpdated = true;
         }
 
-        Contact beforeUpdate = new Contact();
-        BeanUtils.copyProperties(contact, beforeUpdate);
+        if (dto.getEmailAddress() != null && !dto.getEmailAddress().isBlank()) {
+            contact.setEmailAddress(dto.getEmailAddress().trim());
+            isUpdated = true;
+        }
 
-        contactMapper.partialUpdate(dto, contact);
+        if (dto.getMobileNo() != null && !dto.getMobileNo().isBlank()) {
+            contact.setMobileNo(dto.getMobileNo().trim());
+            isUpdated = true;
+        }
 
-        if (!Objects.equals(beforeUpdate.getContactName(), contact.getContactName()) ||
-                !Objects.equals(beforeUpdate.getEmailAddress(), contact.getEmailAddress()) ||
-                !Objects.equals(beforeUpdate.getMobileNo(), contact.getMobileNo()) ||
-                !Objects.equals(beforeUpdate.getIsActive(), contact.getIsActive()) ||
-                !Objects.equals(beforeUpdate.getIsDelete(), contact.getIsDelete())) {
-
+        if (dto.getIsActive() != null) {
+            contact.setIsActive(dto.getIsActive());
             isUpdated = true;
         }
 
@@ -377,7 +359,7 @@ public class ContactServiceImpl implements ContactService {
             Page<Contact> pageResult =
                     contactRepository.searchContacts(
                             dto.getContactId(),
-                            dto.getDepartmentId(),
+                            dto.getBranchId(),
                             dto.getQuery(),
                             dto.getIsActive(),
                             pageable

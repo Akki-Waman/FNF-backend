@@ -14,7 +14,18 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Locations, Long> {
 
-    boolean existsByLocationNameIgnoreCase(String locationName);
+    @Query(
+            "SELECT CASE WHEN COUNT(l) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Locations l " +
+                    "WHERE LOWER(l.locationName) = LOWER(:locationName) " +
+                    "AND l.branch.branchId = :branchId " +
+                    "AND l.isDeleted = false"
+    )
+    boolean existsActiveLocationForBranch(
+            @Param("locationName") String locationName,
+            @Param("branchId") Integer branchId   // Integer because Branch ID is Integer
+    );
+
 
     boolean existsByLocationNameIgnoreCaseAndLocationIdNot(
             String locationName, Long locationId
@@ -27,17 +38,21 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
     @Query(
             "SELECT l FROM Locations l " +
                     "WHERE l.isDeleted = false " +
+                    "AND ( :branchId IS NULL OR l.branch.branchId = :branchId ) " +
                     "AND ( :isActive IS NULL OR l.isActive = :isActive ) " +
                     "AND ( :query IS NULL OR :query = '' " +
                     "   OR LOWER(l.locationName) LIKE CONCAT('%', LOWER(:query), '%') " +
-                    "   OR CAST(l.id AS string) LIKE CONCAT('%', :query, '%') " +
+                    "   OR CAST(l.locationId AS string) LIKE CONCAT('%', :query, '%') " +
                     ")"
     )
     Page<Locations> searchLocations(
             @Param("query") String query,
             @Param("isActive") Boolean isActive,
+            @Param("branchId") Integer branchId,
             Pageable pageable
     );
+
+
 
     List<Locations> findAllByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
 }

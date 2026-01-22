@@ -38,13 +38,6 @@ public class Contact extends AuditEntity {
 //    )
 //    private Department department;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "department_id",
-            nullable = false
-    )
-    @JsonIgnore
-    private Department department;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
