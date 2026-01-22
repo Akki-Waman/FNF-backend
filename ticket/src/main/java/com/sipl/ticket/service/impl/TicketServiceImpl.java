@@ -137,7 +137,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.setLocation(location);
         List<Shift> shifts = shiftRepository.findByBranchId(branch.getBranchId());
         Shift shiftForTicket = getShiftForTicket(shifts);
-            ticket.setShift(shiftForTicket);
+        ticket.setShift(shiftForTicket);
         return ticketRepository.save(ticket);
     }
     private Shift getShiftForTicket(List<Shift> shifts) {
