@@ -25,9 +25,18 @@ public interface MastersRepository extends JpaRepository<Masters, Long> {
             @Param("tblName") String tblName,
             @Param("columnCode") Integer columnCode
     );
+    @Query("FROM Masters m WHERE m.columnCode = :columnCode AND m.columnValue = :columnValue")
+    Masters findByColumnCodeAndColumnValue(
+            @Param("columnCode") Integer columnCode,
+            @Param("columnValue") Integer columnValue
+    );
 
-    @Query("From Masters m where m.columnCode=?1 and m.columnValue=?2")
-    Masters findByColumnCodeAndColumnValue(Integer columnCode, Integer status);
+    @Query("FROM Masters m WHERE m.columnCode = :columnCode AND m.columnValue = :columnValue")
+    Optional<Masters> findByColumnCodeAndColumnValues(
+            @Param("columnCode") Integer columnCode,
+            @Param("columnValue") Integer columnValue
+    );
+
 
     @Query("From Masters m where m.columnCode=?1")
     List<Masters> findAllActiveStatuses(Integer columnCode);

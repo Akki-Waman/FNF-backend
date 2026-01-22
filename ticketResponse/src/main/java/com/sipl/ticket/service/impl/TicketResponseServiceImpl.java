@@ -56,6 +56,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final SettingRepository settingRepository;
     private final SlaProfileRepository slaProfileRepository;
     private final SlaRuleDetailsRepository slaRuleDetailsRepository;
+    private final MastersRepository mastersRepository;
 
     public static final Long SLA_TYPE_RESPONSE_ID = 1L;
 
@@ -131,8 +132,12 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             description = "Ticket response {0} created successfully"
     )
     private TicketResponse saveTicketResponse(TicketResponseRequestDTO dto) {
-
         validateTicketResponseRequest(dto);
+        Masters statusMaster = mastersRepository
+                .findByColumnCodeAndColumnValues(2, dto.getStatus())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid status code: " + dto.getStatus())
+                );
 
         Ticket ticket = getTicket(dto.getTicket());
 
@@ -142,8 +147,10 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         ticketResponse.setResponseType(dto.getResponseType());
         ticketResponse.setIsPublic(Boolean.TRUE.equals(dto.getIsPublic()));
         ticketResponse.setStatusBefore(dto.getStatusBefore());
-        ticketResponse.setStatusAfter(dto.getStatusAfter());
+        ticketResponse.setStatusAfter(statusMaster.getValueDesc());
         applyResponseSlaLogic(ticket);
+        ticket.setStatus(dto.getStatus());
+        ticketRepository.save(ticket);
 
         return ticketResponseRepository.save(ticketResponse);
     }
