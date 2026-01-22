@@ -54,16 +54,20 @@ public class ServiceServiceImpl implements ServiceService {
     public ApiResponseDTO<ServiceResponseDTO> saveService(ServiceRequestDto dto) {
 
         try {
-            if (repository.existsByServiceNameIgnoreCase(dto.getServiceName())) {
+
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+            if (repository.existsByServiceNameIgnoreCaseAndCompanyCompanyId(
+                    dto.getServiceName(), dto.getCompanyId())) {
+
                 return new ApiResponseDTO<>(
                         null,
-                        "Service with name already exists",
+                        "Service '" + dto.getServiceName() + "' already exists for this company",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
-            Companies company = companyRepository.findById(dto.getCompanyId())
-                    .orElseThrow(() -> new RuntimeException("Company not found"));
+
             ServiceEntity service = mapper.toEntity(dto);
             service.setCompany(company);
             service.setIsActive(true);

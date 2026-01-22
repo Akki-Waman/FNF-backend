@@ -16,6 +16,8 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     boolean existsByServiceNameIgnoreCaseAndServiceIdNot(
             String serviceName, Long serviceId
     );
+    boolean existsByServiceNameIgnoreCaseAndCompanyCompanyId(String serviceName, Long companyId);
+
 
     @Query(
             "SELECT s FROM ServiceEntity s " +
