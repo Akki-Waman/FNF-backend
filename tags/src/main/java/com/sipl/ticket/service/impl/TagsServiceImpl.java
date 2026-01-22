@@ -118,7 +118,7 @@ public class TagsServiceImpl implements TagsService {
         }
 
         tag.setTagName(name);
-
+        tag.setIsActive(dto.getIsActive());
         Tags updated = repository.save(tag);
 
         return new ApiResponseDTO<>(

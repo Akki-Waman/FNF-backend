@@ -198,8 +198,6 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
-
-            company.setIsActive(false);
             company.setIsDeleted(true);
             repository.save(company);
 

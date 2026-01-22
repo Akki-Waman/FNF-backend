@@ -242,8 +242,6 @@ public class BrandsServiceImpl implements BrandsService {
                         true
                 );
             }
-
-            brand.setIsActive(false);
             brand.setIsDeleted(true);
             repository.save(brand);
 

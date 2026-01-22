@@ -379,6 +379,7 @@ public class ContactServiceImpl implements ContactService {
                             dto.getContactId(),
                             dto.getDepartmentId(),
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 
