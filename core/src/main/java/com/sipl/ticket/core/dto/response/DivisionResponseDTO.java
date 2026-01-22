@@ -18,5 +18,9 @@ public class DivisionResponseDTO extends AuditDto{
 
     private ZoneResponseDTO zone;
 
+    private Long companyId;
+
+    private String companyName;
+
     private Boolean isActive = true;
 }

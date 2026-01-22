@@ -22,6 +22,10 @@ public class Region extends AuditEntity{
     @Column(name = "region_name", length = 100, nullable = false, unique = true)
     private String regionName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Companies company;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 }

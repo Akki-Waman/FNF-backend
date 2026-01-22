@@ -32,5 +32,9 @@ public class ServiceEntity extends AuditEntity {
     @Column(name = "is_delete",nullable = false)
     private Boolean isDelete = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Companies company;
+
 }
 

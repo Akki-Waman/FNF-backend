@@ -27,6 +27,10 @@ public class Divisions extends AuditEntity{
     @JoinColumn(name = "zone_id", nullable = false)
     private Zone zone;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Companies company;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 }

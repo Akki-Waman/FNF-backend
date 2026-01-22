@@ -26,6 +26,10 @@ public class Zone extends AuditEntity{
     @JoinColumn(name = "region_id", nullable = false)
     private Region region;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Companies company;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 }

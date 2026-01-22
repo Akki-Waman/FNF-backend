@@ -19,5 +19,9 @@ public class ServiceResponseDTO extends AuditDto {
 
     private Boolean isActive;
 
+    private Long companyId;
+
+    private String companyName;
+
 }
 
