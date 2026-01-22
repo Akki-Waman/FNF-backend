@@ -198,16 +198,6 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
-            if (Boolean.FALSE.equals(company.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            company.setIsActive(false);
             company.setIsDeleted(true);
             repository.save(company);
 
