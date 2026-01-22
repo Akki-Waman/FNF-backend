@@ -15,9 +15,10 @@ public class ShiftRequestDto {
     private Long shiftId;
     private String shiftName;
     private String description;
-    @JsonFormat(pattern = "HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime startTime;
-    @JsonFormat(pattern = "HH:mm")
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
     private LocalTime endTime;
     private Boolean isActive;
     private Integer branchId;

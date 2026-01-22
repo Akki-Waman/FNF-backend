@@ -17,6 +17,7 @@ import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ShiftService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -54,33 +55,12 @@ public class ShiftServiceImpl implements ShiftService {
         log.info("Saving shift with name: {}", dto.getShiftName());
 
         try {
-
-            String shiftname = dto.getShiftName().trim();
-
-            if (repository.existsByShiftNameIgnoreCaseAndIsActiveTrueAndIsDeletedFalse(shiftname)) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Shift '" + shiftname + "' already exists.",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            Shift shift = new Shift();
-            shift.setShiftName(shiftname);
-            shift.setDescription(dto.getDescription());
-            shift.setStartTime(dto.getStartTime());
-            shift.setEndTime(dto.getEndTime());
-            shift.setIsActive(true);
-            shift.setIsDeleted(false);
-            if(dto.getBranchId() !=null)
-            {
-                Branches branches=new Branches();
-                branches.setBranchId(dto.getBranchId());
-                shift.setBranch(branches);
-            }
+            ApiResponseDTO<ShiftResponseDTO> validationError = validateShiftRequest(dto);
+            if (validationError != null) return validationError;
+            ApiResponseDTO<ShiftResponseDTO> duplicateError = isDuplicateShift(dto);
+            if (duplicateError != null) return duplicateError;
+            Shift shift = buildShiftEntity(dto);
             Shift savedShift = repository.save(shift);
-
             return new ApiResponseDTO<>(
                     mapper.toResponseDto(savedShift),
                     "Shift created successfully",
@@ -98,6 +78,69 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+    private ApiResponseDTO<ShiftResponseDTO> validateShiftRequest(ShiftRequestDto dto) {
+        if (dto.getShiftName() == null || dto.getShiftName().trim().isEmpty()) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Shift name is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        if (dto.getBranchId() == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Branch is required to create shift",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        if (dto.getStartTime() == null || dto.getEndTime() == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Shift start time and end time are required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        return null;
+    }
+    private ApiResponseDTO<ShiftResponseDTO> isDuplicateShift(ShiftRequestDto dto) {
+        boolean exists = repository.existsByShiftNameIgnoreCaseAndBranch_BranchIdAndIsDeletedFalse(
+                dto.getShiftName().trim(),
+                dto.getBranchId()
+        );
+
+        if (exists) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Shift '" + dto.getShiftName().trim() + "' already exists in this branch.",
+                    HttpStatus.CONFLICT,
+                    true
+            );
+        }
+
+        return null;
+    }
+    private Shift buildShiftEntity(ShiftRequestDto dto) {
+        Shift shift = new Shift();
+        shift.setShiftName(dto.getShiftName().trim());
+        shift.setDescription(dto.getDescription());
+        shift.setStartTime(dto.getStartTime());
+        shift.setEndTime(dto.getEndTime());
+        shift.setIsActive(true);
+        shift.setIsDeleted(false);
+
+        Branches branch = new Branches();
+        branch.setBranchId(dto.getBranchId());
+        shift.setBranch(branch);
+
+        return shift;
+    }
+
 
     @Override
     @CacheEvict(value = "shifts", allEntries = true)
@@ -107,14 +150,13 @@ public class ShiftServiceImpl implements ShiftService {
             description = "Shift {0} updated successfully"
     )
     public ApiResponseDTO<ShiftResponseDTO> updateShift(ShiftRequestDto dto) {
-
         log.info("Updating shift, id={}, name={}",
                 dto != null ? dto.getShiftId() : null,
                 dto != null ? dto.getShiftName() : null
         );
 
         if (dto == null || dto.getShiftId() == null) {
-            throw new IllegalArgumentException("Shift ID is required");
+            return new ApiResponseDTO<>(null, "Shift ID is required", HttpStatus.BAD_REQUEST, true);
         }
 
         Shift shift = repository.findById(dto.getShiftId())
@@ -126,50 +168,17 @@ public class ShiftServiceImpl implements ShiftService {
                 shift.getShiftName()
         );
 
-        boolean isUpdated = false;
-
-        if (dto.getShiftName() != null && !dto.getShiftName().trim().isEmpty()) {
-
-            String name = dto.getShiftName().trim();
-
-            if (repository.existsByShiftNameAndIdNot(name,dto.getShiftId())) {
-                throw new IllegalStateException(
-                            "Shift '" + name + "' already exists"
-                );
-            }
-
-            shift.setShiftName(name);
-            isUpdated = true;
+        if(dto.getShiftName() != null && !dto.getShiftName().trim().isEmpty()) {
+            ApiResponseDTO<ShiftResponseDTO> duplicateError = checkDuplicateForUpdate(dto);
+            if(duplicateError != null) return duplicateError;
         }
 
-        if (dto.getDescription() != null) {
-            shift.setDescription(dto.getDescription());
-            isUpdated = true;
+        boolean isUpdated = updateFieldIfNotNull(shift, dto);
+
+        if(!isUpdated) {
+            return new ApiResponseDTO<>(null, "No fields provided to update", HttpStatus.BAD_REQUEST, true);
         }
 
-        if (dto.getStartTime() != null) {
-            shift.setStartTime(dto.getStartTime());
-            isUpdated = true;
-        }
-
-        if (dto.getEndTime() != null) {
-            shift.setEndTime(dto.getEndTime());
-            isUpdated = true;
-        }
-
-        if(dto.getBranchId() !=null)
-        {
-            Branches branches=new Branches();
-            branches.setBranchId(dto.getBranchId());
-            shift.setBranch(branches);
-            isUpdated = true;
-        }
-
-        if (!isUpdated) {
-            throw new IllegalArgumentException("No fields provided to update");
-        }
-
-        shift.setIsActive(dto.getIsActive());
         Shift updatedShift = repository.save(shift);
 
         return new ApiResponseDTO<>(
@@ -180,12 +189,72 @@ public class ShiftServiceImpl implements ShiftService {
         );
     }
 
+    private boolean updateFieldIfNotNull(Shift shift, ShiftRequestDto dto) {
+        boolean updated = false;
+
+        if(dto.getShiftName() != null && !dto.getShiftName().trim().isEmpty()) {
+            shift.setShiftName(dto.getShiftName().trim());
+            updated = true;
+        }
+
+        if(dto.getDescription() != null) {
+            shift.setDescription(dto.getDescription());
+            updated = true;
+        }
+
+        if(dto.getStartTime() != null) {
+            shift.setStartTime(dto.getStartTime());
+            updated = true;
+        }
+
+        if(dto.getEndTime() != null) {
+            shift.setEndTime(dto.getEndTime());
+            updated = true;
+        }
+
+        if(dto.getBranchId() != null) {
+            assignBranch(shift, dto.getBranchId());
+            updated = true;
+        }
+
+        if(dto.getIsActive() != null) {
+            shift.setIsActive(dto.getIsActive());
+            updated = true;
+        }
+
+        return updated;
+    }
+
+    private void assignBranch(Shift shift, Integer branchId) {
+        if(branchId != null) {
+            Branches branch = new Branches();
+            branch.setBranchId(branchId);
+            shift.setBranch(branch);
+        }
+    }
+
+    private ApiResponseDTO<ShiftResponseDTO> checkDuplicateForUpdate(ShiftRequestDto dto) {
+        boolean exists = repository.existsByShiftNameIgnoreCaseAndBranch_BranchIdAndShiftIdNotAndIsDeletedFalse(
+                dto.getShiftName().trim(),
+                dto.getBranchId(),
+                dto.getShiftId()
+        );
+
+        if (exists) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Shift '" + dto.getShiftName().trim() + "' already exists in this branch.",
+                    HttpStatus.CONFLICT,
+                    true
+            );
+        }
+        return null;
+    }
+
 
     @Override
     public ApiResponseDTO<ShiftResponseDTO> getById(Long id) {
-
         log.info("Fetching shift by id={}", id);
-
         try {
             return repository.findById(id)
                     .filter(s ->
@@ -330,9 +399,10 @@ public class ShiftServiceImpl implements ShiftService {
             );
 
             Page<Shift> pageResult =
-                    repository.findByShiftId(
+                    repository.searchShifts(
                             dto.getQuery(),
                             dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 
@@ -377,6 +447,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+
     @Override
     @Transactional(readOnly = true)
     public void downloadShiftsExcel(HttpServletResponse response) {
