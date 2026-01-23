@@ -59,7 +59,7 @@ public class TagsServiceImpl implements TagsService {
             if (repository.existsTagByNameAndBranch(name, dto.getBranchId())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Tag '" + name + "' already exists in this branch",
+                        "Tag '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
@@ -135,12 +135,8 @@ public class TagsServiceImpl implements TagsService {
                 tag.getTagId()
         )) {
             throw new IllegalStateException(
-                    "Tag '" + name + "' already exists in this branch"
+                    "Tag '" + name + "' already exists."
             );
-        }
-
-        if (repository.existsByTagNameIgnoreCaseAndTagIdNot(name, dto.getTagId())) {
-            throw new IllegalStateException("Tag '" + name + "' already exists");
         }
 
         tag.setTagName(name);
