@@ -46,6 +46,7 @@
         <module>report</module>
         <module>dashboard</module>
         <module>ticketNote</module>
+        <module>workflow</module>
 
     </modules>
 
@@ -337,6 +338,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>dashboard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>workflow</artifactId>
                 <version>${project.version}</version>
             </dependency>
 			<dependency>

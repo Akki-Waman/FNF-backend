@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import java.util.List;
 
 @Data
@@ -31,4 +32,6 @@ public class NewTicketsRequestDTO {
     private List<String> ccEmails;
     private String statusLabel;
     private String priorityLabel;
+    private Boolean isApproverRequired;
+    private Boolean isApproved;
 }

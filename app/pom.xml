@@ -223,6 +223,10 @@
             <artifactId>dashboard</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>workflow</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
