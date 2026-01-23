@@ -40,6 +40,7 @@ public class ClientProductServiceImpl implements ClientProductService {
     private final RegionRepository regionRepository;
     private final ZoneRepository zoneRepository;
     private final DivisionsRepository divisionsRepository;
+    private final BranchRepository branchRepository;
 
     @ActivityLoggable(
             action = "CREATE",
@@ -148,6 +149,17 @@ public class ClientProductServiceImpl implements ClientProductService {
             }
             entity.setUnit(optionalUnit.get());
         }
+        if (dto.getBranchId() != null) {
+            Optional<Branches> branchesOptional = branchRepository.findById(dto.getBranchId());
+            if (!branchesOptional.isPresent()) {
+                return new ApiResponseDTO<>(null,
+                        "Branch with ID " + dto.getBranchId() + " does not exist.",
+                        HttpStatus.BAD_REQUEST,
+                        true);
+            }
+            entity.setBranch(branchesOptional.get());
+        }
+
         return null;
     }
 
