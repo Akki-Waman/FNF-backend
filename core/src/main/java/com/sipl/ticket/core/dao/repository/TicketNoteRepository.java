@@ -16,6 +16,12 @@ public interface TicketNoteRepository extends JpaRepository<TicketNote, Long> {
     @Query("From TicketNote t WHERE t.ticket.ticketId= :ticketId")
     List<TicketNote> findByTicketId(@Param("ticketId")  Long ticketId);
 
-    Optional<TicketNote> findByTicket_TicketIdAndIsDeletedFalse(Long ticketId);
+    @Query(
+            "SELECT tn FROM TicketNote tn " +
+                    "WHERE tn.ticket.ticketId = :ticketId " +
+                    "AND tn.isDeleted = false"
+    )
+    Optional<TicketNote> findActiveByTicketId(@Param("ticketId") Long ticketId);
+
 }
 

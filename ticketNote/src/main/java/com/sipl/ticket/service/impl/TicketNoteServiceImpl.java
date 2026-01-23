@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -121,13 +123,19 @@ public class TicketNoteServiceImpl implements TicketNoteService {
         log.info("Get ticket note by ticketId request received. ticketId={}", ticketId);
         try {
             log.info("Fetching TicketNote for ticketId={}", ticketId);
-            TicketNote ticketNote = ticketNoteRepository
-                    .findByTicket_TicketIdAndIsDeletedFalse(ticketId)
-                    .orElseThrow(() -> {
-                        log.info("TicketNote not found for ticketId={}", ticketId);
-                        return new RuntimeException("Ticket note not found");
-                    });
-            TicketNoteResponseDTO responseDTO = ticketNoteMapper.toDto(ticketNote);
+            Optional<TicketNote> ticketNote =
+                    ticketNoteRepository.findActiveByTicketId(ticketId);
+
+            if (ticketNote.isEmpty()) {
+                log.info("TicketNote not found for ticketId={}", ticketId);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket note not found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+            TicketNoteResponseDTO responseDTO = ticketNoteMapper.toDto(ticketNote.get());
             log.info("Ticket note fetched successfully for ticketId={}", ticketId);
             return new ApiResponseDTO<>(
                     responseDTO,
@@ -151,17 +159,30 @@ public class TicketNoteServiceImpl implements TicketNoteService {
         log.info("Delete ticket note request received. ticketNoteId={}", ticketNoteId);
         try {
             log.info("Fetching TicketNote for delete. ticketNoteId={}", ticketNoteId);
-            TicketNote ticketNote = ticketNoteRepository
-                    .findById(ticketNoteId)
-                    .orElseThrow(() -> {
-                        log.info("TicketNote not found for delete. ticketNoteId={}", ticketNoteId);
-                        return new RuntimeException("Ticket note not found");
-                    });
-            EntityStateValidator.checkNotDeleted(
-                    ticketNote.getIsDeleted(),
-                    "Ticket Note",
-                    String.valueOf(ticketNote.getTicketNoteId())
-            );
+
+            Optional<TicketNote> ticketNoteOpt =
+                    ticketNoteRepository.findById(ticketNoteId);
+
+            if (ticketNoteOpt.isEmpty()) {
+                log.info("TicketNote not found. ticketNoteId={}", ticketNoteId);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket note not found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+            TicketNote ticketNote = ticketNoteOpt.get();
+
+            if (Boolean.TRUE.equals(ticketNote.getIsDeleted())) {
+                log.info("TicketNote already deleted. ticketNoteId={}", ticketNoteId);
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket note is already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
             ticketNote.setIsDeleted(true);
             log.info("Soft deleting TicketNote id={}", ticketNoteId);
             ticketNoteRepository.save(ticketNote);
