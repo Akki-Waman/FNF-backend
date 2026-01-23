@@ -353,16 +353,6 @@ public class CityServiceImpl implements CityService {
                         true
                 );
             }
-
-
-            if (Boolean.FALSE.equals(city.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "City already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
             city.setIsDeleted(true);
             repository.save(city);
 

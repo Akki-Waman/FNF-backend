@@ -62,7 +62,7 @@ public class StateServiceImpl implements StateService {
                 return new ApiResponseDTO<>(null, "Country not found", HttpStatus.NOT_FOUND, true);
             }
 
-            boolean exists = stateRepository.existsByStateNameIgnoreCase(stateName);
+            boolean exists = stateRepository.existsByStateNameAndCountry(stateName, countryId);
             if (exists) {
                 return new ApiResponseDTO<>(null,
                         "State '" + stateName + "' already exists",
