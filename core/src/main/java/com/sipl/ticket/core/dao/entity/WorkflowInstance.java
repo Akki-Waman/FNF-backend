@@ -32,6 +32,9 @@ public class WorkflowInstance extends AuditEntity{
     @JoinColumn(name = "current_step_id")
     private WorkflowSteps currentStep;
 
+    @ManyToOne
+    private Users assignedUser;
+
     @Column(name = "workflow_status")
     private Integer workFlowStatus;
 

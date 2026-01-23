@@ -18,6 +18,7 @@ public class WorkflowStepsDTO extends AuditDto{
     private Integer workFlowStepsId;
     private WorkFlowDefinitionDTO workflowDefinition;
     private Integer stepOrder;
+    private Integer assignmentMode;
     private String stepName;
     private Roles role;
     private BigDecimal minAmount;

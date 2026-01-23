@@ -17,12 +17,12 @@ public class WorkFlowDefinition extends AuditEntity{
     @Column(name = "work_flow_definition_id")
     private Integer workFlowDefinitionId;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "entity_type", nullable = false, length = 100)
+    @Column(name = "entity_type")
     private String entityType;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private Boolean isActive = true;
 }

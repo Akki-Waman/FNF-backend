@@ -26,6 +26,9 @@ public class WorkflowSteps extends AuditEntity{
 
     private String stepName;
 
+    @Column(name = "assignment_mode")
+    private Integer assignmentMode;
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Roles role;

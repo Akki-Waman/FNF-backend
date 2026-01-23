@@ -157,4 +157,10 @@ public class Ticket extends AuditEntity{
     @ManyToOne
     @JoinColumn(name = "shift_id")
     private Shift shift;
+
+    @Column(name = "is_approver_required")
+    private Boolean isApproverRequired = false;
+
+    @Column(name="is_approved")
+    private Boolean isApproved;
 }
