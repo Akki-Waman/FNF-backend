@@ -14,7 +14,19 @@ import java.util.Optional;
 @Repository
 public interface StateRepository extends JpaRepository<State, Long> {
 
-    boolean existsByStateNameIgnoreCase(String stateName);
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM State s " +
+                    "WHERE LOWER(s.stateName) = LOWER(:stateName) " +
+                    "AND s.country.countryId = :countryId "+
+            "AND s.isDeleted = false"
+    )
+    boolean existsByStateNameAndCountry(
+            @Param("stateName") String stateName,
+            @Param("countryId") Long countryId
+    );
+
+
     @Query(
             "SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
                     "FROM State s " +
