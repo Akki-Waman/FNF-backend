@@ -13,8 +13,15 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
 
     boolean existsByCountryNameIgnoreCase(String name);
 
-    boolean existsByCountryNameIgnoreCaseAndCountryIdNot(String name, Long countryId);
-
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END "+
+    "FROM Country c "+
+    "WHERE LOWER(c.countryName) = LOWER(:countryName) "+
+      "AND c.countryId <> :countryId "+
+      "AND c.isDeleted = false ")
+    boolean existsByCountryNameIgnoreCaseAndCountryIdNot(
+            @Param("countryName") String countryName,
+            @Param("countryId") Long countryId
+    );
 
     @Query("SELECT c FROM Country c WHERE c.isActive = true ORDER BY c.countryId DESC")
     Page<Country> findAllActive(Pageable pageable);
