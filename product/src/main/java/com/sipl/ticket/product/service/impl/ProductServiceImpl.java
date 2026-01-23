@@ -102,18 +102,6 @@ public class ProductServiceImpl implements ProductService {
                 );
 
             }
-            if (productRequestDto.getProductDto().getDefaultTaxHead() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        null,
-                        null,
-                        "GST slab cannot be null.",
-                        HttpStatus.BAD_REQUEST,
-                        true,
-                        null,
-                        null
-                );
-            }
             validateProductUnits(
                     productRequestDto.getProductUnitDtoList(), productRequestDto.getProductDto().getUnit());
             normalizeBooleanFields(productRequestDto);
