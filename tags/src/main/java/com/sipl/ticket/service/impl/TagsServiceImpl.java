@@ -1,7 +1,9 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Tags;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.TagsRepository;
 import com.sipl.ticket.core.dto.request.TagsRequestDto;
 import com.sipl.ticket.core.dto.request.TagsSearchRequestDto;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +42,7 @@ public class TagsServiceImpl implements TagsService {
 
     private final TagsRepository repository;
     private final TagsMapper mapper;
+    private final BranchRepository branchRepository;
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
@@ -52,16 +56,27 @@ public class TagsServiceImpl implements TagsService {
         try {
             String name = dto.getTagName().trim();
 
-            if (repository.existsByTagNameIgnoreCase(name)) {
+            if (repository.existsTagByNameAndBranch(name, dto.getBranchId())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Tag '" + name + "' already exists",
+                        "Tag '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
-
             Tags tag = new Tags();
+
+            Optional<Branches> branchesOpt = branchRepository.findById(dto.getBranchId());
+            if(!branchesOpt.isPresent()){
+                return new ApiResponseDTO<>(
+                        null,
+                        "Branch not found",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }else {
+              tag.setBranch(branchesOpt.get());
+            }
             tag.setTagName(name);
             tag.setIsActive(true);
             tag.setIsDelete(false);
@@ -112,9 +127,16 @@ public class TagsServiceImpl implements TagsService {
         }
 
         String name = dto.getTagName().trim();
+        Integer branchId = tag.getBranch().getBranchId();
 
-        if (repository.existsByTagNameIgnoreCaseAndTagIdNot(name, dto.getTagId())) {
-            throw new IllegalStateException("Tag '" + name + "' already exists");
+        if (repository.existsTagByNameAndBranchAndNotSameId(
+                name,
+                branchId,
+                tag.getTagId()
+        )) {
+            throw new IllegalStateException(
+                    "Tag '" + name + "' already exists."
+            );
         }
 
         tag.setTagName(name);

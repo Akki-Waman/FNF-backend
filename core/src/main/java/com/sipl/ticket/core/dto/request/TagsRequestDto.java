@@ -15,4 +15,6 @@ public class TagsRequestDto {
     private String tagName;
 
     private Boolean isActive;
+
+    private Integer branchId;
 }

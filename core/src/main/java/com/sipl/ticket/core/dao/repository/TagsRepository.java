@@ -11,7 +11,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TagsRepository extends JpaRepository<Tags, Long> {
 
-    boolean existsByTagNameIgnoreCase(String tagName);
+    @Query(
+            "select case when count(t) > 0 then true else false end " +
+                    "from Tags t " +
+                    "where lower(t.tagName) = lower(:tagName) " +
+                    "and t.branch.branchId = :branchId"
+    )
+    boolean existsTagByNameAndBranch(
+            @Param("tagName") String tagName,
+            @Param("branchId") Integer branchId
+    );
 
     boolean existsByTagNameIgnoreCaseAndTagIdNot(
             String tagName, Long tagId
@@ -33,5 +42,18 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
             Pageable pageable
     );
 
+    @Query(
+            "select case when count(t) > 0 then true else false end " +
+                    "from Tags t " +
+                    "where lower(t.tagName) = lower(:tagName) " +
+                    "and t.branch.branchId = :branchId " +
+                    "and t.tagId <> :tagId " +
+                    "and t.isDelete = false"
+    )
+    boolean existsTagByNameAndBranchAndNotSameId(
+            @Param("tagName") String tagName,
+            @Param("branchId") Integer branchId,
+            @Param("tagId") Long tagId
+    );
 
 }
