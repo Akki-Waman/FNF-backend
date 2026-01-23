@@ -57,7 +57,7 @@ public class ProductSubCategoryServiceImpl
         try {
             String name = dto.getProductSubCategoryName().trim();
 
-            if (repository.existsByProductSubCategoryNameIgnoreCase(name)) {
+            if (repository.existsActiveByName(name)) {
                 return new ApiResponseDTO<>(
                         null,
                         "Product sub category '" + name + "' already exists.",
@@ -252,6 +252,7 @@ public class ProductSubCategoryServiceImpl
                 );
             }
             subCategory.setIsDeleted(true);
+            subCategory.setIsActive(false);
             repository.save(subCategory);
 
             return new ApiResponseDTO<>(
