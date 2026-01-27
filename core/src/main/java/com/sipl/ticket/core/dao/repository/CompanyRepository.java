@@ -21,15 +21,29 @@ public interface CompanyRepository extends JpaRepository<Companies, Long> {
             "SELECT c " +
                     "FROM Companies c " +
                     "WHERE c.isDeleted = false " +
-                    "AND ( :isActive IS NULL OR c.isActive = :isActive ) " +
-                    "AND ( :search IS NULL OR :search = '' " +
-                    "   OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+                    "AND (:isActive IS NULL OR c.isActive = :isActive) " +
+
+                    "AND ( " +
+                    "   :branchId IS NULL " +
+                    "   OR c.companyId = ( " +
+                    "        SELECT b.company.companyId " +
+                    "        FROM Branches b " +
+                    "        WHERE b.branchId = :branchId " +
+                    "   ) " +
+                    ") " +
+
+                    "AND ( " +
+                    "   :search IS NULL OR :search = '' " +
+                    "   OR LOWER(c.companyName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    ")"
     )
     Page<Companies> searchCompanies(
             @Param("search") String search,
+            @Param("branchId") Integer branchId,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 
 
 }
