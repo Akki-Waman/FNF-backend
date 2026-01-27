@@ -266,6 +266,7 @@ public class BranchServiceImpl implements BranchService {
         );
         Page<Branches> pageResult = repository.searchBranches(
                 dto.getQuery(),
+                dto.getBranchId(),
                 dto.getIsActive(),
                 pageable
         );

@@ -22,22 +22,36 @@ public interface BranchRepository extends JpaRepository<Branches, Integer> {
             "SELECT b " +
                     "FROM Branches b " +
                     "WHERE b.isDeleted = false " +
-                    "AND ( :isActive IS NULL OR b.isActive = :isActive ) " +
-                    "AND ( :search IS NULL OR :search = '' " +
-                    "   OR CAST(b.branchId AS string) LIKE CONCAT('%', :search, '%') " +
+                    "AND (:isActive IS NULL OR b.isActive = :isActive) " +
+
+                    "AND ( " +
+                    "   :branchId IS NULL " +
+                    "   OR b.company.companyId = ( " +
+                    "        SELECT b2.company.companyId " +
+                    "        FROM Branches b2 " +
+                    "        WHERE b2.branchId = :branchId " +
+                    "   ) " +
+                    ") " +
+
+                    "AND ( " +
+                    "   :search IS NULL OR :search = '' " +
                     "   OR LOWER(b.branchName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(b.email) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(b.address) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(b.company.companyName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(b.country.countryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
                     "   OR LOWER(b.state.stateName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-                    "   OR LOWER(b.city.cityName) LIKE LOWER(CONCAT('%', :search, '%')) )"
+                    "   OR LOWER(b.city.cityName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    ")"
     )
     Page<Branches> searchBranches(
             @Param("search") String search,
+            @Param("branchId") Integer branchId,
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+
 
     @Query("from Branches b where b.branchId = :branchId")
     Optional<Branches> findByBranchId(@Param("branchId") Integer branchId);

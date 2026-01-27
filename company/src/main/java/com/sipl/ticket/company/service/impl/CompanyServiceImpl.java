@@ -274,6 +274,7 @@ public class CompanyServiceImpl implements CompanyService {
             Page<Companies> pageResult =
                     repository.searchCompanies(
                             dto.getQuery(),
+                            dto.getBranchId(),
                             dto.getIsActive(),
                             pageable
                     );
