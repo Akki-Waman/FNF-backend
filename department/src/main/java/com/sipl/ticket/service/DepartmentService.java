@@ -28,7 +28,7 @@ public interface DepartmentService {
             Long departmentId
     );
 
-    ApiResponseDTO<DepartmentResponseDTO> getAllDepartments();
+    ApiResponseDTO<DepartmentResponseDTO> getAllDepartments( Integer branchId);
 
     ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(
             DepartmentSearchRequestDto requestDto

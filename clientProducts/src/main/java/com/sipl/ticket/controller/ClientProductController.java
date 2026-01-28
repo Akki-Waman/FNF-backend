@@ -39,7 +39,9 @@ public interface ClientProductController {
     );
 
     @GetMapping(" ")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts();
+    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts(
+            @RequestParam(required = false) Integer branchId
+    );
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> searchClientProducts(

@@ -28,7 +28,7 @@ public interface ContactService {
             Long contactId
     );
 
-    ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts();
+    ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts(Integer branchId);
 
 
     ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(

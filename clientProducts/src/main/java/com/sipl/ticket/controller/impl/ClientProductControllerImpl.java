@@ -50,10 +50,10 @@ public class ClientProductControllerImpl implements ClientProductController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts() {
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts(Integer branchId) {
         log.info("<<Start>>getAllClientProducts endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> response =
-                ResponseEntity.ok(clientProductService.getAllClientProducts());
+                ResponseEntity.ok(clientProductService.getAllClientProducts(branchId));
         log.info("<<End>>getAllClientProducts endpoint called<<End>>");
         return response;
     }

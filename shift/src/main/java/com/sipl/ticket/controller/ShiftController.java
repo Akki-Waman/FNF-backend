@@ -45,7 +45,9 @@ public interface ShiftController {
             response = ShiftResponseDTO.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getAllShifts();
+    ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getAllShifts(
+            @RequestParam(required = false) Integer branchId
+    );
 
 
     @PostMapping("/search")

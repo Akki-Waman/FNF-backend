@@ -263,18 +263,23 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @Cacheable("departments")
-    public ApiResponseDTO<DepartmentResponseDTO> getAllDepartments() {
+    @Cacheable(value = "departments", key = "#branchId")
+    public ApiResponseDTO<DepartmentResponseDTO> getAllDepartments(Integer branchId) {
 
-        log.info("Fetching all active departments");
+        log.info("Fetching departments, branchId={}", branchId);
 
         try {
-            List<DepartmentResponseDTO> list = repository.findAll()
-                    .stream()
-                    .filter(d ->
-                            Boolean.TRUE.equals(d.getIsActive()) &&
-                                    Boolean.FALSE.equals(d.getIsDelete())
-                    )
+            List<Department> departments;
+
+            if (branchId != null) {
+                departments = repository
+                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(branchId);
+            } else {
+                departments = repository
+                        .findByIsActiveTrueAndIsDeleteFalse();
+            }
+
+            List<DepartmentResponseDTO> list = departments.stream()
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -305,6 +310,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<DepartmentResponseDTO>> searchDepartments(

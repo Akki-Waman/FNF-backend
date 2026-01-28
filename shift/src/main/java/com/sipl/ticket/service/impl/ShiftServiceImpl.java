@@ -343,29 +343,34 @@ public class ShiftServiceImpl implements ShiftService {
 
 
     @Override
-    @Cacheable("shifts")
-    public ApiResponseDTO<ShiftResponseDTO> getAllShifts() {
+    @Cacheable(value = "shifts", key = "#branchId")
+    public ApiResponseDTO<ShiftResponseDTO> getAllShifts(Integer branchId) {
 
-        log.info("Fetching all active shifts");
+        log.info("Fetching shifts, branchId={}", branchId);
 
         try {
-            List<ShiftResponseDTO> list = repository.findAll()
-                    .stream()
-                    .filter(s ->
-                            Boolean.TRUE.equals(s.getIsActive())
-                                    && Boolean.FALSE.equals(s.getIsDeleted())
-                    )
-                    .map(mapper::toResponseDto)
-                    .collect(Collectors.toList());
+            List<Shift> shifts;
 
-            if (list.isEmpty()) {
+            if (branchId != null) {
+                shifts = repository
+                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalse(branchId);
+            } else {
+                shifts = repository
+                        .findByIsActiveTrueAndIsDeletedFalse();
+            }
+
+            if (shifts.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No shifts found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
+
+            List<ShiftResponseDTO> list = shifts.stream()
+                    .map(mapper::toResponseDto)
+                    .collect(Collectors.toList());
 
             return new ApiResponseDTO<>(
                     list,
@@ -385,6 +390,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(

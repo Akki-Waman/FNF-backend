@@ -76,12 +76,12 @@ public class DepartmentControllerImpl implements DepartmentController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments() {
+    public ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments( Integer branchId) {
 
         log.info("<<Start>> getAllDepartments <<Start>>");
 
         ApiResponseDTO<DepartmentResponseDTO> response =
-                departmentService.getAllDepartments();
+                departmentService.getAllDepartments(branchId);
 
         log.info("<<End>> getAllDepartments <<End>>");
 

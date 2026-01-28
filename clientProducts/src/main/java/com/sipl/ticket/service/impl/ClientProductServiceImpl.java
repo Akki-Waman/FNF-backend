@@ -270,20 +270,35 @@ public class ClientProductServiceImpl implements ClientProductService {
     }
 
     @Override
-    public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts() {
-        log.info("<<Start>> getAllClientProducts endpoint called <<Start>>");
+    public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts(
+            Integer branchId
+    ) {
+
+        log.info("Fetching client products, branchId={}", branchId);
+
         try {
-            List<ClientProducts> list = clientProductsRepository.findByIsActiveTrueOrderByDeviceNameAsc();
-            if (list.isEmpty()) {
+            List<ClientProducts> products;
+
+            if (branchId != null) {
+                products = clientProductsRepository
+                        .findByBranch_BranchIdAndIsActiveTrueOrderByDeviceNameAsc(branchId);
+            } else {
+                products = clientProductsRepository
+                        .findByIsActiveTrueOrderByDeviceNameAsc();
+            }
+
+            if (products.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No client products found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,   // ✅ NOT_FOUND टाळला
+                        false
                 );
             }
+
             List<ClientProductsResponseDTO> response =
-                    clientProductMapper.toDtoList(list);
+                    clientProductMapper.toDtoList(products);
+
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
                             response,
@@ -297,6 +312,7 @@ public class ClientProductServiceImpl implements ClientProductService {
                     HttpStatus.OK,
                     false
             );
+
         } catch (Exception e) {
             log.error("getAllClientProducts unexpected error", e);
             return new ApiResponseDTO<>(
@@ -305,10 +321,9 @@ public class ClientProductServiceImpl implements ClientProductService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
-        } finally {
-            log.info("<<End>> getAllClientProducts endpoint called <<End>>");
         }
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(

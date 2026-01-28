@@ -67,5 +67,9 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
             @Param("branchId") Integer branchId
     );
 
+    List<Contact> findByIsActiveTrueAndIsDeleteFalse();
 
+    List<Contact> findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(
+            Integer branchId
+    );
 }

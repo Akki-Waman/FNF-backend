@@ -78,5 +78,8 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
     )
     Optional<ClientProducts> findActiveById(@Param("id") Long id);
 
+    List<ClientProducts> findByBranch_BranchIdAndIsActiveTrueOrderByDeviceNameAsc(
+            Integer branchId
+    );
 
 }

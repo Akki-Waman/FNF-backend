@@ -70,12 +70,12 @@ public class ShiftControllerImpl implements ShiftController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getAllShifts() {
+    public ResponseEntity<ApiResponseDTO<ShiftResponseDTO>> getAllShifts(Integer branchId) {
 
         log.info("<<Start>> getAllShifts called <<Start>>");
 
         ApiResponseDTO<ShiftResponseDTO> response =
-                shiftService.getAllShifts();
+                shiftService.getAllShifts(branchId);
 
         log.info("<<End>> getAllShifts endpoint called <<End>>");
 
