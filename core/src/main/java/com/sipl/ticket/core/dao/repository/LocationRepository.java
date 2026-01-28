@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.xml.stream.Location;
 import java.util.List;
 
 @Repository
@@ -52,7 +53,10 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             Pageable pageable
     );
 
+    List<Locations> findByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
 
+    List<Locations> findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc(
+            Integer branchId
+    );
 
-    List<Locations> findAllByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
 }

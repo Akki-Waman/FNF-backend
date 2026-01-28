@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.Location;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -234,34 +235,53 @@ private final BranchRepository branchRepository;
             );
         }
     }
-
     @Override
     @Cacheable("locations")
-    public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations() {
+    public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations(
+            Integer branchId
+    ) {
+
+        log.info("Fetching locations, branchId={}", branchId);
 
         try {
-            List<LocationResponseDTO> list =
-                    repository.findAllByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc()
-                            .stream()
-                            .map(mapper::toDto)
-                            .collect(Collectors.toList());
+            List<Locations> locations;
 
-            if (list.isEmpty()) {
+            if (branchId != null) {
+                locations = repository
+                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc(
+                                branchId
+                        );
+            } else {
+                locations = repository
+                        .findByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
+            }
+
+            if (locations.isEmpty()) {
+                log.warn("No locations found");
+
                 return new ApiResponseDTO<>(
                         null,
                         "No locations found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
 
+            List<LocationResponseDTO> response =
+                    mapper.mapLocationsListToDtoList(locations);
+
+            log.info(
+                    "Locations fetched successfully, totalRecords={}",
+                    response.size()
+            );
+
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
-                            list,
+                            response,
                             0,
-                            list.size(),
+                            response.size(),
                             1,
-                            list.size(),
+                            response.size(),
                             true
                     ),
                     "Locations fetched successfully",
@@ -270,7 +290,8 @@ private final BranchRepository branchRepository;
             );
 
         } catch (Exception e) {
-            log.error("getAllLocations error", e);
+            log.error("Unexpected error while fetching locations", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

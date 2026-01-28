@@ -21,9 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -239,20 +237,26 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @Cacheable("tags")
-    public ApiResponseDTO<TagResponseDto> getAllTags() {
+    public ApiResponseDTO<TagResponseDto> getAllTags(
+            Integer branchId
+    ) {
+
+        log.info("Fetching tags, branchId={}", branchId);
 
         try {
-            List<TagResponseDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.ASC, "tagName"))
-                    .stream()
-                    .filter(t ->
-                            Boolean.TRUE.equals(t.getIsActive()) &&
-                                    Boolean.FALSE.equals(t.getIsDelete())
-                    )
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<Tags> tags;
 
-            if (list.isEmpty()) {
+            if (branchId != null) {
+                tags = repository
+                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc(
+                                branchId
+                        );
+            } else {
+                tags = repository
+                        .findByIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc();
+            }
+
+            if (tags.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No tags found",
@@ -261,8 +265,11 @@ public class TagsServiceImpl implements TagsService {
                 );
             }
 
+            List<TagResponseDto> response =
+                    mapper.mapTagsListToDtoList(tags);
+
             return new ApiResponseDTO<>(
-                    list,
+                    response,
                     HttpStatus.OK,
                     "Tags fetched successfully",
                     false,
@@ -271,6 +278,7 @@ public class TagsServiceImpl implements TagsService {
 
         } catch (Exception e) {
             log.error("getAllTags error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

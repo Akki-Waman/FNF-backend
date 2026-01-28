@@ -28,7 +28,7 @@ public interface TagsService {
             Long tagId
     );
 
-    ApiResponseDTO<TagResponseDto> getAllTags();
+    ApiResponseDTO<TagResponseDto> getAllTags(Integer branchId);
 
     ApiResponseDTO<PagedResponse<TagResponseDto>> searchTags(
             TagsSearchRequestDto requestDto
