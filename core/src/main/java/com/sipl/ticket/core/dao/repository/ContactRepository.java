@@ -67,9 +67,14 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
             @Param("branchId") Integer branchId
     );
 
-    List<Contact> findByIsActiveTrueAndIsDeleteFalse();
-
-    List<Contact> findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(
-            Integer branchId
+    @Query(
+            "SELECT c FROM Contact c " +
+                    "WHERE c.isDelete = false " +
+                    "AND (:branchId IS NULL OR c.branch.branchId = :branchId) " +
+                    "ORDER BY c.contactName ASC"
+    )
+    List<Contact> findContacts(
+            @Param("branchId") Integer branchId
     );
+
 }

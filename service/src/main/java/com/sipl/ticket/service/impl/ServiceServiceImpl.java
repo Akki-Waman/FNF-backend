@@ -262,28 +262,29 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "services")
-    public ApiResponseDTO<ServiceResponseDTO> getAllServices() {
+    @Cacheable(
+            value = "services",
+            key = "#companyId != null ? #companyId : 'ALL'"
+    )
+    public ApiResponseDTO<ServiceResponseDTO> getAllServices(Long companyId) {
+
+        log.info("Fetching services, companyId={}", companyId);
 
         try {
-            List<ServiceResponseDTO> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "serviceId"))
-                    .stream()
-                    .filter(s ->
-                            Boolean.TRUE.equals(s.getIsActive()) &&
-                                    Boolean.FALSE.equals(s.getIsDelete())
-                    )
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<ServiceEntity> services =
+                    repository.findServices(companyId);
 
-            if (list.isEmpty()) {
+            if (services.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No services found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
+
+            List<ServiceResponseDTO> list =
+                    mapper.mapServicesListToDtoList(services);
 
             return new ApiResponseDTO<>(
                     list,
@@ -294,7 +295,9 @@ public class ServiceServiceImpl implements ServiceService {
             );
 
         } catch (Exception e) {
+
             log.error("getAllServices error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -303,6 +306,8 @@ public class ServiceServiceImpl implements ServiceService {
             );
         }
     }
+
+
 
     @Override
     @CacheEvict(value = "services", allEntries = true)

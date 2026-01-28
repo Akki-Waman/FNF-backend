@@ -278,15 +278,8 @@ public class ContactServiceImpl implements ContactService {
         log.info("Fetching contacts, branchId={}", branchId);
 
         try {
-            List<Contact> contacts;
-
-            if (branchId != null) {
-                contacts = contactRepository
-                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(branchId);
-            } else {
-                contacts = contactRepository
-                        .findByIsActiveTrueAndIsDeleteFalse();
-            }
+            List<Contact> contacts =
+                    contactRepository.findContacts(branchId);
 
             if (contacts.isEmpty()) {
                 log.warn("No contacts found");
@@ -332,6 +325,7 @@ public class ContactServiceImpl implements ContactService {
             );
         }
     }
+
 
 
     @Override

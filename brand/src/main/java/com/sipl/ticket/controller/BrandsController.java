@@ -41,10 +41,13 @@ public interface BrandsController {
     @ApiOperation(
             value = "Get all brands",
             notes = "Fetch all active brands",
-            response = BrandDto.class
+            response = ApiResponseDTO.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands();
+    ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands(
+            @RequestParam(required = false) Long companyId
+
+    );
 
     @ApiOperation(
             value = "Search brands",
