@@ -291,7 +291,7 @@ public class ClientProductServiceImpl implements ClientProductService {
                 return new ApiResponseDTO<>(
                         null,
                         "No client products found",
-                        HttpStatus.OK,   // ✅ NOT_FOUND टाळला
+                        HttpStatus.OK,
                         false
                 );
             }
