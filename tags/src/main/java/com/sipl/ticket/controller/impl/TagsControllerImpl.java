@@ -77,12 +77,12 @@ public class TagsControllerImpl implements TagsController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<TagResponseDto>> getAllTags() {
+    public ResponseEntity<ApiResponseDTO<TagResponseDto>> getAllTags(Integer branchId) {
 
         log.info("<<Start>> getAllTags endpoint called <<Start>>");
 
         ApiResponseDTO<TagResponseDto> response =
-                tagsService.getAllTags();
+                tagsService.getAllTags(branchId);
 
         log.info("<<End>> getAllTags endpoint called <<End>>");
 

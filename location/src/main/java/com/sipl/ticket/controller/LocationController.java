@@ -38,7 +38,7 @@ public interface LocationController {
     );
 
     @GetMapping(" ")
-    ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations();
+    ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations(@RequestParam(required = false) Integer branchId);
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> searchLocations(

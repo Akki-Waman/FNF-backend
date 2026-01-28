@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
@@ -82,13 +83,13 @@ public class LocationControllerImpl implements LocationController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations() {
+    public ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> getAllLocations(Integer branchId) {
 
         log.info("<<Start>>getAllLocations endpoint called<<Start>>");
 
         ResponseEntity<ApiResponseDTO<PagedResponse<LocationResponseDTO>>> response =
                 ResponseEntity.ok(
-                        locationService.getAllLocations()
+                        locationService.getAllLocations(branchId)
                 );
 
         log.info("<<End>>getAllLocations endpoint called<<End>>");

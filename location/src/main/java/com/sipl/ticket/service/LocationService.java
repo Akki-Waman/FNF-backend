@@ -6,6 +6,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -33,7 +34,7 @@ public interface LocationService {
     );
 
     /* ===================== GET ALL ===================== */
-    ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations();
+    ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations(Integer branchId);
 
     ApiResponseDTO<PagedResponse<LocationResponseDTO>> searchLocations(
             LocationSearchRequestDTO requestDto

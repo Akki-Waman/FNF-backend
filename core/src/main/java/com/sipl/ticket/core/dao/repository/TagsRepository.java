@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TagsRepository extends JpaRepository<Tags, Long> {
 
@@ -54,6 +56,17 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
             @Param("tagName") String tagName,
             @Param("branchId") Integer branchId,
             @Param("tagId") Long tagId
+    );
+
+    @Query(
+                    "select t from Tags t " +
+                    "where t.isActive = true " +
+                    "and t.isDelete = false " +
+                    "and ( :branchId is null or t.branch.branchId = :branchId ) " +
+                    "order by t.tagName asc"
+    )
+    List<Tags> findAllActiveTags(
+            @Param("branchId") Integer branchId
     );
 
 }
