@@ -244,21 +244,10 @@ private final BranchRepository branchRepository;
         log.info("Fetching locations, branchId={}", branchId);
 
         try {
-            List<Locations> locations;
-
-            if (branchId != null) {
-                locations = repository
-                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc(
-                                branchId
-                        );
-            } else {
-                locations = repository
-                        .findByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
-            }
+            List<Locations> locations =
+                    repository.findActiveLocationsByBranch(branchId);
 
             if (locations.isEmpty()) {
-                log.warn("No locations found");
-
                 return new ApiResponseDTO<>(
                         null,
                         "No locations found",
@@ -269,11 +258,6 @@ private final BranchRepository branchRepository;
 
             List<LocationResponseDTO> response =
                     mapper.mapLocationsListToDtoList(locations);
-
-            log.info(
-                    "Locations fetched successfully, totalRecords={}",
-                    response.size()
-            );
 
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
@@ -291,7 +275,6 @@ private final BranchRepository branchRepository;
 
         } catch (Exception e) {
             log.error("Unexpected error while fetching locations", e);
-
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",

@@ -244,17 +244,8 @@ public class TagsServiceImpl implements TagsService {
         log.info("Fetching tags, branchId={}", branchId);
 
         try {
-            List<Tags> tags;
-
-            if (branchId != null) {
-                tags = repository
-                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc(
-                                branchId
-                        );
-            } else {
-                tags = repository
-                        .findByIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc();
-            }
+            List<Tags> tags =
+                    repository.findAllActiveTags(branchId);
 
             if (tags.isEmpty()) {
                 return new ApiResponseDTO<>(

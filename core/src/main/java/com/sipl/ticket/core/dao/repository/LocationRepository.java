@@ -53,10 +53,15 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             Pageable pageable
     );
 
-    List<Locations> findByIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc();
-
-    List<Locations> findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalseOrderByLocationNameAsc(
-            Integer branchId
+    @Query(
+                    "select l from Locations l " +
+                    "where l.isActive = true " +
+                    "and l.isDeleted = false " +
+                    "and ( :branchId is null or l.branch.branchId = :branchId ) " +
+                    "order by l.locationName asc"
+    )
+    List<Locations> findActiveLocationsByBranch(
+            @Param("branchId") Integer branchId
     );
 
 }

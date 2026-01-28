@@ -58,10 +58,15 @@ public interface TagsRepository extends JpaRepository<Tags, Long> {
             @Param("tagId") Long tagId
     );
 
-    List<Tags> findByIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc();
-
-    List<Tags> findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalseOrderByTagNameAsc(
-            Integer branchId
+    @Query(
+                    "select t from Tags t " +
+                    "where t.isActive = true " +
+                    "and t.isDelete = false " +
+                    "and ( :branchId is null or t.branch.branchId = :branchId ) " +
+                    "order by t.tagName asc"
+    )
+    List<Tags> findAllActiveTags(
+            @Param("branchId") Integer branchId
     );
 
 }
