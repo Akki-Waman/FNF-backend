@@ -54,6 +54,16 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
     );
 
 
+    @Query(
+            "SELECT b FROM Brands b " +
+                    "WHERE b.isDeleted = false " +
+                    "AND (:companyId IS NULL OR b.company.companyId = :companyId) " +
+                    "ORDER BY b.brandName ASC"
+    )
+    List<Brands> findBrands(
+            @Param("companyId") Long companyId
+    );
+
 
 
 }

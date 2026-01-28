@@ -20,4 +20,14 @@ public interface ZoneRepository extends JpaRepository<Zone, Long> {
 
     @Query("SELECT z FROM Zone z WHERE z.region.regionId = :regionId AND z.isActive = true")
     List<Zone> findByRegionId(@Param("regionId") Long regionId);
+
+    @Query(
+            "SELECT z FROM Zone z " +
+                    "WHERE (:companyId IS NULL OR z.company.companyId = :companyId) " +
+                    "ORDER BY z.zoneName ASC"
+    )
+    List<Zone> findZones(
+            @Param("companyId") Long companyId
+    );
+
 }

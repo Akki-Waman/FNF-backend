@@ -343,21 +343,17 @@ public class ShiftServiceImpl implements ShiftService {
 
 
     @Override
-    @Cacheable(value = "shifts", key = "#branchId")
+    @Cacheable(
+            value = "shifts",
+            key = "#branchId != null ? #branchId : 'ALL'"
+    )
     public ApiResponseDTO<ShiftResponseDTO> getAllShifts(Integer branchId) {
 
         log.info("Fetching shifts, branchId={}", branchId);
 
         try {
-            List<Shift> shifts;
-
-            if (branchId != null) {
-                shifts = repository
-                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalse(branchId);
-            } else {
-                shifts = repository
-                        .findByIsActiveTrueAndIsDeletedFalse();
-            }
+            List<Shift> shifts =
+                    repository.findShifts(branchId);
 
             if (shifts.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -382,6 +378,7 @@ public class ShiftServiceImpl implements ShiftService {
 
         } catch (Exception e) {
             log.error("getAllShifts unexpected error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -390,6 +387,7 @@ public class ShiftServiceImpl implements ShiftService {
             );
         }
     }
+
 
 
     @Override

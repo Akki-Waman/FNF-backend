@@ -277,15 +277,8 @@ public class ClientProductServiceImpl implements ClientProductService {
         log.info("Fetching client products, branchId={}", branchId);
 
         try {
-            List<ClientProducts> products;
-
-            if (branchId != null) {
-                products = clientProductsRepository
-                        .findByBranch_BranchIdAndIsActiveTrueOrderByDeviceNameAsc(branchId);
-            } else {
-                products = clientProductsRepository
-                        .findByIsActiveTrueOrderByDeviceNameAsc();
-            }
+            List<ClientProducts> products =
+                    clientProductsRepository.findClientProducts(branchId);
 
             if (products.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -315,6 +308,7 @@ public class ClientProductServiceImpl implements ClientProductService {
 
         } catch (Exception e) {
             log.error("getAllClientProducts unexpected error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -323,6 +317,7 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
+
 
 
     @Override

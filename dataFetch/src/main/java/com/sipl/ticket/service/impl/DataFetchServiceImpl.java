@@ -37,10 +37,15 @@ public class DataFetchServiceImpl implements DataFetchService {
 
 
     @Override
-    public ApiResponseDTO<RegionResponseDTO> getAllRegions() {
+    public ApiResponseDTO<RegionResponseDTO> getAllRegions(Long companyId) {
+
         try {
-            List<Region> regions = regionRepository.findByIsActiveTrue();
-            List<RegionResponseDTO> regionDtos = regionMapper.mapRegionListToDtoList(regions);
+            List<Region> regions =
+                    regionRepository.findRegions(companyId);
+
+            List<RegionResponseDTO> regionDtos =
+                    regionMapper.mapRegionListToDtoList(regions);
+
             return new ApiResponseDTO<>(
                     null,
                     regionDtos,
@@ -54,6 +59,7 @@ public class DataFetchServiceImpl implements DataFetchService {
 
         } catch (Exception ex) {
             log.error("Error while fetching regions", ex);
+
             return new ApiResponseDTO<>(
                     null,
                     ex.getMessage(),
@@ -63,11 +69,17 @@ public class DataFetchServiceImpl implements DataFetchService {
         }
     }
 
+
     @Override
-    public ApiResponseDTO<ZoneResponseDTO> getAllZones() {
+    public ApiResponseDTO<ZoneResponseDTO> getAllZones(Long companyId) {
+
         try {
-            List<Zone> zones = zoneRepository.findByIsActiveTrue();
-            List<ZoneResponseDTO> zoneDtos = zoneMapper.mapZoneListToDtoList(zones);
+            List<Zone> zones =
+                    zoneRepository.findZones(companyId);
+
+            List<ZoneResponseDTO> zoneDtos =
+                    zoneMapper.mapZoneListToDtoList(zones);
+
             return new ApiResponseDTO<>(
                     null,
                     zoneDtos,
@@ -81,6 +93,7 @@ public class DataFetchServiceImpl implements DataFetchService {
 
         } catch (Exception ex) {
             log.error("Error while fetching Zones", ex);
+
             return new ApiResponseDTO<>(
                     null,
                     ex.getMessage(),
@@ -90,11 +103,17 @@ public class DataFetchServiceImpl implements DataFetchService {
         }
     }
 
+
     @Override
-    public ApiResponseDTO<DivisionResponseDTO> getAllDivisions() {
+    public ApiResponseDTO<DivisionResponseDTO> getAllDivisions(Long companyId) {
+
         try {
-            List<Divisions> divisions = divisionsRepository.findByIsActiveTrue();
-            List<DivisionResponseDTO> divisionDTOS = divisionMapper.mapDivisionListToDtoList(divisions);
+            List<Divisions> divisions =
+                    divisionsRepository.findDivisions(companyId);
+
+            List<DivisionResponseDTO> divisionDTOS =
+                    divisionMapper.mapDivisionListToDtoList(divisions);
+
             return new ApiResponseDTO<>(
                     null,
                     divisionDTOS,
@@ -108,6 +127,7 @@ public class DataFetchServiceImpl implements DataFetchService {
 
         } catch (Exception ex) {
             log.error("Error while fetching Divisions", ex);
+
             return new ApiResponseDTO<>(
                     null,
                     ex.getMessage(),
@@ -116,6 +136,7 @@ public class DataFetchServiceImpl implements DataFetchService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<OperationalUnitResponseDTO> getAllgetAllOperationalUnits() {

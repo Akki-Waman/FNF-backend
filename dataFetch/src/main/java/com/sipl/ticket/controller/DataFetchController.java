@@ -13,16 +13,22 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "Data Fetch APIs")
 public interface DataFetchController {
     @GetMapping("/get-regions")
-    ResponseEntity<ApiResponseDTO<RegionResponseDTO>> getAllRegions();
+    ResponseEntity<ApiResponseDTO<RegionResponseDTO>> getAllRegions(
+            @RequestParam(required = false) Long companyId
+    );
 
     @GetMapping("/get-zones")
-    ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> getAllZones();
+    ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> getAllZones(
+            @RequestParam(required = false) Long companyId
+    );
 
     @GetMapping("/get-zones/{regionId}")
     ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> getAllZonesByRegions( @PathVariable Long regionId);
 
     @GetMapping("/get-divisions")
-    ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> getAllDivisions();
+    ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> getAllDivisions(
+            @RequestParam(required = false) Long companyId
+    );
 
     @GetMapping("/get-divisions/{zoneId}")
     ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> getAllDivisionsByZones(@PathVariable Long zoneId);

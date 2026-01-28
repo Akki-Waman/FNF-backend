@@ -17,19 +17,19 @@ public class DataFetchControllerImpl implements DataFetchController {
     private final DataFetchService dataFetchService;
 
     @Override
-    public ResponseEntity<ApiResponseDTO<RegionResponseDTO>> getAllRegions() {
+    public ResponseEntity<ApiResponseDTO<RegionResponseDTO>> getAllRegions(Long companyId) {
         log.info("<<Start>>getAllRegions endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<RegionResponseDTO>> responseEntity =
-                new ResponseEntity<>(dataFetchService.getAllRegions(), HttpStatus.OK);
+                new ResponseEntity<>(dataFetchService.getAllRegions(companyId), HttpStatus.OK);
         log.info("<<End>>getAllRegions endpoint called<<End>>");
         return responseEntity;
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> getAllZones() {
+    public ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> getAllZones(Long companyId) {
         log.info("<<Start>>getAllZones endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<ZoneResponseDTO>> responseEntity =
-                new ResponseEntity<>(dataFetchService.getAllZones(), HttpStatus.OK);
+                new ResponseEntity<>(dataFetchService.getAllZones(companyId), HttpStatus.OK);
         log.info("<<End>>getAllZones endpoint called<<End>>");
         return responseEntity;
     }
@@ -43,10 +43,10 @@ public class DataFetchControllerImpl implements DataFetchController {
         return responseEntity;    }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> getAllDivisions() {
+    public ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> getAllDivisions(Long companyId) {
         log.info("<<Start>>getAllDivisions endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<DivisionResponseDTO>> responseEntity =
-                new ResponseEntity<>(dataFetchService.getAllDivisions(), HttpStatus.OK);
+                new ResponseEntity<>(dataFetchService.getAllDivisions(companyId), HttpStatus.OK);
         log.info("<<End>>getAllDivisions endpoint called<<End>>");
         return responseEntity;
     }

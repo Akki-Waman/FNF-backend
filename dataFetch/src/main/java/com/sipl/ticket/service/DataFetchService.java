@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface DataFetchService {
-    ApiResponseDTO<RegionResponseDTO> getAllRegions();
+    ApiResponseDTO<RegionResponseDTO> getAllRegions(Long companyId);
 
-    ApiResponseDTO<ZoneResponseDTO> getAllZones();
+    ApiResponseDTO<ZoneResponseDTO> getAllZones(Long companyId);
 
-    ApiResponseDTO<DivisionResponseDTO> getAllDivisions();
+    ApiResponseDTO<DivisionResponseDTO> getAllDivisions(Long companyId);
 
     ApiResponseDTO<OperationalUnitResponseDTO> getAllgetAllOperationalUnits();
 

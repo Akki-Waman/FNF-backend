@@ -275,27 +275,30 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    @Cacheable("brands")
-    public ApiResponseDTO<BrandDto> getAllBrands() {
+    @Cacheable(
+            value = "brands",
+            key = "#companyId != null ? #companyId : 'ALL'"
+    )
+    public ApiResponseDTO<BrandDto> getAllBrands(Long companyId) {
 
-        log.info("Fetching all active brands");
+        log.info("Fetching brands, companyId={}", companyId);
 
         try {
-            List<BrandDto> list = repository.findAll(Sort.by(Sort.Direction.ASC, "brandName"))
-                    .stream()
-                    .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
-                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<Brands> brands =
+                    repository.findBrands(companyId);
 
-            if (list.isEmpty()) {
+            if (brands.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No brands found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
+
+            List<BrandDto> list = brands.stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
 
             return new ApiResponseDTO<>(
                     list,
@@ -307,6 +310,7 @@ public class BrandsServiceImpl implements BrandsService {
 
         } catch (Exception e) {
             log.error("getAllBrands error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -315,6 +319,8 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
+
 
     @Override
     public ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(

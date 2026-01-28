@@ -263,34 +263,30 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @Cacheable(value = "departments", key = "#branchId")
+    @Cacheable(
+            value = "departments",
+            key = "#branchId != null ? #branchId : 'ALL'"
+    )
     public ApiResponseDTO<DepartmentResponseDTO> getAllDepartments(Integer branchId) {
 
         log.info("Fetching departments, branchId={}", branchId);
 
         try {
-            List<Department> departments;
+            List<Department> departments =
+                    repository.findDepartments(branchId);
 
-            if (branchId != null) {
-                departments = repository
-                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(branchId);
-            } else {
-                departments = repository
-                        .findByIsActiveTrueAndIsDeleteFalse();
+            if (departments.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No departments found",
+                        HttpStatus.OK,
+                        false
+                );
             }
 
             List<DepartmentResponseDTO> list = departments.stream()
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
-
-            if (list.isEmpty()) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "No departments found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
 
             return new ApiResponseDTO<>(
                     list,
@@ -302,6 +298,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         } catch (Exception e) {
             log.error("getAllDepartments error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -310,6 +307,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             );
         }
     }
+
 
 
     @Override

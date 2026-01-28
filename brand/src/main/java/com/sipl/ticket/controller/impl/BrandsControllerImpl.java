@@ -75,12 +75,12 @@ public class BrandsControllerImpl implements BrandsController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands() {
+    public ResponseEntity<ApiResponseDTO<BrandDto>> getAllBrands(Long companyId) {
 
         log.info("<<Start>> getAllBrands <<Start>>");
 
         ApiResponseDTO<BrandDto> response =
-                brandsService.getAllBrands();
+                brandsService.getAllBrands(companyId);
 
         log.info("<<End>> getAllBrands <<End>>");
 
