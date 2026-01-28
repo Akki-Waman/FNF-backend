@@ -19,7 +19,7 @@ public interface ClientProductService {
 
     ApiResponseDTO<ClientProductsResponseDTO> deleteClientProducts(Long clientProductId);
 
-    ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts();
+    ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> getAllClientProducts(Integer branchId);
 
     ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(
             ClientProductSearchRequestDto requestDto);

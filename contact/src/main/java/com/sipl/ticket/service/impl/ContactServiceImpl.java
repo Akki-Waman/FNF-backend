@@ -271,26 +271,31 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    public ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts() {
+    public ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts(
+            Integer branchId
+    ) {
 
-        log.info("Fetching all contacts");
+        log.info("Fetching contacts, branchId={}", branchId);
 
         try {
-            List<Contact> contacts = contactRepository.findAll()
-                    .stream()
-                    .filter(c ->
-                            Boolean.TRUE.equals(c.getIsActive()) &&
-                                    Boolean.FALSE.equals(c.getIsDelete())
-                    )
-                    .collect(Collectors.toList());
+            List<Contact> contacts;
+
+            if (branchId != null) {
+                contacts = contactRepository
+                        .findByBranch_BranchIdAndIsActiveTrueAndIsDeleteFalse(branchId);
+            } else {
+                contacts = contactRepository
+                        .findByIsActiveTrueAndIsDeleteFalse();
+            }
 
             if (contacts.isEmpty()) {
                 log.warn("No contacts found");
+
                 return new ApiResponseDTO<>(
                         null,
                         "No contacts found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
 
@@ -318,6 +323,7 @@ public class ContactServiceImpl implements ContactService {
 
         } catch (Exception e) {
             log.error("Unexpected error while fetching all contacts", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -326,6 +332,7 @@ public class ContactServiceImpl implements ContactService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(

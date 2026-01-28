@@ -75,6 +75,12 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
             String shiftName, Integer branchId, Long shiftId
     );
 
+    List<Shift> findByIsActiveTrueAndIsDeletedFalse();
+
+    List<Shift> findByBranch_BranchIdAndIsActiveTrueAndIsDeletedFalse(
+            Integer branchId
+    );
+
 
 }
 

@@ -38,8 +38,10 @@ public interface ContactController {
             @PathVariable Long contactId
     );
 
-    @GetMapping("/getAll")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts();
+    @GetMapping("")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts(
+            @RequestParam(required = false) Integer branchId
+    );
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
