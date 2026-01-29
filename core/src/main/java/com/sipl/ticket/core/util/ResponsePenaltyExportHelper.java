@@ -21,23 +21,26 @@ import java.util.List;
 @Slf4j
 public class ResponsePenaltyExportHelper {
 
-        private static final String[] HEADERS = {
-                "Ticket ID",
-                "Unit Name",
-                "Device Name",
-                "Service",
-                "Subject",
-                "Issue Logged",
-                "Issue Resolved",
-                "Resolution Time",
-                "Status",
-                "Task Status",
-                "Within Week",
-                "Penalty Days",
-                "Penalty %"
-        };
+    private static final String[] HEADERS = {
+            "Ticket ID",
+            "Unit Name",
+            "Device Name",
+            "Service",
+            "Subject",
+            "Severity",
+            "SLA Hours",
+            "Issue Logged",
+            "Response On",
+            "Response Time",
+            "Status",
+            "Response Within SLA",
+            "Response Within 72 Hours",
+            "Penalty Time",
+            "Penalty %"
+    };
 
-        public static void export(
+
+    public static void export(
                 List<ResponsePenaltyResponseDTO> list,
                 String format,
                 HttpServletResponse response
@@ -84,14 +87,16 @@ public class ResponsePenaltyExportHelper {
                 set(r, 2, d.getDeviceName(), data);
                 set(r, 3, d.getService(), data);
                 set(r, 4, d.getSubject(), data);
-                set(r, 5, d.getIssueLogged(), data);
-                set(r, 6, d.getIssueResolved(), data);
-                set(r, 7, d.getResolutionTime(), data);
-                set(r, 8, d.getStatus(), data);
-                set(r, 9, d.getTaskStatus(), data);
-                set(r,10, yesNo(d.getWithInWeek()), data);
-                set(r,11, d.getPenaltyDays(), data);
-                set(r,12, d.getPenaltyPercentage(), data);
+                set(r, 5, d.getSeverity(), data);
+                set(r, 6, d.getSlaHours(), data);
+                set(r, 7, d.getIssueLogged(), data);
+                set(r, 8, d.getResponseOn(), data);
+                set(r, 9, d.getResponseTime(), data);
+                set(r,10, d.getStatus(), data);
+                set(r,11, yesNo(d.getResponseWithinSla()), data);
+                set(r,12, yesNo(d.getResponseWithin72Hours()), data);
+                set(r,13, d.getPenaltyTime(), data);
+                set(r,14, d.getPenaltyPercentage(), data);
             }
 
             for (int i = 0; i < HEADERS.length; i++) {
@@ -132,13 +137,20 @@ public class ResponsePenaltyExportHelper {
                 csv.append(q(d.getDeviceName())).append(",");
                 csv.append(q(d.getService())).append(",");
                 csv.append(q(d.getSubject())).append(",");
+                csv.append(q(d.getSeverity())).append(",");
+                csv.append(
+                        d.getSlaHours() != null
+                                ? String.format("%.2f", d.getSlaHours())
+                                : ""
+                ).append(",");
+
                 csv.append(d.getIssueLogged()).append(",");
-                csv.append(d.getIssueResolved()).append(",");
-                csv.append(q(d.getResolutionTime())).append(",");
+                csv.append(d.getResponseOn()).append(",");
+                csv.append(q(d.getResponseTime())).append(",");
                 csv.append(q(d.getStatus())).append(",");
-                csv.append(q(d.getTaskStatus())).append(",");
-                csv.append(yesNo(d.getWithInWeek())).append(",");
-                csv.append(q(d.getPenaltyDays())).append(",");
+                csv.append(yesNo(d.getResponseWithinSla())).append(",");
+                csv.append(yesNo(d.getResponseWithin72Hours())).append(",");
+                csv.append(q(d.getPenaltyTime())).append(",");
                 csv.append(d.getPenaltyPercentage()).append("\n");
             }
 
@@ -181,13 +193,15 @@ public class ResponsePenaltyExportHelper {
                 add(table, d.getDeviceName(), dFont);
                 add(table, d.getService(), dFont);
                 add(table, d.getSubject(), dFont);
+                add(table, d.getSeverity(), dFont);
+                add(table, d.getSlaHours(), dFont);
                 add(table, d.getIssueLogged(), dFont);
-                add(table, d.getIssueResolved(), dFont);
-                add(table, d.getResolutionTime(), dFont);
+                add(table, d.getResponseOn(), dFont);
+                add(table, d.getResponseTime(), dFont);
                 add(table, d.getStatus(), dFont);
-                add(table, d.getTaskStatus(), dFont);
-                add(table, yesNo(d.getWithInWeek()), dFont);
-                add(table, d.getPenaltyDays(), dFont);
+                add(table, yesNo(d.getResponseWithinSla()), dFont);
+                add(table, yesNo(d.getResponseWithin72Hours()), dFont);
+                add(table, d.getPenaltyTime(), dFont);
                 add(table, d.getPenaltyPercentage(), dFont);
             }
 

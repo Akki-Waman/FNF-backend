@@ -40,6 +40,7 @@ public class ReportServiceImpl implements ReportService {
     private final MastersRepository mastersRepository;
     private final TicketResponseRepository ticketResponseRepository;
     private static final Integer TICKET_STATUS_COLUMN_CODE = 2;
+    private static final Integer TICKET_PRIORITY_COLUMN_CODE = 3;
 
     @Override
     public ApiResponseDTO<PagedResponse<ResponsePenaltyResponseDTO>>
@@ -127,43 +128,42 @@ public class ReportServiceImpl implements ReportService {
                         .map(ServiceEntity::getServiceName)
                         .orElse(null)
         );
-
         dto.setIssueLogged(
                 Optional.ofNullable(ticket.getCreatedTime())
                         .map(LocalDateTime::toLocalDate)
                         .orElse(null)
         );
 
-        dto.setIssueResolved(
+        dto.setResponseOn(
                 Optional.ofNullable(ticket.getResponseDateTime())
                         .map(LocalDateTime::toLocalDate)
                         .orElse(null)
         );
 
-        dto.setResolutionTime(convertHoursToDays(ticket.getResponseTimeHours()));
+        dto.setResponseTime(convertHoursToDays(ticket.getResponseTimeHours()));
 
         dto.setPenaltyPercentage(
                 Optional.ofNullable(ticket.getResponsePenaltyPercentage())
                         .map(BigDecimal::doubleValue)
                         .orElse(null)
         );
-
+        dto.setSeverity(setTicketSeverity(ticket));
         dto.setStatus(setTicketStatus(ticket));
-        dto.setTaskStatus(null); //TODO: don't what exact value is need to set
-
-        dto.setWithInWeek(
-                ticket.getResolutionDateTime() != null &&
-                        ticket.getCreatedTime() != null &&
+        dto.setSlaHours(ticket.getResponseSlaHours());
+        dto.setResponseWithinSla(ticket.getResponseWithinSla());
+        dto.setPenaltyTime(ticket.getResponsePenaltyTime() != null
+                ? convertHoursToDays(ticket.getResponsePenaltyTime())
+                : null);
+        dto.setPenaltyPercentage( Optional.ofNullable(ticket.getResponsePenaltyPercentage())
+                .map(BigDecimal::doubleValue)
+                .orElse(null));
+        dto.setResponseWithin72Hours(
+                ticket.getCreatedTime() != null &&
+                        ticket.getResponseDateTime() != null &&
                         Duration.between(
                                 ticket.getCreatedTime(),
-                                ticket.getResolutionDateTime()
-                        ).toDays() <= 7
-        );
-
-        dto.setPenaltyDays(
-                ticket.getResponsePenaltyTime() != null
-                        ? convertHoursToDays(ticket.getResponsePenaltyTime())
-                        : null
+                                ticket.getResponseDateTime()
+                        ).toHours() <= 72
         );
 
         return dto;
@@ -204,6 +204,23 @@ public class ReportServiceImpl implements ReportService {
                 ? masters.getValueDesc()
                 : String.valueOf(ticket.getStatus());
     }
+
+    private String setTicketSeverity(Ticket ticket) {
+
+        if (ticket.getPriority() == null) {
+            return null;
+        }
+
+        Masters masters = mastersRepository.findByColumnCodeAndColumnValue(
+                TICKET_PRIORITY_COLUMN_CODE,
+                ticket.getPriority()
+        );
+
+        return masters != null
+                ? masters.getValueDesc()
+                : String.valueOf(ticket.getPriority());
+    }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<StaffTicketResponseDTO>> staffTicketReport(
