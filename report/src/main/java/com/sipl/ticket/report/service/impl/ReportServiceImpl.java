@@ -294,8 +294,6 @@ public class ReportServiceImpl implements ReportService {
             HttpServletResponse response
     ) {
 
-        log.info("<<START>> exportResponsePenaltyReport <<START>>");
-
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
                         .contains(format.toLowerCase())) {
@@ -305,9 +303,22 @@ public class ReportServiceImpl implements ReportService {
         try {
             Pageable pageable = Pageable.unpaged();
 
+            String query = null;
+            Integer branchId = null;
+            Integer status = null;
+
+            if (dto != null) {
+                if (dto.getQuery() != null && !dto.getQuery().trim().isEmpty()) {
+                    query = dto.getQuery().trim();
+                }
+                branchId = dto.getBranchId();
+            }
+
             Page<Ticket> pageResult =
-                    ticketRepository.searchResponsePenaltyReport(
-                            dto.getQuery(),
+                    ticketRepository.searchTickets(
+                            query,
+                            branchId,
+                            status,
                             pageable
                     );
 
@@ -335,8 +346,8 @@ public class ReportServiceImpl implements ReportService {
             );
         }
 
-        log.info("<<END>> exportResponsePenaltyReport <<END>>");
     }
+
 
     @Override
     public ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>> searchResolutionPenaltyReport(ResolutionPenaltyRequestDTO dto) {
@@ -481,13 +492,21 @@ public class ReportServiceImpl implements ReportService {
             Pageable pageable = Pageable.unpaged();
 
             String query = null;
-            if (dto != null && dto.getQuery() != null && !dto.getQuery().trim().isEmpty()) {
-                query = dto.getQuery().trim();
+            Integer branchId = null;
+            Integer status = null;
+
+            if (dto != null) {
+                if (dto.getQuery() != null && !dto.getQuery().trim().isEmpty()) {
+                    query = dto.getQuery().trim();
+                }
+                branchId = dto.getBranchId();
             }
 
             Page<Ticket> pageResult =
-                    ticketRepository.searchResolutionPenaltyReport(
+                    ticketRepository.searchTickets(
                             query,
+                            branchId,
+                            status,
                             pageable
                     );
 
@@ -515,6 +534,7 @@ public class ReportServiceImpl implements ReportService {
             );
         }
     }
+
 
 
 }
