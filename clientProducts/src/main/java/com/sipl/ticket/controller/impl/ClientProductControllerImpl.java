@@ -98,7 +98,7 @@ public class ClientProductControllerImpl implements ClientProductController {
     }
 
     @Override
-    public ResponseEntity<Void> exportClientProducts(ClientProductsRequestDTO requestDto, String format, HttpServletResponse response) {
+    public ResponseEntity<Void> exportClientProducts(ClientProductSearchRequestDto requestDto, String format, HttpServletResponse response) {
         log.info("<<START>> exportClientProducts <<START>>");
 
         clientProductService.exportClientProducts(requestDto, format, response);

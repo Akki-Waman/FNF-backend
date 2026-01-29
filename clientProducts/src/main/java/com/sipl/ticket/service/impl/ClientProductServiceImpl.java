@@ -473,43 +473,30 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
-
     @Override
     public void exportClientProducts(
-            ClientProductsRequestDTO requestDto,
+            ClientProductSearchRequestDto requestDto,
             String format,
             HttpServletResponse response
     ) {
-
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
                         .contains(format.toLowerCase())) {
             throw new IllegalArgumentException("Invalid export format");
         }
-
         try {
             Pageable pageable = Pageable.unpaged();
 
             String keyword = "";
             Boolean isActive = null;
             Integer branchId = null;
-
             if (requestDto != null) {
-                if (requestDto.getDeviceName() != null &&
-                        !requestDto.getDeviceName().trim().isEmpty()) {
-                    keyword = requestDto.getDeviceName().trim();
-                } else if (requestDto.getSerialNumber() != null &&
-                        !requestDto.getSerialNumber().trim().isEmpty()) {
-                    keyword = requestDto.getSerialNumber().trim();
-                } else if (requestDto.getGroupName() != null &&
-                        !requestDto.getGroupName().trim().isEmpty()) {
-                    keyword = requestDto.getGroupName().trim();
-                }
-
+                keyword = StringUtils.hasText(requestDto.getQuery())
+                        ? requestDto.getQuery().trim()
+                        : "";
                 isActive = requestDto.getIsActive();
                 branchId = requestDto.getBranchId();
             }
-
             Page<ClientProducts> pageResult =
                     clientProductsRepository.searchClientProducts(
                             keyword,
@@ -517,7 +504,6 @@ public class ClientProductServiceImpl implements ClientProductService {
                             branchId,
                             pageable
                     );
-
             if (pageResult.isEmpty()) {
                 throw new RuntimeException("No data found for export");
             }
@@ -531,7 +517,8 @@ public class ClientProductServiceImpl implements ClientProductService {
             ClientProductsExportHelper.export(data, format, response);
 
             log.info(
-                    "Client Products export completed | records={}",
+                    "Client Products export completed | format={}, records={}",
+                    format,
                     data.size()
             );
 
@@ -542,6 +529,7 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
+
 
 
 

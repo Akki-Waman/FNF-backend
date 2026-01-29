@@ -57,9 +57,9 @@ public interface ClientProductController {
             @PathVariable Long clientProductId
     );
 
-    @PostMapping("/client-products/export")
+    @PostMapping("/export")
     ResponseEntity<Void> exportClientProducts(
-            @RequestBody ClientProductsRequestDTO requestDto,
+            @RequestBody ClientProductSearchRequestDto requestDto,
             @RequestParam String format,
             HttpServletResponse response
     );

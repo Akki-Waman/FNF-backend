@@ -29,5 +29,5 @@ public interface ClientProductService {
             Long clientProductId
     );
 
-    void exportClientProducts(ClientProductsRequestDTO requestDto, String format, HttpServletResponse response);
+    void exportClientProducts(ClientProductSearchRequestDto requestDto, String format, HttpServletResponse response);
 }
