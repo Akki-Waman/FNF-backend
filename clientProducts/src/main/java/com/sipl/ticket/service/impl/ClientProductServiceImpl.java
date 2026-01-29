@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.helper.ClientProductExcelGenerator;
+import com.sipl.ticket.core.helper.ClientProductsExportHelper;
 import com.sipl.ticket.core.mapper.ClientProductMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ClientProductService;
@@ -472,5 +473,76 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
+
+    @Override
+    public void exportClientProducts(
+            ClientProductsRequestDTO requestDto,
+            String format,
+            HttpServletResponse response
+    ) {
+
+        if (format == null ||
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid export format");
+        }
+
+        try {
+            Pageable pageable = Pageable.unpaged();
+
+            String keyword = "";
+            Boolean isActive = null;
+            Integer branchId = null;
+
+            if (requestDto != null) {
+                if (requestDto.getDeviceName() != null &&
+                        !requestDto.getDeviceName().trim().isEmpty()) {
+                    keyword = requestDto.getDeviceName().trim();
+                } else if (requestDto.getSerialNumber() != null &&
+                        !requestDto.getSerialNumber().trim().isEmpty()) {
+                    keyword = requestDto.getSerialNumber().trim();
+                } else if (requestDto.getGroupName() != null &&
+                        !requestDto.getGroupName().trim().isEmpty()) {
+                    keyword = requestDto.getGroupName().trim();
+                }
+
+                isActive = requestDto.getIsActive();
+                branchId = requestDto.getBranchId();
+            }
+
+            Page<ClientProducts> pageResult =
+                    clientProductsRepository.searchClientProducts(
+                            keyword,
+                            isActive,
+                            branchId,
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                throw new RuntimeException("No data found for export");
+            }
+
+            List<ClientProductsResponseDTO> data =
+                    pageResult.getContent()
+                            .stream()
+                            .map(clientProductMapper::toDto)
+                            .collect(Collectors.toList());
+
+            ClientProductsExportHelper.export(data, format, response);
+
+            log.info(
+                    "Client Products export completed | records={}",
+                    data.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportClientProducts failed", e);
+            throw new RuntimeException(
+                    "Failed to export client products report", e
+            );
+        }
+    }
+
+
 
 }

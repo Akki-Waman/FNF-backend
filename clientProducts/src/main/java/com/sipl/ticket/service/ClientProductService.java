@@ -28,4 +28,6 @@ public interface ClientProductService {
     ApiResponseDTO<ClientProductsResponseDTO> getById(
             Long clientProductId
     );
+
+    void exportClientProducts(ClientProductsRequestDTO requestDto, String format, HttpServletResponse response);
 }
