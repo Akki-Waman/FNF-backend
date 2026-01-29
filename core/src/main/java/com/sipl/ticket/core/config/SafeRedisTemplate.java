@@ -18,32 +18,27 @@ public class SafeRedisTemplate {
 
     public Object get(String key) {
         try {
-            if (redisTemplate.getConnectionFactory().getConnection().ping() != null) {
-                return redisTemplate.opsForValue().get(key);
-            }
+            return redisTemplate.opsForValue().get(key);
         } catch (Exception e) {
-            log.warn("Redis down, skipping cache get for key: {}", key);
+            log.warn("Redis down, skipping cache get for key: {}", key, e);
+            return null;
         }
-        return null;
     }
 
     public void put(String key, Object value, long ttlSeconds) {
         try {
-            if (redisTemplate.getConnectionFactory().getConnection().ping() != null) {
-                redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttlSeconds));
-            }
+            redisTemplate.opsForValue()
+                    .set(key, value, Duration.ofSeconds(ttlSeconds));
         } catch (Exception e) {
-            log.warn("Redis down, skipping cache put for key: {}", key);
+            log.warn("Redis down, skipping cache put for key: {}", key, e);
         }
     }
 
     public void delete(String key) {
         try {
-            if (redisTemplate.getConnectionFactory().getConnection().ping() != null) {
-                redisTemplate.delete(key);
-            }
+            redisTemplate.delete(key);
         } catch (Exception e) {
-            log.warn("Redis down, skipping cache delete for key: {}", key);
+            log.warn("Redis down, skipping cache delete for key: {}", key, e);
         }
     }
 }
