@@ -134,5 +134,26 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "ORDER BY COUNT(t.ticketId) DESC"
     )
     List<ChartItemDTO> getTicketsByAssignee();
+
+    @Query(
+            "SELECT t " +
+                    "FROM Ticket t " +
+                    "LEFT JOIN t.clientProducts cp " +
+                    "LEFT JOIN t.service s " +
+                    "WHERE t.isDeleted = false " +
+                    "AND t.resolutionDateTime IS NOT NULL " +
+                    "AND ( " +
+                    "   :query IS NULL OR :query = '' OR " +
+                    "   CAST(t.ticketId AS string) LIKE CONCAT('%', :query, '%') OR " +
+                    "   LOWER(cp.groupName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   LOWER(cp.deviceName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+                    "   LOWER(s.serviceName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+                    ")"
+    )
+    Page<Ticket> searchResolutionPenaltyReport(
+            @Param("query") String query,
+            Pageable pageable
+    );
+
 }
 

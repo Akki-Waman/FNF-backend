@@ -25,4 +25,11 @@ public interface ReportService {
     ApiResponseDTO<PagedResponse<ResolutionPenaltyResponseDTO>>
     searchResolutionPenaltyReport(ResolutionPenaltyRequestDTO requestDto);
 
+    void exportResolutionPenaltyReport(
+            ResolutionPenaltyRequestDTO requestDto,
+            String format,
+            HttpServletResponse response
+    );
+
+
 }

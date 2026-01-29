@@ -71,4 +71,19 @@ public class ReportControllerImpl implements ReportController {
                 .body(response);
     }
 
+    @Override
+    public ResponseEntity<Void> exportResolutionPenaltyReport(
+            ResolutionPenaltyRequestDTO requestDto,
+            String format,
+            HttpServletResponse response
+    ) {
+        log.info("<<START>> exportResolutionPenaltyReport <<START>>");
+
+        reportService.exportResolutionPenaltyReport(requestDto, format, response);
+
+        log.info("<<END>> exportResolutionPenaltyReport <<END>>");
+        return ResponseEntity.ok().build();
+    }
+
+
 }

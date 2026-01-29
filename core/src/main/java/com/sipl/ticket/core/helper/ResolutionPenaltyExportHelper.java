@@ -1,0 +1,234 @@
+package com.sipl.ticket.core.helper;
+
+import com.sipl.ticket.core.dto.response.ResolutionPenaltyResponseDTO;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import javax.servlet.http.HttpServletResponse;
+import java.awt.Color;
+import java.util.List;
+
+@Slf4j
+public class ResolutionPenaltyExportHelper {
+
+    private static final String[] HEADERS = {
+            "Ticket ID",
+            "Unit Name",
+            "Device Name",
+            "Service",
+            "Subject",
+            "Issue Logged",
+            "Issue Resolved",
+            "Resolution Time",
+            "Status",
+            "Task Status",
+            "Within Week",
+            "Penalty Days",
+            "Penalty %"
+    };
+
+    public static void export(
+            List<ResolutionPenaltyResponseDTO> list,
+            String format,
+            HttpServletResponse response
+    ) throws Exception {
+
+        if ("excel".equalsIgnoreCase(format)) {
+            writeExcel(list, response);
+        } else if ("csv".equalsIgnoreCase(format)) {
+            writeCsv(list, response);
+        } else if ("pdf".equalsIgnoreCase(format)) {
+            writePdf(list, response);
+        } else {
+            throw new IllegalArgumentException("Invalid format");
+        }
+    }
+
+    private static void writeExcel(
+            List<ResolutionPenaltyResponseDTO> list,
+            HttpServletResponse response
+    ) throws Exception {
+
+        Workbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet("Resolution Penalty");
+
+        CellStyle header = excelHeader(wb);
+        CellStyle data = excelData(wb);
+
+        int row = 0;
+        Row h = sheet.createRow(row++);
+
+        for (int i = 0; i < HEADERS.length; i++) {
+            Cell c = h.createCell(i);
+            c.setCellValue(HEADERS[i]);
+            c.setCellStyle(header);
+        }
+
+        for (ResolutionPenaltyResponseDTO d : list) {
+            Row r = sheet.createRow(row++);
+
+            set(r, 0, d.getTicketId(), data);
+            set(r, 1, d.getUnitName(), data);
+            set(r, 2, d.getDeviceName(), data);
+            set(r, 3, d.getService(), data);
+            set(r, 4, d.getSubject(), data);
+            set(r, 5, d.getIssueLogged(), data);
+            set(r, 6, d.getIssueResolved(), data);
+            set(r, 7, d.getResolutionTime(), data);
+            set(r, 8, d.getStatus(), data);
+            set(r, 9, d.getTaskStatus(), data);
+            set(r, 10, yesNo(d.getWithInWeek()), data);
+            set(r, 11, d.getPenaltyDays(), data);
+            set(r, 12, d.getPenaltyPercentage(), data);
+        }
+
+        for (int i = 0; i < HEADERS.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        response.setContentType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=resolution-penalty.xlsx"
+        );
+
+        wb.write(response.getOutputStream());
+        wb.close();
+    }
+
+    private static void writeCsv(
+            List<ResolutionPenaltyResponseDTO> list,
+            HttpServletResponse response
+    ) throws Exception {
+
+        response.setContentType("text/csv");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=resolution-penalty.csv"
+        );
+
+        StringBuilder csv = new StringBuilder();
+        csv.append(String.join(",", HEADERS)).append("\n");
+
+        for (ResolutionPenaltyResponseDTO d : list) {
+            csv.append(d.getTicketId()).append(",");
+            csv.append(q(d.getUnitName())).append(",");
+            csv.append(q(d.getDeviceName())).append(",");
+            csv.append(q(d.getService())).append(",");
+            csv.append(q(d.getSubject())).append(",");
+            csv.append(d.getIssueLogged()).append(",");
+            csv.append(d.getIssueResolved()).append(",");
+            csv.append(q(d.getResolutionTime())).append(",");
+            csv.append(q(d.getStatus())).append(",");
+            csv.append(q(d.getTaskStatus())).append(",");
+            csv.append(yesNo(d.getWithInWeek())).append(",");
+            csv.append(q(d.getPenaltyDays())).append(",");
+            csv.append(d.getPenaltyPercentage()).append("\n");
+        }
+
+        response.getWriter().write(csv.toString());
+    }
+
+    private static void writePdf(
+            List<ResolutionPenaltyResponseDTO> list,
+            HttpServletResponse response
+    ) throws Exception {
+
+        response.setContentType("application/pdf");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=resolution-penalty.pdf"
+        );
+
+        Document doc = new Document(PageSize.A4.rotate());
+        PdfWriter.getInstance(doc, response.getOutputStream());
+        doc.open();
+
+        PdfPTable table = new PdfPTable(HEADERS.length);
+        table.setWidthPercentage(100);
+
+        Font hFont = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
+        Font dFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+        for (String h : HEADERS) {
+            PdfPCell c = new PdfPCell(new Phrase(h, hFont));
+            c.setBackgroundColor(Color.LIGHT_GRAY);
+            c.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(c);
+        }
+
+        for (ResolutionPenaltyResponseDTO d : list) {
+            add(table, d.getTicketId(), dFont);
+            add(table, d.getUnitName(), dFont);
+            add(table, d.getDeviceName(), dFont);
+            add(table, d.getService(), dFont);
+            add(table, d.getSubject(), dFont);
+            add(table, d.getIssueLogged(), dFont);
+            add(table, d.getIssueResolved(), dFont);
+            add(table, d.getResolutionTime(), dFont);
+            add(table, d.getStatus(), dFont);
+            add(table, d.getTaskStatus(), dFont);
+            add(table, yesNo(d.getWithInWeek()), dFont);
+            add(table, d.getPenaltyDays(), dFont);
+            add(table, d.getPenaltyPercentage(), dFont);
+        }
+
+        doc.add(table);
+        doc.close();
+    }
+
+    private static String yesNo(Boolean b) {
+        return b == null ? "" : (b ? "Yes" : "No");
+    }
+
+    private static String q(String v) {
+        if (v == null) return "\"\"";
+        return "\"" + v.replace("\"", "\"\"") + "\"";
+    }
+
+    private static void set(Row r, int i, Object v, CellStyle s) {
+        Cell c = r.createCell(i);
+        if (v != null) c.setCellValue(v.toString());
+        c.setCellStyle(s);
+    }
+
+    private static void add(PdfPTable t, Object v, Font f) {
+        t.addCell(new Phrase(v == null ? "" : v.toString(), f));
+    }
+
+    private static CellStyle excelHeader(Workbook wb) {
+        org.apache.poi.ss.usermodel.Font f = wb.createFont();
+        f.setBold(true);
+        CellStyle s = wb.createCellStyle();
+        s.setFont(f);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.setBorderTop(BorderStyle.THIN);
+        s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN);
+        return s;
+    }
+
+    private static CellStyle excelData(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        s.setBorderTop(BorderStyle.THIN);
+        s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN);
+        return s;
+    }
+}

@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.helper.ResolutionPenaltyExportHelper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.ResponsePenaltyExportHelper;
 import com.sipl.ticket.report.service.ReportService;
@@ -463,4 +464,61 @@ public class ReportServiceImpl implements ReportService {
         return dto;
     }
 
+    @Override
+    public void exportResolutionPenaltyReport(
+            ResolutionPenaltyRequestDTO dto,
+            String format,
+            HttpServletResponse response
+    ) {
+
+        if (format == null ||
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid export format");
+        }
+
+        try {
+            Pageable pageable = Pageable.unpaged();
+
+            String query = null;
+            if (dto != null && dto.getQuery() != null && !dto.getQuery().trim().isEmpty()) {
+                query = dto.getQuery().trim();
+            }
+
+            Page<Ticket> pageResult =
+                    ticketRepository.searchResolutionPenaltyReport(
+                            query,
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                throw new RuntimeException("No data found for export");
+            }
+
+            List<ResolutionPenaltyResponseDTO> data =
+                    pageResult.getContent()
+                            .stream()
+                            .map(this::mapToResolutionPenaltyDto)
+                            .collect(Collectors.toList());
+
+            ResolutionPenaltyExportHelper.export(data, format, response);
+
+            log.info(
+                    "Resolution Penalty export completed | records={}",
+                    data.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportResolutionPenaltyReport failed", e);
+            throw new RuntimeException(
+                    "Failed to export resolution penalty report", e
+            );
+        }
+    }
+
+
 }
+
+
+
+
