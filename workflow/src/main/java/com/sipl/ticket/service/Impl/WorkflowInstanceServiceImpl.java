@@ -10,10 +10,12 @@ import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
 import com.sipl.ticket.core.mapper.WorkflowInstanceMapper;
 import com.sipl.ticket.core.util.UserManager;
+import com.sipl.ticket.service.EmailWorkflowService;
 import com.sipl.ticket.service.WorkFlowInstanceService;
 import com.sipl.ticket.service.WorkflowNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,14 +43,19 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
     private final TicketRepository ticketRepository;
     private final UserRolesRepository userRolesRepository;
     private final @Qualifier("helperUserManager") UserManager userManager;
+    private final HttpServletRequest request;
+    private final EmailWorkflowService emailWorkflowService;
 
     @Override
     public ApiResponseDTO<WorkflowInstanceDTO> addWorkflowInstance(WorkflowInstanceDTO dto) {
         WorkflowInstance entity = workflowInstanceMapper.toEntity(dto);
-        //TODO need to remove this logic in future after auditAware properly working
-        entity.setCreatedBy(dto.getActionBy());
+        entity.setCreatedBy(userManager.getUser(request));
+        if(dto.getAssignedUser() !=null) {
+            entity.setAssignedUser(dto.getAssignedUser());
+        }
         WorkflowInstance saved = workflowInstanceRepository.save(entity);
         WorkflowInstanceDTO savedDto = workflowInstanceMapper.toDto(saved);
+        String mailStatus = null;
         return new ApiResponseDTO<>(savedDto, "Workflow Instance added successfully.", HttpStatus.CREATED, false);
     }
 

@@ -14,20 +14,15 @@ import java.util.List;
 public class MailSendRequestDTO {
     private List<String> notifiedEmailId;
     private List<String> emailIds;
-    private String transactionId;
+    private String ticketId;
     private String status;
     private String subject;
     private LocalDate date;
-    private String performedBy;
-    private String cancellationReason;
-    private LocalDateTime lepIssueDate;
-    private String lepNumber;
-    private String cancellationRequestBy;
-    private LocalDateTime cancellationInititatedTime;
-    private String truckNumber;
-    private String driverName;
-    private String batchNumber;
-    private String rfidNumber;
     private Long templateId;
+    private String performedBy;
+    private String initiatedBy;
+    private String remarks;
+    private String raisedReason;
+    private String ticketSubject;
 
 }

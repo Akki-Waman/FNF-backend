@@ -70,11 +70,27 @@ public class TaskServiceImpl implements TaskService {
     public ApiResponseDTO<CombinedTaskResponseDto> addTask(
             String taskRequestDto,
             List<MultipartFile> files) {
-
         try {
             TaskRequestDto dto =
                     objectMapper.readValue(taskRequestDto, TaskRequestDto.class);
-
+            Optional<Ticket> fetchTicketData=ticketRepository.findById(dto.getTicketId());
+            if(fetchTicketData.isPresent())
+            {
+                Ticket ticket=fetchTicketData.get();
+                if (Boolean.TRUE.equals(ticket.getIsApproverRequired())
+                        || ticket.getStatus().equals(7)) {
+                    return new ApiResponseDTO<>(
+                            null,
+                            null,
+                            null,
+                            "This ticket is currently under approval. Please wait for further updates.",
+                            HttpStatus.BAD_REQUEST,
+                            true,
+                            null,
+                            null
+                    );
+                }
+            }
             Task task = saveTask(dto);
             List<TaskAssignee> assignees = saveAssignees(dto.getAssigneeUserIds(), task);
             List<TaskFollower> followers = saveFollowers(dto.getFollowerUserIds(), task);
@@ -115,7 +131,6 @@ public class TaskServiceImpl implements TaskService {
                     null
             );
         }
-
     }
 
     @ActivityLoggable(

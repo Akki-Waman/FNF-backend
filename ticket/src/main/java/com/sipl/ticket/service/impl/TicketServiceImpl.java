@@ -12,17 +12,24 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
 import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TicketExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.TicketFileUploadUtil;
+import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.master.service.MasterService;
+import com.sipl.ticket.service.EmailWorkflowService;
 import com.sipl.ticket.service.TicketService;
+import com.sipl.ticket.service.WorkFlowInstanceService;
+import com.sipl.ticket.service.WorkflowNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.dom4j.Branch;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -31,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -70,6 +78,16 @@ public class TicketServiceImpl implements TicketService {
     private final TicketNoteMapper ticketNoteMapper;
     private final TicketNoteRepository ticketNoteRepository;
     private final ShiftRepository shiftRepository;
+    private final WorkFlowDefinitionRepository workFlowDefinitionRepository;
+    private final WorkflowStepsRepository workflowStepsRepository;
+
+    private final WorkflowInstanceMapper workflowInstanceMapper;
+    private final WorkFlowInstanceService workFlowInstanceService;
+   private final WorkflowNotificationService workflowNotificationService;
+   private final EmailWorkflowService emailWorkflowService;
+    private final @Qualifier("helperUserManager") UserManager userManager;
+    private final HttpServletRequest request;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1107,7 +1125,123 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<String> requestTicketApproval(ApprovalRequestDTO dto) {
+        log.info("Requesting approval for ticketId={}", dto.getTicketId());
 
+        try {
+            Optional<Ticket> fetchTicketData = ticketRepository.findById(dto.getTicketId());
+            if (!fetchTicketData.isPresent()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket data not found",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+
+            Ticket ticket = fetchTicketData.get();
+            if (ticket.getStatus() != null && ticket.getStatus().equals(5)) { // Closed
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket already closed, approval cannot be requested",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            if(ticket.getStatus().equals(7))
+            {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Ticket already in approval process",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            // Update status to "Approval Pending"
+            ticket.setStatus(7);
+            ticket.setIsApproverRequired(true);
+            ticket.setIsApproved(false);
+            Optional<Users> fetchedUsers=userRepository.findById(dto.getAssignedBy());
+            if(!fetchedUsers.isPresent())
+            {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Assigned user data not found",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
+            Users user=fetchedUsers.get();
+            createWorkflowInstance(ticket,user,dto.getReason());
+            ticketRepository.save(ticket);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Ticket approval requested successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception ex) {
+            log.error("Error while requesting ticket approval for ticketId={}, msg={}",
+                    dto.getTicketId(), ex.getMessage(), ex);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    "Something went wrong while requesting approval",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private WorkflowInstanceDTO createWorkflowInstance(Ticket ticket,Users assignedTo,String reason) {
+        log.info("Creating workflow instance for ticket: {}", ticket.getTicketId());
+        final String entityType = "Ticket";
+        WorkFlowDefinition workflowDefinition = workFlowDefinitionRepository.findByEntityType(entityType)
+                .orElseThrow(() -> new RuntimeException("Workflow Definition for 'Transaction' not found"));
+
+        log.info("Found workflowDefinitionId: {}", workflowDefinition.getWorkFlowDefinitionId());
+
+        WorkflowSteps firstStep = workflowStepsRepository
+                .findFirstStepByDefinitionId(workflowDefinition.getWorkFlowDefinitionId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Step with stepOrder not found for workflowDefinitionId=" + workflowDefinition.getWorkFlowDefinitionId()));
+
+        log.info("Found first workflow stepId: {}", firstStep.getWorkFlowStepsId());
+
+        WorkFlowDefinitionDTO defDto = new WorkFlowDefinitionDTO();
+        defDto.setWorkFlowDefinitionId(workflowDefinition.getWorkFlowDefinitionId());
+
+        WorkflowStepsDTO stepDto = new WorkflowStepsDTO();
+        stepDto.setWorkFlowStepsId(firstStep.getWorkFlowStepsId());
+        WorkflowInstanceDTO instanceDto = new WorkflowInstanceDTO();
+        instanceDto.setWorkflow(defDto);
+        instanceDto.setCurrentStep(stepDto);
+        instanceDto.setEntityId(ticket.getTicketId());
+        instanceDto.setEntityType(entityType);
+        instanceDto.setWorkFlowStatus(WorkFlowStatusEnum.CREATED.getCode());
+        instanceDto.setStartedAt(LocalDateTime.now());
+        instanceDto.setAssignedUser(assignedTo);
+        instanceDto.setReason(reason);
+        ApiResponseDTO<WorkflowInstanceDTO> instanceResponse =
+                workFlowInstanceService.addWorkflowInstance(instanceDto);
+        WorkflowInstance workflowInstance = workflowInstanceMapper.toEntity(instanceResponse.getData());
+        log.info("workflowInstance: {}", workflowInstance);
+        String stepStatus="CREATED";
+        String mailStatus=null;
+        Users user=userManager.getUser(request);
+        if (stepStatus != null) {
+            mailStatus = emailWorkflowService.sendWorkflowEmail(workflowInstance,user, firstStep, stepStatus);
+            if (mailStatus.equals("Failed")) {
+                log.error("Failed to send mail");
+                mailStatus = "Failed";
+            }
+        }
+        log.info("Workflow instance created successfully for ticketId: {}", ticket.getTicketId());
+        return instanceResponse.getData();
+    }
 }
 
 

@@ -1,10 +1,7 @@
 package com.sipl.ticket.controller;
 
 
-import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
-import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
-import com.sipl.ticket.core.dto.request.TicketStatusRequestDTO;
+import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -79,4 +76,9 @@ public interface TicketController {
     @PutMapping("/status")
     public ResponseEntity<ApiResponseDTO<TicketCombinedResponseDto>> updateTicketStatus(
             @RequestBody TicketStatusRequestDTO ticketStatusRequestDTO);
+
+    @PutMapping("/request-approval")
+    public ResponseEntity<ApiResponseDTO<String>> requestTicketApproval(
+            @RequestBody ApprovalRequestDTO dto);
+
 }

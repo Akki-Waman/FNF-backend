@@ -1,5 +1,5 @@
 <configuration>
-    <property name="LOG_DIR" value="/opt/tomcat/logs/app_logs/collaboration-app"/>
+    <property name="LOG_DIR" value="/opt/tomcat/logs/app_logs/ticket-management"/>
     <property name="LOG_FILE" value="${LOG_DIR}/service.log"/>
 
     <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
