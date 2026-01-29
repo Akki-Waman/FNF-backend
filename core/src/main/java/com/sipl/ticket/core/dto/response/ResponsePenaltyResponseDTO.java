@@ -15,12 +15,14 @@ public class ResponsePenaltyResponseDTO {
     private String deviceName;
     private String service;
     private String subject;
+    private String severity;
+    private String slaHours;
     private LocalDate issueLogged;
-    private LocalDate issueResolved;
-    private String resolutionTime;
+    private LocalDate responseOn;
+    private String responseTime;
     private String status;
-    private String taskStatus;
-    private Boolean withInWeek;
-    private String penaltyDays;
+    private Boolean responseWithinSla;
+    private Boolean responseWithin72Hours;
+    private String penaltyTime;
     private Double penaltyPercentage;
 }
