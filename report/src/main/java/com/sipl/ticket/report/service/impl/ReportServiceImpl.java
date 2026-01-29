@@ -139,7 +139,7 @@ public class ReportServiceImpl implements ReportService {
                         .orElse(null)
         );
 
-        dto.setResponseTime(convertHoursToDays(ticket.getResponseTimeHours())); //ye hours chahiye
+        dto.setResponseTime(convertHoursToDays(ticket.getResponseTimeHours()));
 
         dto.setPenaltyPercentage(
                 Optional.ofNullable(ticket.getResponsePenaltyPercentage())
@@ -148,7 +148,7 @@ public class ReportServiceImpl implements ReportService {
         );
         dto.setSeverity(setTicketSeverity(ticket));
         dto.setStatus(setTicketStatus(ticket));
-        dto.setSlaHours(null);
+        dto.setSlaHours(ticket.getResponseSlaHours());
         dto.setResponseWithinSla(ticket.getResponseWithinSla());
         dto.setPenaltyTime(ticket.getResponsePenaltyTime() != null
                 ? convertHoursToDays(ticket.getResponsePenaltyTime())

@@ -16,7 +16,7 @@ public class ResponsePenaltyResponseDTO {
     private String service;
     private String subject;
     private String severity;
-    private String slaHours;
+    private Double slaHours;
     private LocalDate issueLogged;
     private LocalDate responseOn;
     private String responseTime;

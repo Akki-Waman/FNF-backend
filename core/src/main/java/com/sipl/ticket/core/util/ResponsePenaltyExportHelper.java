@@ -138,7 +138,12 @@ public class ResponsePenaltyExportHelper {
                 csv.append(q(d.getService())).append(",");
                 csv.append(q(d.getSubject())).append(",");
                 csv.append(q(d.getSeverity())).append(",");
-                csv.append(q(d.getSlaHours())).append(",");
+                csv.append(
+                        d.getSlaHours() != null
+                                ? String.format("%.2f", d.getSlaHours())
+                                : ""
+                ).append(",");
+
                 csv.append(d.getIssueLogged()).append(",");
                 csv.append(d.getResponseOn()).append(",");
                 csv.append(q(d.getResponseTime())).append(",");
