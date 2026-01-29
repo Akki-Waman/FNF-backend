@@ -97,4 +97,14 @@ public class ClientProductControllerImpl implements ClientProductController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<Void> exportClientProducts(ClientProductSearchRequestDto requestDto, String format, HttpServletResponse response) {
+        log.info("<<START>> exportClientProducts <<START>>");
+
+        clientProductService.exportClientProducts(requestDto, format, response);
+
+        log.info("<<END>> exportClientProducts <<END>>");
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -5,6 +5,7 @@ package com.sipl.ticket.controller;
 import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
@@ -54,5 +55,12 @@ public interface ClientProductController {
     @GetMapping("/get/{clientProductId}")
     ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> getById(
             @PathVariable Long clientProductId
+    );
+
+    @PostMapping("/export")
+    ResponseEntity<Void> exportClientProducts(
+            @RequestBody ClientProductSearchRequestDto requestDto,
+            @RequestParam String format,
+            HttpServletResponse response
     );
 }
