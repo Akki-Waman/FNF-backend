@@ -134,5 +134,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "ORDER BY COUNT(t.ticketId) DESC"
     )
     List<ChartItemDTO> getTicketsByAssignee();
+
+
 }
 

@@ -56,4 +56,11 @@ public interface ReportController {
             @RequestBody ResolutionPenaltyRequestDTO requestDto
     );
 
+    @PostMapping("/resolution-penalty/export")
+    ResponseEntity<Void> exportResolutionPenaltyReport(
+            @RequestBody ResolutionPenaltyRequestDTO requestDto,
+            @RequestParam String format,
+            HttpServletResponse response
+    );
+
 }
