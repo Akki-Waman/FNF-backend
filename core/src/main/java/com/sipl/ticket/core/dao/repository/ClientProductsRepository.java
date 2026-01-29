@@ -80,12 +80,14 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
 
     @Query(
             "SELECT cp FROM ClientProducts cp " +
-                    "WHERE (:branchId IS NULL OR cp.branch.branchId = :branchId) " +
+                    "WHERE cp.isActive = true " +
+                    "AND (:branchId IS NULL OR cp.branch.branchId = :branchId) " +
                     "ORDER BY cp.deviceName ASC"
     )
     List<ClientProducts> findClientProducts(
             @Param("branchId") Integer branchId
     );
+
 
 
 }

@@ -23,11 +23,13 @@ public interface DivisionsRepository extends JpaRepository<Divisions, Long> {
 
     @Query(
             "SELECT d FROM Divisions d " +
-                    "WHERE (:companyId IS NULL OR d.company.companyId = :companyId) " +
+                    "WHERE d.isActive = true " +
+                    "AND (:companyId IS NULL OR d.company.companyId = :companyId) " +
                     "ORDER BY d.divisionName ASC"
     )
     List<Divisions> findDivisions(
             @Param("companyId") Long companyId
     );
+
 
 }

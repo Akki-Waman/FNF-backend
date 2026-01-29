@@ -23,7 +23,8 @@ public interface ZoneRepository extends JpaRepository<Zone, Long> {
 
     @Query(
             "SELECT z FROM Zone z " +
-                    "WHERE (:companyId IS NULL OR z.company.companyId = :companyId) " +
+                    "WHERE z.isActive = true " +
+                    "AND (:companyId IS NULL OR z.company.companyId = :companyId) " +
                     "ORDER BY z.zoneName ASC"
     )
     List<Zone> findZones(

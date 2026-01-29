@@ -49,12 +49,14 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     @Query(
             "SELECT d FROM Department d " +
                     "WHERE d.isDelete = false " +
+                    "AND d.isActive = true " +
                     "AND (:branchId IS NULL OR d.branch.branchId = :branchId) " +
                     "ORDER BY d.departmentName ASC"
     )
     List<Department> findDepartments(
             @Param("branchId") Integer branchId
     );
+
 
 
 }

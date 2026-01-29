@@ -20,10 +20,12 @@ public interface RegionRepository extends JpaRepository<Region, Long> {
 
     @Query(
             "SELECT r FROM Region r " +
-                    "WHERE (:companyId IS NULL OR r.company.companyId = :companyId) " +
+                    "WHERE r.isActive = true " +
+                    "AND (:companyId IS NULL OR r.company.companyId = :companyId) " +
                     "ORDER BY r.regionName ASC"
     )
     List<Region> findRegions(
             @Param("companyId") Long companyId
     );
+
 }
