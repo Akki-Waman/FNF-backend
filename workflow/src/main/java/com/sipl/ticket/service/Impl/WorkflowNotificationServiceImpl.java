@@ -9,9 +9,11 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkflowNotificationDTO;
 import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
 import com.sipl.ticket.core.mapper.WorkflowNotificationMapper;
+import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.service.WorkflowNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,20 +35,21 @@ public class WorkflowNotificationServiceImpl implements WorkflowNotificationServ
 
     private final WorkflowNotificationRepository workflowNotificationRepository;
     private final WorkflowNotificationMapper workflowNotificationMapper;
+    private final @Qualifier("helperUserManager") UserManager userManager;
+    private final HttpServletRequest request;
 
     @Override
     public ApiResponseDTO<WorkflowNotificationDTO> addWorkflowNotification(WorkflowNotificationDTO workflowNotificationDto) {
         log.info("<<START>> addWorkflowNotification called");
-
         Integer instanceId = workflowNotificationDto.getInstance().getWorkflowInstanceId();
         //Integer stepId = workflowNotificationDto.getStep().getWorkFlowStepsId();
-        Long userId = workflowNotificationDto.getUser().getId();
-
+  //      Long userId = workflowNotificationDto.getUser().getId();
         WorkflowNotification entity = workflowNotificationMapper.toEntity(workflowNotificationDto);
+        entity.setCreatedBy(userManager.getUser(request));
+        entity.setCreatedTime(LocalDateTime.now());
         WorkflowNotification savedEntity = workflowNotificationRepository.save(entity);
         WorkflowNotificationDTO savedDto = workflowNotificationMapper.toDto(savedEntity);
         log.info("<<END>> addWorkflowNotification success");
-
         return new ApiResponseDTO<>(savedDto, "Workflow notification service added successfully", HttpStatus.OK, false);
 
     }

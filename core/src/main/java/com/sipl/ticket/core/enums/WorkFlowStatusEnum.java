@@ -2,9 +2,9 @@ package com.sipl.ticket.core.enums;
 
 
 public enum WorkFlowStatusEnum {
-    CREATED(1),            // Ticket user ne create kiya
-    IN_PROGRESS(2),        // Engineer kaam kar raha hai
-    APPROVED(3),           // Manager/Approver ne approve kiya
+    CREATED(1),
+    IN_PROGRESS(2),
+    APPROVED(3),
     REJECTED(4);
 ;
     private final int code;

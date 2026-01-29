@@ -1,10 +1,7 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.TicketController;
-import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
-import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
-import com.sipl.ticket.core.dto.request.TicketStatusRequestDTO;
+import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
@@ -122,4 +119,13 @@ public class TicketControllerImpl implements TicketController {
     }
 
 
+    @Override
+    public ResponseEntity<ApiResponseDTO<String>> requestTicketApproval(ApprovalRequestDTO dto) {
+        log.info("<<START>> requestTicketApproval controller");
+        ApiResponseDTO<String> response =
+                ticketService.requestTicketApproval(dto);
+        log.info("<<END>> requestTicketApproval controller");
+
+        return ResponseEntity.ok(response);
+    }
 }
