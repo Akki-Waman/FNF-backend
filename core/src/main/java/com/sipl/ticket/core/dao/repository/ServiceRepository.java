@@ -54,10 +54,12 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
     @Query(
             "SELECT s FROM ServiceEntity s " +
                     "WHERE s.isDelete = false " +
+                    "AND s.isActive = true " +
                     "AND (:companyId IS NULL OR s.company.companyId = :companyId) " +
                     "ORDER BY s.serviceId DESC"
     )
     List<ServiceEntity> findServices(@Param("companyId") Long companyId);
+
 
 
 }

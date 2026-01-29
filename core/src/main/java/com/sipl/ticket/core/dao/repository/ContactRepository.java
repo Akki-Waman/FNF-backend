@@ -70,6 +70,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     @Query(
             "SELECT c FROM Contact c " +
                     "WHERE c.isDelete = false " +
+                    "AND c.isActive = true " +
                     "AND (:branchId IS NULL OR c.branch.branchId = :branchId) " +
                     "ORDER BY c.contactName ASC"
     )

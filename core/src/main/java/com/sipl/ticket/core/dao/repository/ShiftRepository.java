@@ -78,12 +78,12 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
     @Query(
             "SELECT s FROM Shift s " +
                     "WHERE s.isDeleted = false " +
+                    "AND s.isActive = true " +
                     "AND (:branchId IS NULL OR s.branch.branchId = :branchId) " +
                     "ORDER BY s.startTime ASC"
     )
-    List<Shift> findShifts(
-            @Param("branchId") Integer branchId
-    );
+    List<Shift> findShifts(@Param("branchId") Integer branchId);
+
 
 
 
