@@ -40,4 +40,13 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
             Pageable pageable
     );
 
+    @Query(
+            "SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Unit u " +
+                    "WHERE LOWER(u.unitName) = LOWER(:unitName) " +
+                    "AND u.isActive = true"
+    )
+    boolean existsActiveUnitByName(@Param("unitName") String unitName);
+
+
 }

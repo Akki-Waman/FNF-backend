@@ -49,7 +49,7 @@ public class UnitServiceImpl implements UnitService {
         try {
             String name = dto.getUnitName().trim();
 
-            if (repository.existsByUnitNameIgnoreCase(name)) {
+            if (repository.existsActiveUnitByName(name)) {
                 return new ApiResponseDTO<>(
                         null,
                         "Unit '" + name + "' already exists",
