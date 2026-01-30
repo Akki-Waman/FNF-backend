@@ -60,13 +60,18 @@ public class ContactControllerImpl implements ContactController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts(Integer branchId) {
+    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> getAllContacts(Integer branchId) {
+
         log.info("<<Start>> getAllContacts endpoint called <<Start>>");
-        ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> response =
+
+        ResponseEntity<ApiResponseDTO<ContactResponseDto>> response =
                 ResponseEntity.ok(contactService.getAllContacts(branchId));
+
         log.info("<<End>> getAllContacts endpoint called <<End>>");
+
         return response;
     }
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(

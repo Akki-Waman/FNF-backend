@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -271,7 +273,7 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    public ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts(
+    public ApiResponseDTO<ContactResponseDto> getAllContacts(
             Integer branchId
     ) {
 
@@ -282,8 +284,6 @@ public class ContactServiceImpl implements ContactService {
                     contactRepository.findContacts(branchId);
 
             if (contacts.isEmpty()) {
-                log.warn("No contacts found");
-
                 return new ApiResponseDTO<>(
                         null,
                         "No contacts found",
@@ -292,30 +292,20 @@ public class ContactServiceImpl implements ContactService {
                 );
             }
 
-            List<ContactResponseDto> response =
-                    contactMapper.toResponseDtoList(contacts);
-
-            log.info(
-                    "Contacts fetched successfully, totalRecords={}",
-                    response.size()
-            );
+            List<ContactResponseDto> list = contacts.stream()
+                    .map(contactMapper::toResponseDto)
+                    .collect(Collectors.toList());
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            response,
-                            0,
-                            response.size(),
-                            1,
-                            response.size(),
-                            true
-                    ),
-                    "Contacts fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Contacts fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("Unexpected error while fetching all contacts", e);
+            log.error("getAllContacts error", e);
 
             return new ApiResponseDTO<>(
                     null,
@@ -325,7 +315,6 @@ public class ContactServiceImpl implements ContactService {
             );
         }
     }
-
 
 
     @Override

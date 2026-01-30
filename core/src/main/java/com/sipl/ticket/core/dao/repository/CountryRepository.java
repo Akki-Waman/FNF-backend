@@ -46,4 +46,13 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT COUNT(c) FROM Country c " +
+            "WHERE LOWER(c.countryName) = LOWER(:name) " +
+            "AND c.isActive = true " +
+            "AND c.isDeleted = false")
+    long countActiveCountry(@Param("name") String name);
+
+
+
+
 }

@@ -39,9 +39,10 @@ public interface ContactController {
     );
 
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts(
+    ResponseEntity<ApiResponseDTO<ContactResponseDto>> getAllContacts(
             @RequestParam(required = false) Integer branchId
     );
+
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
