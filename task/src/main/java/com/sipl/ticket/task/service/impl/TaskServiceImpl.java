@@ -773,13 +773,6 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public ApiResponseDTO<List<TaskStatusCountDto>> getTaskSummary(Users user) {
         try {
-            ApiResponseDTO<List<TaskStatusCountDto>> validation =
-                    validateUser(user);
-
-            if (validation != null) {
-                log.warn("Task summary aborted due to validation failure");
-                return validation;
-            }
 
             log.info("Fetching unified task summary for userId={}", user.getId());
 
