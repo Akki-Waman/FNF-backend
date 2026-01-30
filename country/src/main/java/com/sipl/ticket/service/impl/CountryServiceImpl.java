@@ -51,7 +51,7 @@ public class CountryServiceImpl implements CountryService {
         try {
             String name = dto.getCountryName().trim();
 
-            if (repository.existsByCountryNameIgnoreCase(name)) {
+            if (repository.countActiveCountry(name) > 0) {
                 return new ApiResponseDTO<>(
                         null,
                         "Country already exists",
@@ -59,6 +59,7 @@ public class CountryServiceImpl implements CountryService {
                         true
                 );
             }
+
 
             Country country = mapper.toEntity(dto);
             country.setCountryName(name);
