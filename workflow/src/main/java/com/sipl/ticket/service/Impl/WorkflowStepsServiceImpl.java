@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.request.WorkFlowStepsSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkflowStepsDTO;
+import com.sipl.ticket.core.helper.WorkflowStepsExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkflowStepsMapper;
 import com.sipl.ticket.service.WorkflowStepsService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -247,5 +251,57 @@ public class WorkflowStepsServiceImpl implements WorkflowStepsService {
             );
         }
     }
+    @Override
+    @Transactional(readOnly = true)
+    public void exportWorkflowStepsCsv(
+            WorkFlowStepsSearchRequestDTO request,
+            HttpServletResponse response) {
+
+        log.info("Request | workFlowStepsId={} | workFlowDefinitionId={} | stepOrder={} | stepName={} | roleId={} | isFinalApprover={}",
+                request.getWorkFlowStepsId(),
+                request.getWorkFlowDefinitionId(),
+                request.getStepOrder(),
+                request.getStepName(),
+                request.getRoleId(),
+                request.getIsFinalApprover());
+
+        try {
+            Page<WorkflowSteps> page =
+                    workflowStepsRepository.findBySearchQuery(
+                            request.getStepName(),
+                            request.getRoleId(),
+                            request.getIsFinalApprover(),
+                            request.getStepOrder(),
+                            request.getWorkFlowDefinitionId(),
+                            request.getWorkFlowStepsId(),
+                            Pageable.unpaged()
+                    );
+
+            log.info("Total elements = {}", page.getTotalElements());
+            log.info("Content size = {}", page.getContent().size());
+
+            List<WorkflowSteps> steps = page.getContent();
+
+            if (steps.isEmpty()) {
+                log.warn("No workflow steps found for given criteria");
+            }
+
+            List<WorkflowStepsDTO> dtos = new ArrayList<>();
+            for (WorkflowSteps ws : steps) {
+                dtos.add(workflowStepsMapper.toDto(ws));
+            }
+
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
+            WorkflowStepsExcelGenerator.generateExcel(dtos, response);
+
+            log.info("Excel generated successfully | file=workflow_steps.xlsx");
+
+        } catch (Exception e) {
+            log.error("Error while exporting workflow steps", e);
+            throw new RuntimeException("Failed to export workflow steps CSV", e);
+        }
+    }
+
 
 }

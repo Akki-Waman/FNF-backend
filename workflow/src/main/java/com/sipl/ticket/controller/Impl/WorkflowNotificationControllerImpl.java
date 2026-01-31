@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -40,4 +42,20 @@ public class WorkflowNotificationControllerImpl implements WorkflowNotificationC
         log.info("<<END>> resendMail <<END>>");
         return responseEntity;
     }
+
+    @Override
+    public ResponseEntity<Void> exportWorkflowNotificationsCsv(
+            WorkflowNotificationRequestDTO request,
+            HttpServletResponse response) {
+
+        log.info("<<Start>> exportWorkflowNotificationsCsv");
+
+        workflowNotificationService
+                .exportWorkflowNotificationsCsv(request, response);
+
+        log.info("<<End>> exportWorkflowNotificationsCsv");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

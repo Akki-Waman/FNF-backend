@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -80,4 +82,20 @@ public class WorkflowStepsControllerImpl implements WorkflowStepsController {
         log.info("<<END>> searchWorkFlowDefinitionsByPagination <<END>>");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @Override
+    public ResponseEntity<Void> exportWorkflowStepsCsv(
+            WorkFlowStepsSearchRequestDTO request,
+            HttpServletResponse response) {
+
+        log.info("<<Start>> exportWorkflowStepsCsv");
+
+        workflowStepsService
+                .exportWorkflowStepsCsv(request, response);
+
+        log.info("<<End>> exportWorkflowStepsCsv");
+
+        return ResponseEntity.ok().build();
+    }
+
 }
