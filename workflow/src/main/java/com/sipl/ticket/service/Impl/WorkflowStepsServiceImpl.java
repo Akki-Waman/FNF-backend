@@ -257,7 +257,6 @@ public class WorkflowStepsServiceImpl implements WorkflowStepsService {
             WorkFlowStepsSearchRequestDTO request,
             HttpServletResponse response) {
 
-        log.info("<<Start>> exportWorkflowStepsCsv");
         log.info("Request | workFlowStepsId={} | workFlowDefinitionId={} | stepOrder={} | stepName={} | roleId={} | isFinalApprover={}",
                 request.getWorkFlowStepsId(),
                 request.getWorkFlowDefinitionId(),
@@ -301,8 +300,6 @@ public class WorkflowStepsServiceImpl implements WorkflowStepsService {
         } catch (Exception e) {
             log.error("Error while exporting workflow steps", e);
             throw new RuntimeException("Failed to export workflow steps CSV", e);
-        } finally {
-            log.info("<<End>> exportWorkflowStepsCsv");
         }
     }
 
