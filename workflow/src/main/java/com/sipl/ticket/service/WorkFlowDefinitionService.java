@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkFlowDefinitionDTO;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface WorkFlowDefinitionService {
     ApiResponseDTO<WorkFlowDefinitionDTO> addWorkFlowDefinition(WorkFlowDefinitionDTO workFlowDefinitionDto);
@@ -20,4 +22,7 @@ public interface WorkFlowDefinitionService {
     ApiResponseDTO<Void> deleteWorkFlowDefinitionById(Integer id);
 
     ApiResponseDTO<PagedResponse<WorkFlowDefinitionDTO>> searchWorkFlowDefinitionsByPagination(WorkFlowDefinitionSearchRequestDTO request);
+
+    void exportWorkFlowDefinitionCsv(WorkFlowDefinitionSearchRequestDTO request, HttpServletResponse response);
+
 }

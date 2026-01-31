@@ -7,6 +7,7 @@ import com.sipl.ticket.core.dto.request.WorkFlowDefinitionSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkFlowDefinitionDTO;
+import com.sipl.ticket.core.helper.WorkflowExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkFlowDefinitionMapper;
 import com.sipl.ticket.service.WorkFlowDefinitionService;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -53,19 +58,19 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
                     savedDefinition.getWorkFlowDefinitionId());
             return new ApiResponseDTO<>(
                     responseDto,
-                    "Workflow definition added successfully." ,  HttpStatus.CREATED,
+                    "Workflow definition added successfully.", HttpStatus.CREATED,
                     false);
         } catch (IllegalArgumentException e) {
             log.warn("Validation failed in addWorkFlowDefinition: {}", e.getMessage());
             return new ApiResponseDTO<>(
                     null,
-                    e.getMessage() ,  HttpStatus.BAD_REQUEST,
+                    e.getMessage(), HttpStatus.BAD_REQUEST,
                     true);
         } catch (Exception e) {
             log.error("Exception occurred in addWorkFlowDefinition: ", e);
             return new ApiResponseDTO<>(
                     null,
-                   null ,  HttpStatus.INTERNAL_SERVER_ERROR,
+                    null, HttpStatus.INTERNAL_SERVER_ERROR,
                     true);
         }
     }
@@ -131,21 +136,21 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             log.info("WorkFlowDefinition updated successfully for ID: {}", dto.getWorkFlowDefinitionId());
             return new ApiResponseDTO<>(
                     responseDto,
-                    "Workflow definition updated successfully." ,  HttpStatus.OK,
+                    "Workflow definition updated successfully.", HttpStatus.OK,
                     false);
 
         } catch (IllegalArgumentException e) {
             log.warn("Validation failed in updateWorkFlowDefinition: {}", e.getMessage());
             return new ApiResponseDTO<>(
                     null,
-                    e.getMessage() ,  HttpStatus.BAD_REQUEST,
+                    e.getMessage(), HttpStatus.BAD_REQUEST,
                     true);
 
         } catch (Exception e) {
             log.error("Exception occurred in updateWorkFlowDefinition: ", e);
             return new ApiResponseDTO<>(
                     null,
-                    "INTERNAL_SERVER_ERROR" ,  HttpStatus.INTERNAL_SERVER_ERROR,
+                    "INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR,
                     true);
         }
     }
@@ -209,19 +214,19 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             log.info("WorkFlowDefinition retrieved successfully for ID: {}", id);
             return new ApiResponseDTO<>(
                     dto,
-                    "Workflow definition retrieved successfully.",  HttpStatus.OK,
+                    "Workflow definition retrieved successfully.", HttpStatus.OK,
                     false);
         } catch (IllegalArgumentException e) {
             log.warn("Not found in getWorkFlowDefinitionById: {}", e.getMessage());
             return new ApiResponseDTO<>(
                     null,
-                    e.getMessage(),  HttpStatus.NOT_FOUND,
+                    e.getMessage(), HttpStatus.NOT_FOUND,
                     true);
         } catch (Exception e) {
             log.error("Exception occurred in getWorkFlowDefinitionById: ", e);
             return new ApiResponseDTO<>(
                     null,
-                    "INTERNAL_SERVER_ERROR",  HttpStatus.INTERNAL_SERVER_ERROR,
+                    "INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR,
                     true);
         }
     }
@@ -240,17 +245,17 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
                         LocalDateTime.now()
                 );
             }
-                List<WorkFlowDefinitionDTO> dtos =
-                        activeEntities.stream().map(workFlowDefinitionMapper::toDto).collect(Collectors.toList());
+            List<WorkFlowDefinitionDTO> dtos =
+                    activeEntities.stream().map(workFlowDefinitionMapper::toDto).collect(Collectors.toList());
 
-                log.info("Retrieved {} active workflow definitions", dtos.size());
-                return new ApiResponseDTO<>(
-                        dtos,
-                        HttpStatus.OK,
-                        "Active workflow definitions retrieved successfully.",
-                        false,
-                        LocalDateTime.now()
-                );
+            log.info("Retrieved {} active workflow definitions", dtos.size());
+            return new ApiResponseDTO<>(
+                    dtos,
+                    HttpStatus.OK,
+                    "Active workflow definitions retrieved successfully.",
+                    false,
+                    LocalDateTime.now()
+            );
         } catch (Exception e) {
             log.error("Exception occurred in getAllWorkFlowDefinitions: ", e);
             return new ApiResponseDTO<>(
@@ -279,24 +284,24 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             log.info("WorkFlowDefinition-deleted successfully for ID: {}", id);
             return new ApiResponseDTO<>(
                     null,
-                    "Workflow definition deleted successfully.",  HttpStatus.OK,
+                    "Workflow definition deleted successfully.", HttpStatus.OK,
                     false);
         } catch (DataIntegrityViolationException e) {
             return new ApiResponseDTO<>(
                     null,
-                    "Cannot delete workflow definition because it is being used in one or more workflow instances.",  HttpStatus.CONFLICT,
+                    "Cannot delete workflow definition because it is being used in one or more workflow instances.", HttpStatus.CONFLICT,
                     false);
         } catch (IllegalArgumentException e) {
             log.warn("Not found in deleteWorkFlowDefinitionById: {}", e.getMessage());
             return new ApiResponseDTO<>(
                     null,
-                    e.getMessage(),  HttpStatus.NOT_FOUND,
+                    e.getMessage(), HttpStatus.NOT_FOUND,
                     true);
         } catch (Exception e) {
             log.error("Exception occurred in deleteWorkFlowDefinitionById: ", e);
             return new ApiResponseDTO<>(
                     null,
-                    "INTERNAL_SERVER_ERROR",  HttpStatus.INTERNAL_SERVER_ERROR,
+                    "INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR,
                     true);
         }
     }
@@ -382,5 +387,51 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             );
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportWorkFlowDefinitionCsv(
+            WorkFlowDefinitionSearchRequestDTO request,
+            HttpServletResponse response) {
+
+        try {
+            log.info("Export request received | name={} | entityType={}",
+                    request.getName(), request.getEntityType());
+
+            Page<WorkFlowDefinition> page =
+                    workFlowDefinitionRepository.searchWorkFlowDefinitions(
+                            request.getName(),
+                            request.getEntityType(),
+                            Pageable.unpaged()
+                    );
+
+            log.info("Search executed successfully");
+            log.info("Total elements fetched = {}", page.getTotalElements());
+            log.info("Records in current export batch = {}", page.getContent().size());
+
+            List<WorkFlowDefinition> workflows = page.getContent();
+
+            if (workflows.isEmpty()) {
+                log.warn("No workflow records found for given search criteria");
+            }
+
+            List<WorkFlowDefinitionDTO> dtos = new ArrayList<>();
+            for (WorkFlowDefinition wf : workflows) {
+                dtos.add(workFlowDefinitionMapper.toDto(wf));
+            }
+
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
+            WorkflowExcelGenerator.generateExcel(dtos, response);
+
+            log.info("Excel generated successfully | file=workflows.xlsx");
+
+        } catch (Exception e) {
+            log.error("Error while exporting workflows to Excel", e);
+            throw new RuntimeException("Failed to export workflows CSV", e);
+        }
+    }
+
+
 
 }

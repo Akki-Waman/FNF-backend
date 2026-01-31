@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RequestMapping("/api/v1/workflow-definition")
 @RestController
 @CrossOrigin(origins = "*")
@@ -49,4 +51,11 @@ public interface WorkFlowDefinitionController {
     ResponseEntity<ApiResponseDTO<PagedResponse<WorkFlowDefinitionDTO>>> searchWorkFlowDefinitionsByPagination(
             @RequestBody WorkFlowDefinitionSearchRequestDTO request);
 
+    @PostMapping("/export")
+    ResponseEntity<Void> exportWorkFlowDefinitionCsv(
+            @RequestBody WorkFlowDefinitionSearchRequestDTO request,
+            HttpServletResponse response);
 }
+
+
+
