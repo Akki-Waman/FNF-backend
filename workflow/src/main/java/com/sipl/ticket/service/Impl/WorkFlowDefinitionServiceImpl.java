@@ -395,28 +395,43 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             HttpServletResponse response) {
 
         try {
+            log.info("Export request received | name={} | entityType={}",
+                    request.getName(), request.getEntityType());
+
             Page<WorkFlowDefinition> page =
                     workFlowDefinitionRepository.searchWorkFlowDefinitions(
                             request.getName(),
                             request.getEntityType(),
                             Pageable.unpaged()
                     );
-            log.info("Total elements = {}", page.getTotalElements());
-            log.info("Content size = {}", page.getContent().size());
+
+            log.info("Search executed successfully");
+            log.info("Total elements fetched = {}", page.getTotalElements());
+            log.info("Records in current export batch = {}", page.getContent().size());
 
             List<WorkFlowDefinition> workflows = page.getContent();
+
+            if (workflows.isEmpty()) {
+                log.warn("No workflow records found for given search criteria");
+            }
 
             List<WorkFlowDefinitionDTO> dtos = new ArrayList<>();
             for (WorkFlowDefinition wf : workflows) {
                 dtos.add(workFlowDefinitionMapper.toDto(wf));
             }
 
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
             WorkflowExcelGenerator.generateExcel(dtos, response);
 
+            log.info("Excel generated successfully | file=workflows.xlsx");
+
         } catch (Exception e) {
+            log.error("Error while exporting workflows to Excel", e);
             throw new RuntimeException("Failed to export workflows CSV", e);
         }
     }
+
 
 
 }
