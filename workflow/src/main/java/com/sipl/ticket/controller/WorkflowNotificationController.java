@@ -10,6 +10,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("api/v1/workflow-notification")
 @CrossOrigin("*")
@@ -24,4 +26,10 @@ public interface WorkflowNotificationController {
     @ApiOperation(value = "Resend mail approval status by notification id")
     ResponseEntity<ApiResponseDTO<Void>> resendMail(
             @PathVariable("workFlowNotificationId") Integer workFlowNotificationId);
+
+    @PostMapping("/export")
+    ResponseEntity<Void> exportWorkflowNotificationsCsv(
+            @RequestBody WorkflowNotificationRequestDTO request,
+            HttpServletResponse response);
+
 }

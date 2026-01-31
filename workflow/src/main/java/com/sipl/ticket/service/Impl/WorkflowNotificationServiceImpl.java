@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkflowNotificationDTO;
 import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
+import com.sipl.ticket.core.helper.WorkflowNotificationExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkflowNotificationMapper;
 import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.service.WorkflowNotificationService;
@@ -20,9 +21,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -192,5 +196,53 @@ public class WorkflowNotificationServiceImpl implements WorkflowNotificationServ
                     true);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportWorkflowNotificationsCsv(
+            WorkflowNotificationRequestDTO request,
+            HttpServletResponse response) {
+
+        log.info("Request | status={} | notificationType={} | notificationId={}",
+                request.getStatus(),
+                request.getNotificationType(),
+                request.getWorkflowNotificationId());
+
+        try {
+            Page<WorkflowNotification> page =
+                    workflowNotificationRepository.findBySearchQuery(
+                            request.getStatus(),
+                            request.getNotificationType(),
+                            request.getWorkflowNotificationId(),
+                            Pageable.unpaged()
+                    );
+
+            log.info("Total elements = {}", page.getTotalElements());
+            log.info("Content size = {}", page.getContent().size());
+
+            List<WorkflowNotification> notifications = page.getContent();
+
+            if (notifications.isEmpty()) {
+                log.warn("No workflow notifications found for given criteria");
+            }
+
+            List<WorkflowNotificationDTO> dtos = new ArrayList<>();
+            for (WorkflowNotification wn : notifications) {
+                dtos.add(workflowNotificationMapper.toDto(wn));
+            }
+
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
+            WorkflowNotificationExcelGenerator.generateExcel(dtos, response);
+
+            log.info("Excel generated successfully | file=workflow_notifications.xlsx");
+
+        } catch (Exception e) {
+            log.error("Error while exporting workflow notifications", e);
+            throw new RuntimeException("Failed to export workflow notifications CSV", e);
+        }
+    }
+
+
 
 }

@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -50,4 +51,10 @@ public interface WorkflowStepsController {
     @ApiOperation(value = "Search Workflow Steps with filters and pagination")
     ResponseEntity<ApiResponseDTO<PagedResponse<WorkflowStepsDTO>>> searchWorkFlowStepsByPagination(
             @RequestBody WorkFlowStepsSearchRequestDTO request);
+
+    @PostMapping("/export")
+    ResponseEntity<Void> exportWorkflowStepsCsv(
+            @RequestBody WorkFlowStepsSearchRequestDTO request,
+            HttpServletResponse response);
+
 }
