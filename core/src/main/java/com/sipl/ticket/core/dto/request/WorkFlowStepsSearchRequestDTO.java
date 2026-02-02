@@ -14,7 +14,7 @@ public class WorkFlowStepsSearchRequestDTO {
     private Integer workFlowDefinitionId;
     private Integer stepOrder;
     private String stepName;
-    private Long roleId;
+    private Integer roleId;
     private Boolean isFinalApprover;
 
 }

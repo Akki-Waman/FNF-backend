@@ -139,7 +139,7 @@ public class EmailWorkflowServiceImpl implements EmailWorkflowService {
         Set<String> toSet = new LinkedHashSet<>();
       //  WorkflowSteps step = workflowInstance.getCurrentStep();
         log.info("Assignment mode: {}", step.getAssignmentMode());
-        log.info("Role ID: {}", step.getRole() != null ? step.getRole().getId() : null);
+        log.info("Role ID: {}", step.getRole() != null ? step.getRole().getUserRoleId() : null);
         log.info("Assigned user email: {}", workflowInstance.getAssignedUser() != null ? workflowInstance.getAssignedUser().getEmailId() : null);
         if (step == null) {
             log.warn("Workflow step is null for instance: {}", workflowInstance.getWorkflowInstanceId());
@@ -148,7 +148,7 @@ public class EmailWorkflowServiceImpl implements EmailWorkflowService {
         if (step.getAssignmentMode() != null) {
             if (step.getAssignmentMode().equals(1)) { // Role-based
                 if (step.getRole() != null) {
-                    List<String> roleUsers = userRolesRepository.findActiveUsersByRoleId(step.getRole().getId())
+                    List<String> roleUsers = userRolesRepository.findActiveUsersByRoleId(step.getRole().getUserRoleId())
                             .stream()
                             .map(Users::getEmailId)
                             .filter(Objects::nonNull)
@@ -177,12 +177,12 @@ public class EmailWorkflowServiceImpl implements EmailWorkflowService {
         Set<String> toSet = new LinkedHashSet<>();
       //  WorkflowSteps step = workflowStepsRepository.findWorkflowStepsId(workflowInstance.getCurrentStep().getWorkFlowStepsId());
         log.info("Assignment mode: {}", step.getAssignmentMode());
-        log.info("Role ID: {}", step.getRole() != null ? step.getRole().getId() : null);
+        log.info("Role ID: {}", step.getRole() != null ? step.getRole().getUserRoleId() : null);
         log.info("Assigned user email: {}", workflowInstance.getAssignedUser() != null ? workflowInstance.getAssignedUser().getEmailId() : null);
         if (step != null && step.getAssignmentMode() != null) {
             if (step.getAssignmentMode().equals(1)) { // Role-based
                 if (step.getRole() != null) {
-                    List<String> roleUsers = userRolesRepository.findActiveUsersByRoleId(step.getRole().getId())
+                    List<String> roleUsers = userRolesRepository.findActiveUsersByRoleId(step.getRole().getUserRoleId())
                             .stream()
                             .map(Users::getEmailId)
                             .filter(Objects::nonNull)
@@ -215,7 +215,7 @@ public class EmailWorkflowServiceImpl implements EmailWorkflowService {
                 ? Optional.ofNullable(userData.getFirstName()).orElse("") + " " + Optional.ofNullable(userData.getLastName()).orElse("")
                 : "Unknown User";
 
-        String roleName = workflowSteps.getRole() != null ? workflowSteps.getRole().getName() : "Unknown Role";
+        String roleName = workflowSteps.getRole() != null ? workflowSteps.getRole().getUserRoleName() : "Unknown Role";
 
         MailSendRequestDTO dto = new MailSendRequestDTO();
         dto.setNotifiedEmailId(toList);

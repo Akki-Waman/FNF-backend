@@ -1,6 +1,7 @@
 package com.sipl.ticket.core.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sipl.ticket.core.dao.entity.RbacUserRoles;
 import com.sipl.ticket.core.dao.entity.Roles;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class WorkflowStepsDTO extends AuditDto{
     private Integer stepOrder;
     private Integer assignmentMode;
     private String stepName;
-    private Roles role;
+    private RbacUserRoles role;
     private BigDecimal minAmount;
     private BigDecimal maxAmount;
     private Boolean isFinalApprover;

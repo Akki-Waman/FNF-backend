@@ -23,7 +23,7 @@ public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
 
     @Query("SELECT u FROM UserRoles urm JOIN urm.user u " +
             "WHERE urm.role.id = :roleId AND urm.isActive = true AND u.isActive = true")
-    List<Users> findActiveUsersByRoleId(@Param("roleId") Long roleId);
+    List<Users> findActiveUsersByRoleId(@Param("roleId") Integer roleId);
 
     @Query("SELECT r FROM Roles r " +
             "JOIN UserRoles urm ON urm.role.id = r.id " +
