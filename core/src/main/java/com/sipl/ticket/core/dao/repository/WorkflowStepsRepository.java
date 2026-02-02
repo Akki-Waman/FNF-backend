@@ -42,7 +42,7 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
     boolean existsByStepOrderAndWorkflowDefinitionIdAndRoleId(
             @Param("stepOrder") Integer stepOrder,
             @Param("workflowDefinitionId") Integer workflowDefinitionId,
-            @Param("roleId") Long roleId);
+            @Param("roleId") Integer roleId);
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws "
@@ -54,7 +54,7 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
                     + "AND (:workFlowStepsId IS NULL OR ws.workFlowStepsId = :workFlowStepsId)")
     Page<WorkflowSteps> findBySearchQuery(
             @Param("stepName") String stepName,
-            @Param("roleId") Long roleId,
+            @Param("roleId") Integer roleId,
             @Param("finalApprover") Boolean finalApprover,
             @Param("stepOrder") Integer stepOrder,
             @Param("workFlowDefinitionId") Integer workFlowDefinitionId,

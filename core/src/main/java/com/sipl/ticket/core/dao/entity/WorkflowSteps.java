@@ -31,7 +31,7 @@ public class WorkflowSteps extends AuditEntity{
 
     @ManyToOne
     @JoinColumn(name = "role_id")
-    private Roles role;
+    private RbacUserRoles role;
 
     private BigDecimal minAmount;
 

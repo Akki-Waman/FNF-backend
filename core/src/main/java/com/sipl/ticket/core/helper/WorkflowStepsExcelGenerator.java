@@ -91,7 +91,7 @@ public class WorkflowStepsExcelGenerator {
 
             Cell c5 = row.createCell(5);
             if (dto.getRole() != null) {
-                c5.setCellValue(dto.getRole().getId());
+                c5.setCellValue(dto.getRole().getUserRoleId());
             }
             c5.setCellStyle(dataStyle);
 
