@@ -402,7 +402,6 @@ public class TaskServiceImpl implements TaskService {
                 dto.getTaskStatus(),
                 pageable
         );
-
         if (pageResult.isEmpty()) {
             return new ApiResponseDTO<>(
                     null,

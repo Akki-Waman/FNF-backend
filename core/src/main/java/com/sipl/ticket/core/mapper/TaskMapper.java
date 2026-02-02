@@ -25,6 +25,10 @@ public interface TaskMapper extends AuditEntityMapper{
 
     List<TaskDto> mapTaskListToDtoList(List<Task> taskList);
 
+    @Mapping(source = "branch.branchId", target = "branchId")
+    @Mapping(source = "branch.branchName", target = "branchName")
+    @Mapping(source = "ticket.ticketId", target = "ticketId")
+    @Mapping(source = "ticket.subject", target = "ticketSubject")
     TaskCustomResponseDTO toCustomDto(Task task);
 
     @BeanMapping(ignoreByDefault = true)
