@@ -824,7 +824,7 @@ public class TaskServiceImpl implements TaskService {
 
         log.debug("User validation successful, userId={}, roleId={}",
                 user.getId(),
-                userRole.getRole().getId());
+                userRole.getRole().getUserRoleId());
 
         return null;
     }

@@ -149,7 +149,7 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
             Users userMaster = userManager.getUser(servletRequest);
 
             UserRoles userRoleMapping = userRolesRepository.findSingleByUserId(userMaster.getId());
-            Long roleId = userRoleMapping != null ? userRoleMapping.getRole().getId() : null;
+            Integer roleId = userRoleMapping != null ? userRoleMapping.getRole().getUserRoleId() : null;
 
             Page<WorkflowInstance> page = workflowInstanceRepository.findByFilters(
                     searchDto.getEntityType() != null ? searchDto.getEntityType() : null,
