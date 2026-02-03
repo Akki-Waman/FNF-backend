@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TaskStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,5 +45,7 @@ public interface TaskService {
 
     ApiResponseDTO<CombinedTaskResponseDto> getTaskById(Long taskId);
 
+    ApiResponseDTO<TaskDto> updateTaskStatus(
+            TaskStatusRequestDTO taskStatusRequestDTO);
 
 }

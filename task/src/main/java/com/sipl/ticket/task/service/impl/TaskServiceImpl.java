@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TaskExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
 import com.sipl.ticket.core.util.UserManager;
@@ -73,10 +74,9 @@ public class TaskServiceImpl implements TaskService {
         try {
             TaskRequestDto dto =
                     objectMapper.readValue(taskRequestDto, TaskRequestDto.class);
-            Optional<Ticket> fetchTicketData=ticketRepository.findById(dto.getTicketId());
-            if(fetchTicketData.isPresent())
-            {
-                Ticket ticket=fetchTicketData.get();
+            Optional<Ticket> fetchTicketData = ticketRepository.findById(dto.getTicketId());
+            if (fetchTicketData.isPresent()) {
+                Ticket ticket = fetchTicketData.get();
                 if (Boolean.TRUE.equals(ticket.getIsApproverRequired())
                         || ticket.getStatus().equals(7)) {
                     return new ApiResponseDTO<>(
@@ -910,7 +910,7 @@ public class TaskServiceImpl implements TaskService {
 
             List<Task> tasks =
                     taskRepository
-                            .searchTasks(null,null, search,null, Pageable.unpaged())
+                            .searchTasks(null, null, search, null, Pageable.unpaged())
                             .getContent();
 
             log.info("Tasks fetched successfully | count={}", tasks.size());
@@ -1205,6 +1205,61 @@ public class TaskServiceImpl implements TaskService {
                     true,
                     null,
                     null
+            );
+        }
+    }
+
+    @Override
+    public ApiResponseDTO<TaskDto> updateTaskStatus(
+            TaskStatusRequestDTO dto) {
+
+        log.info("Update task status request received. taskId={}, status={}",
+                dto != null ? dto.getTaskId() : null,
+                dto != null ? dto.getStatus() : null
+        );
+
+        try {
+            Task task = taskRepository.findById(dto.getTaskId())
+                    .orElseThrow(() -> {
+                        log.warn("Task not found. taskId={}", dto.getTaskId());
+                        return new ResourceNotFoundException("Task not found");
+                    });
+
+            Integer oldStatus = task.getStatus();
+
+            Map<Integer, String> statusMap =
+                    masterService.getTaskStatusMap();   // task status master
+
+            if (!statusMap.containsKey(dto.getStatus())) {
+                log.warn("Invalid task status code. status={}", dto.getStatus());
+                throw new IllegalArgumentException(
+                        "Invalid task status: " + dto.getStatus()
+                );
+            }
+
+            log.info("Updating task status. taskId={}, oldStatus={}, newStatus={}",
+                    dto.getTaskId(), oldStatus, dto.getStatus());
+
+            task.setStatus(dto.getStatus());
+            Task updatedTask = taskRepository.save(task);
+
+            TaskDto responseDto =
+                    taskMapper.toDto(updatedTask);
+
+            return new ApiResponseDTO<>(
+                    responseDto,
+                    "Task status updated successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception ex) {
+            log.error("Error while updating task status. taskId={}",
+                    dto != null ? dto.getTaskId() : null, ex);
+
+            throw new RuntimeException(
+                    "Failed to update task status",
+                    ex
             );
         }
     }

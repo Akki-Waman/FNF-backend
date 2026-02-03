@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TaskStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.helper.UserManager;
 import com.sipl.ticket.task.controller.TaskController;
@@ -133,6 +134,21 @@ public class TaskControllerImpl implements TaskController {
         ApiResponseDTO<CombinedTaskResponseDto> response =
                 taskService.getTaskById(taskId);
         log.info("<<END>> getTaskById <<END>>");
+        return ResponseEntity.ok(response);
+    }
+
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<TaskDto>> updateTaskStatus(
+            TaskStatusRequestDTO taskStatusRequestDTO) {
+
+        log.info("<<START>> updateTaskStatus controller");
+
+        ApiResponseDTO<TaskDto> response =
+                taskService.updateTaskStatus(taskStatusRequestDTO);
+
+        log.info("<<END>> updateTaskStatus controller");
+
         return ResponseEntity.ok(response);
     }
 

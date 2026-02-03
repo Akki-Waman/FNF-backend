@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TaskStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -88,5 +90,13 @@ public interface TaskController {
     public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> getTaskById(
             @PathVariable Long taskId
     );
+
+    @ApiOperation(
+            value = "Update existing task status",
+            notes = "Provide taskId and new status")
+    @PutMapping("/task/status")
+    public ResponseEntity<ApiResponseDTO<TaskDto>> updateTaskStatus(
+            @RequestBody TaskStatusRequestDTO taskStatusRequestDTO);
+
 
 }
