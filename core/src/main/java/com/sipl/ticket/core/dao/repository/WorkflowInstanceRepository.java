@@ -28,7 +28,7 @@ public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstan
             @Param("entityType") String entityType,
             @Param("status") Integer status,
             @Param("userId") Long userId,
-            @Param("roleId") Long roleId,
+            @Param("roleId") Integer roleId,
             Pageable pageable
     );
 

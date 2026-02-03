@@ -16,7 +16,7 @@ import javax.persistence.*;
 public class UserRoles{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -24,7 +24,7 @@ public class UserRoles{
 
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    private RbacUserRoles role;
 
     @Column(nullable = false)
     private boolean isActive = false;
