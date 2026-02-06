@@ -59,4 +59,7 @@ public class ClientProductsResponseDTO extends AuditDto{
     private Integer branchId;
     private String branchName;
 
+    private String deliveryNumber;
+    private LocalDate deliveryDate;
+
 }

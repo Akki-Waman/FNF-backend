@@ -97,4 +97,7 @@ public class ClientProducts extends AuditEntity {
     @JoinColumn(name = "branch_id")
     @JsonIgnore
     private Branches branch;
+
+    private String deliveryNumber;
+    private LocalDate deliveryDate;
 }
