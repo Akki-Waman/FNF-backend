@@ -1196,6 +1196,52 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<TicketCustomResponseDto> getAllTicketCustomDetails() {
+
+        try {
+
+            List<Ticket> tickets = ticketRepository.findByStatusNot(5);
+
+            if (tickets.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No tickets found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<TicketCustomResponseDto> response = tickets.stream()
+                    .map(t -> new TicketCustomResponseDto(
+                            t.getTicketId(),
+                            t.getSubject(),
+                            "#" + t.getTicketId() + "-" + t.getSubject()
+                    ))
+                    .collect(Collectors.toList());
+
+
+            return new ApiResponseDTO<TicketCustomResponseDto>(
+                    null,
+                    response,
+                    null,
+                    "Tickets fetched successfully",
+                    HttpStatus.OK,
+                    false,
+                    null,
+                    null
+            );
+
+        } catch (Exception e) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Failed to fetch tickets",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
     private WorkflowInstanceDTO createWorkflowInstance(Ticket ticket,Users assignedTo,String reason) {
         log.info("Creating workflow instance for ticket: {}", ticket.getTicketId());
         final String entityType = "Ticket";

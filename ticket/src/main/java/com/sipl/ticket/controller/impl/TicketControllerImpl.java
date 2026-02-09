@@ -128,4 +128,16 @@ public class TicketControllerImpl implements TicketController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<TicketCustomResponseDto>> getAllTicketCustomDetails() {
+        log.info("<<START>> getAllTicketCustomDetails controller");
+
+        ApiResponseDTO<TicketCustomResponseDto> response =
+                ticketService.getAllTicketCustomDetails();
+
+        log.info("<<END>> getAllTicketCustomDetails controller");
+
+        return ResponseEntity.ok(response);
+    }
 }
