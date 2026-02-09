@@ -1,5 +1,6 @@
 package com.sipl.ticket.report.controller;
 
+import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
 import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
@@ -61,6 +62,16 @@ public interface ReportController {
             @RequestBody ResolutionPenaltyRequestDTO requestDto,
             @RequestParam String format,
             HttpServletResponse response
+    );
+
+    @PostMapping("/activity-log-report")
+    @ApiOperation(
+            value = "Search Activity Log Report",
+            notes = "Fetch activity log report with pagination and date filter"
+    )
+    ResponseEntity<ApiResponseDTO<PagedResponse<ActivityLogReportResponseDto>>>
+    searchActivityLogReport(
+            @RequestBody ActivityLogReportRequestDto requestDto
     );
 
 }

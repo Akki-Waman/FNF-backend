@@ -1,9 +1,11 @@
 package com.sipl.ticket.report.service.impl;
 
 import com.sipl.ticket.core.dao.entity.*;
+import com.sipl.ticket.core.dao.repository.ActivityLogRepository;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
 import com.sipl.ticket.core.dao.repository.TicketResponseRepository;
+import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
 import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,7 @@ public class ReportServiceImpl implements ReportService {
     private final TicketRepository ticketRepository;
     private final MastersRepository mastersRepository;
     private final TicketResponseRepository ticketResponseRepository;
+    private final ActivityLogRepository activityLogRepository;
     private static final Integer TICKET_STATUS_COLUMN_CODE = 2;
     private static final Integer TICKET_PRIORITY_COLUMN_CODE = 3;
 
@@ -552,7 +556,95 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<PagedResponse<ActivityLogReportResponseDto>>
+    searchActivityLogReport(ActivityLogReportRequestDto dto) {
 
+        try {
+            Pageable pageable = PaginationUtil.pageable(
+                    dto.getPage(),
+                    dto.getSize(),
+                    dto.getSortBy(),
+                    dto.getSortDir()
+            );
+
+            LocalDateTime fromDateTime = null;
+            LocalDateTime toDateTime = null;
+
+            if (dto.getFromDate() != null) {
+                fromDateTime = dto.getFromDate().atStartOfDay(); // 00:00:00
+            }
+
+            if (dto.getToDate() != null) {
+                toDateTime = dto.getToDate().atTime(LocalTime.MAX); // 23:59:59.999999999
+            }
+
+
+            Page<ActivityLog> pageResult =
+                    activityLogRepository.searchActivityLogReport(
+                            fromDateTime,
+                            toDateTime,
+                            pageable
+                    );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No activity log records found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<ActivityLogReportResponseDto> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(this::mapToActivityLogReportDto)
+                            .collect(Collectors.toList());
+
+            PagedResponse<ActivityLogReportResponseDto> pagedResponse =
+                    new PagedResponse<>(
+                            content,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    );
+
+            return new ApiResponseDTO<>(
+                    pagedResponse,
+                    "Activity log report fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchActivityLogReport error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private ActivityLogReportResponseDto mapToActivityLogReportDto(ActivityLog log) {
+
+        ActivityLogReportResponseDto dto = new ActivityLogReportResponseDto();
+        dto.setActivityLogId(log.getActivityLogId());
+        dto.setDescription(log.getDescription());
+        dto.setStaffName(log.getStaffName());
+        dto.setIpAddress(log.getIpAddress());
+        dto.setCreatedTime(log.getCreatedTime());
+
+        if (log.getPerformedBy() != null) {
+            dto.setPerformedBy(log.getPerformedBy().getUserName());
+        }
+
+        return dto;
+    }
 
 }
 
