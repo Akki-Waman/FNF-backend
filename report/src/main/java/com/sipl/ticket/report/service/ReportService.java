@@ -1,5 +1,6 @@
 package com.sipl.ticket.report.service;
 
+import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
 import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
@@ -31,5 +32,7 @@ public interface ReportService {
             HttpServletResponse response
     );
 
+    ApiResponseDTO<PagedResponse<ActivityLogReportResponseDto>>
+    searchActivityLogReport(ActivityLogReportRequestDto requestDto);
 
 }

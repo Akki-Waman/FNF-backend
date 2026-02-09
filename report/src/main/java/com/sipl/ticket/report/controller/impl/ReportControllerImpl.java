@@ -1,5 +1,6 @@
 package com.sipl.ticket.report.controller.impl;
 
+import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
 import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.ResponsePenaltyRequestDTO;
 import com.sipl.ticket.core.dto.request.StaffTicketRequestDTO;
@@ -83,6 +84,20 @@ public class ReportControllerImpl implements ReportController {
 
         log.info("<<END>> exportResolutionPenaltyReport <<END>>");
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ActivityLogReportResponseDto>>> searchActivityLogReport(ActivityLogReportRequestDto requestDto) {
+        log.info("<<START>> searchActivityLogReport <<START>>");
+
+        ApiResponseDTO<PagedResponse<ActivityLogReportResponseDto>> response =
+                reportService.searchActivityLogReport(requestDto);
+
+        log.info("<<END>> searchActivityLogReport <<END>>");
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 
 
