@@ -4,11 +4,15 @@ import com.sipl.ticket.activityLog.service.ActivityLogService;
 import com.sipl.ticket.core.dao.entity.ActivityLog;
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dao.repository.ActivityLogRepository;
+import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
+import com.sipl.ticket.core.dto.response.ActivityLogReportResponseDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
+import com.sipl.ticket.core.helper.ActivityLogExportHelper;
 import com.sipl.ticket.core.util.RequestContextUtil;
 import com.sipl.ticket.core.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -16,6 +20,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 
+import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -132,6 +139,79 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 
         return dto;
     }
+
+    @Override
+    public void exportActivityLogs(
+            ActivityLogReportRequestDto requestDto,
+            String format,
+            HttpServletResponse response
+    ) {
+        if (format == null ||
+                !List.of("excel", "csv", "pdf")
+                        .contains(format.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid export format");
+        }
+        try {
+            Pageable pageable = Pageable.unpaged();
+            LocalDateTime fromDateTime = null;
+            LocalDateTime toDateTime = null;
+            if (requestDto != null) {
+                if (requestDto.getFromDate() != null) {
+                    fromDateTime = requestDto.getFromDate().atStartOfDay();
+                }
+                if (requestDto.getToDate() != null) {
+                    toDateTime = requestDto.getToDate().atTime(LocalTime.MAX);
+                }
+            }
+            Page<ActivityLog> pageResult =
+                    activityLogRepository.searchActivityLogReport(
+                            fromDateTime,
+                            toDateTime,
+                            pageable
+                    );
+            if (pageResult.isEmpty()) {
+                throw new RuntimeException("No activity log records found for export");
+            }
+            List<ActivityLogReportResponseDto> data =
+                    pageResult.getContent()
+                            .stream()
+                            .map(this::mapToActivityLogReportDto)
+                            .collect(Collectors.toList());
+            ActivityLogExportHelper.export(data, format, response);
+            log.info(
+                    "Activity Logs export completed | format={}, records={}",
+                    format,
+                    data.size()
+            );
+        } catch (Exception e) {
+            log.error("exportActivityLogs failed", e);
+            throw new RuntimeException(
+                    "Failed to export activity log report", e
+            );
+        }
+    }
+
+    private ActivityLogReportResponseDto mapToActivityLogReportDto(ActivityLog log) {
+        if (log == null) {
+            return null;
+        }
+        ActivityLogReportResponseDto dto = new ActivityLogReportResponseDto();
+        dto.setActivityLogId(log.getActivityLogId());
+        dto.setDescription(log.getDescription());
+        dto.setStaffName(log.getStaffName());
+        dto.setIpAddress(log.getIpAddress());
+        dto.setPerformedBy(
+                log.getPerformedBy() != null
+                        ? log.getPerformedBy().getUserName()
+                        : null
+        );
+        dto.setCreatedTime(
+                log.getCreatedTime()
+        );
+        return dto;
+    }
+
+
 
 
 }
