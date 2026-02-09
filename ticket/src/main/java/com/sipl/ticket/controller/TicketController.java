@@ -81,4 +81,11 @@ public interface TicketController {
     public ResponseEntity<ApiResponseDTO<String>> requestTicketApproval(
             @RequestBody ApprovalRequestDTO dto);
 
+    @ApiOperation(
+            value = "Get list of all ticket IDs",
+            notes = "Fetches list of active ticket IDs"
+    )
+    @GetMapping("/getByids")
+    ResponseEntity<ApiResponseDTO<TicketCustomResponseDto>> getAllTicketCustomDetails();
+
 }

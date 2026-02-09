@@ -34,4 +34,6 @@ public interface TicketService {
     ApiResponseDTO<TicketCombinedResponseDto> updateTicketStatus(TicketStatusRequestDTO ticketStatusRequestDTO);
 
     ApiResponseDTO<String> requestTicketApproval(ApprovalRequestDTO dto);
+
+    ApiResponseDTO<TicketCustomResponseDto> getAllTicketCustomDetails();
 }
