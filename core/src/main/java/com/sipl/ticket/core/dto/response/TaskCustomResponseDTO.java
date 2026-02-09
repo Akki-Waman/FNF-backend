@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -40,4 +41,6 @@ public class TaskCustomResponseDTO {
 
     private Long ticketId;
     private String ticketSubject;
+    private LocalDateTime timerStartTime;
+    private LocalDateTime timerStopTime;
 }
