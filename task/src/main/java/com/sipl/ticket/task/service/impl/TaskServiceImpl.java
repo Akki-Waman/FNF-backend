@@ -813,7 +813,7 @@ public class TaskServiceImpl implements TaskService {
         UserRoles userRole =
                 userRolesRepository.findSingleByUserId(user.getId());
 
-        if (userRole == null || !userRole.isActive()) {
+        if (userRole == null || !userRole.getIsActive()) {
             log.warn("User validation failed: inactive role, userId={}", user.getId());
             return new ApiResponseDTO<>(
                     "User role not found. Please contact administrator.",
@@ -824,7 +824,7 @@ public class TaskServiceImpl implements TaskService {
 
         log.debug("User validation successful, userId={}, roleId={}",
                 user.getId(),
-                userRole.getRole().getUserRoleId());
+                userRole.getUserUserRoleId());
 
         return null;
     }
