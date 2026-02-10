@@ -94,7 +94,12 @@ List<TaskResponseDTO> findTask(
         @Param("endDateTime") LocalDateTime endDateTime
 );
 
-
+    @Query(" SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END FROM Task t "+
+    "WHERE t.ticket.ticketId = :ticketId  AND t.isDeleted = false AND t.status <> :status ")
+    boolean existsByTicketIdAndStatusNot(
+            @Param("ticketId") Long ticketId,
+            @Param("status") Integer status
+    );
 
 }
 
