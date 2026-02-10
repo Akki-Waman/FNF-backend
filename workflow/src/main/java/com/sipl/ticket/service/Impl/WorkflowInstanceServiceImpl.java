@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dao.repository.WorkflowInstanceRepository;
 import com.sipl.ticket.core.dto.request.WorkflowInstanceSearchDTO;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
+import com.sipl.ticket.core.helper.WorkflowInstanceExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkflowInstanceMapper;
 import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.service.EmailWorkflowService;
@@ -23,8 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +53,7 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
     public ApiResponseDTO<WorkflowInstanceDTO> addWorkflowInstance(WorkflowInstanceDTO dto) {
         WorkflowInstance entity = workflowInstanceMapper.toEntity(dto);
         entity.setCreatedBy(userManager.getUser(request));
-        if(dto.getAssignedUser() !=null) {
+        if (dto.getAssignedUser() != null) {
             entity.setAssignedUser(dto.getAssignedUser());
         }
         WorkflowInstance saved = workflowInstanceRepository.save(entity);
@@ -90,7 +93,7 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
         updateWorkflowInstanceFields(dto, entityToUpdate);
         WorkflowInstance updated = workflowInstanceRepository.save(entityToUpdate);
         WorkflowInstanceDTO updatedDto = workflowInstanceMapper.toDto(updated);
-        return new ApiResponseDTO<>(null,"Workflow Instance updated successfully.", HttpStatus.OK, false);
+        return new ApiResponseDTO<>(null, "Workflow Instance updated successfully.", HttpStatus.OK, false);
     }
 
     private void updateWorkflowInstanceFields(
@@ -136,7 +139,6 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
             int pageNum = searchDto.getPageNum() != null ? searchDto.getPageNum() : 0;
             int pageSize = searchDto.getPageSize() != null ? searchDto.getPageSize() : 10;
             Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.DESC, "workflowInstanceId"));
-
             ApiResponseDTO<WorkflowInstanceDTO> validationResponse = validateUser(servletRequest);
             if (validationResponse != null) {
                 return new ApiResponseDTO<>(
@@ -148,8 +150,12 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
             }
             Users userMaster = userManager.getUser(servletRequest);
 
-            UserRoles userRoleMapping = userRolesRepository.findSingleByUserId(userMaster.getId());
-            Integer roleId = userRoleMapping != null ? userRoleMapping.getRole().getUserRoleId() : null;
+            UserRoles mapping =
+                    userRolesRepository.findFirstByUser_IdAndIsActiveTrueAndIsDeletedFalse(userMaster.getId());
+
+            RbacUserRoles role = mapping != null ? mapping.getUserRole() : null;
+
+            Integer roleId = role != null ? role.getUserRoleId() : null;
 
             Page<WorkflowInstance> page = workflowInstanceRepository.findByFilters(
                     searchDto.getEntityType() != null ? searchDto.getEntityType() : null,
@@ -214,11 +220,20 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
         if (userMaster == null) {
             return new ApiResponseDTO<>(null, "User not found.", HttpStatus.NOT_FOUND, true);
         }
+        log.info("User id " + userMaster.getId());
+        UserRoles userRoleMappingEntity =
+                userRolesRepository.findSingleByUserId(userMaster.getId());
 
-        UserRoles userRoleMappingEntity = userRolesRepository.findSingleByUserId(userMaster.getId());
         if (userRoleMappingEntity == null) {
-            return new ApiResponseDTO<>(null, "User role not found. Please contact administrator.", HttpStatus.NOT_FOUND, true);
+            log.warn("No role mapped for userId={}", userMaster.getId());
+            return new ApiResponseDTO<>(
+                    null,
+                    "User role not found. Please contact administrator.",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
         }
+
 
         return null;
     }
@@ -229,16 +244,78 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
         try {
             Optional<WorkflowInstance> optional = workflowInstanceRepository.findById(id);
             if (!optional.isPresent()) {
-                return new ApiResponseDTO<>(null,"WorkflowInstance not found", HttpStatus.NOT_FOUND, true);
+                return new ApiResponseDTO<>(null, "WorkflowInstance not found", HttpStatus.NOT_FOUND, true);
             }
 
             WorkflowInstance entity = optional.get();
 
             workflowInstanceRepository.delete(entity);
-            return new ApiResponseDTO<>(null,"Workflow Instance deleted successfully.", HttpStatus.OK, false);
+            return new ApiResponseDTO<>(null, "Workflow Instance deleted successfully.", HttpStatus.OK, false);
         } catch (Exception e) {
             log.error("Exception occurred at deleteWorkflowInstance ", e);
-            return new ApiResponseDTO<>(null,"INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, true);
+            return new ApiResponseDTO<>(null, "INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR, true);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportWorkflowInstanceCsv(
+            WorkflowInstanceSearchDTO request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse response) {
+
+        log.info("Request | entityType={} | workFlowStatus={}",
+                request.getEntityType(),
+                request.getWorkFlowStatus());
+
+        try {
+            Users userMaster = userManager.getUser(servletRequest);
+            log.info("Logged-in User | userId={}", userMaster.getId());
+
+            UserRoles userRoleMapping =
+                    userRolesRepository.findSingleByUserId(userMaster.getId());
+
+            Integer roleId = userRoleMapping != null
+                    ? userRoleMapping.getUserRole().getUserRoleId()
+                    : null;
+
+            log.info("User Role | roleId={}", roleId);
+
+            Page<WorkflowInstance> page =
+                    workflowInstanceRepository.findByFilters(
+                            request.getEntityType(),
+                            request.getWorkFlowStatus(),
+                            userMaster.getId(),
+                            roleId,
+                            Pageable.unpaged()
+                    );
+
+            log.info("DB Fetch Completed | totalElements={}", page.getTotalElements());
+
+            List<WorkflowInstance> instances = page.getContent();
+
+            if (instances.isEmpty()) {
+                log.warn("No workflow instances found for given filters");
+            } else {
+                log.info("Records fetched | count={}", instances.size());
+            }
+
+            List<WorkflowInstanceDTO> dtos = instances.stream()
+                    .map(workflowInstanceMapper::toDto)
+                    .collect(Collectors.toList());
+
+            log.info("Mapping completed | DTO count={}", dtos.size());
+
+            WorkflowInstanceExcelGenerator.generateExcel(dtos, response);
+
+            log.info("Excel generated successfully | file=workflow_instance.xlsx");
+
+        } catch (Exception e) {
+            log.error("Error while exporting workflow instances", e);
+            throw new RuntimeException("Failed to export workflow instances", e);
+        }
+
+    }
+
+
 }

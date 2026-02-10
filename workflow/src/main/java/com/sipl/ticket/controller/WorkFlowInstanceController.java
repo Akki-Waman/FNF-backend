@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("api/v1/workflow-instance")
@@ -27,6 +28,14 @@ public interface WorkFlowInstanceController {
     @ApiOperation(value = "Search Workflow Instances with filters and pagination")
     ResponseEntity<ApiResponseDTO<PagedResponse<WorkflowInstanceDTO>>> searchWorkflowInstancesByPagination(
             @RequestBody WorkflowInstanceSearchDTO searchDto, HttpServletRequest servletRequest);
+
+
+    @PostMapping("/export")
+    ResponseEntity<Void> exportWorkflowInstanceCsv(
+            @RequestBody WorkflowInstanceSearchDTO request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse response);
+
 
 
 

@@ -90,10 +90,12 @@ public class WorkflowStepsExcelGenerator {
             c4.setCellStyle(dataStyle);
 
             Cell c5 = row.createCell(5);
-            if (dto.getRole() != null) {
-                c5.setCellValue(dto.getRole().getUserRoleId());
+
+            if (dto.getRoleId() != null) {
+                c5.setCellValue(dto.getRoleId());
+            } else {
+                c5.setCellValue("");
             }
-            c5.setCellStyle(dataStyle);
 
             Cell c6 = row.createCell(6);
             c6.setCellValue(dto.getIsFinalApprover());

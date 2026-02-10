@@ -41,10 +41,10 @@ public class WorkflowStepsServiceImpl implements WorkflowStepsService {
     public ApiResponseDTO<WorkflowStepsDTO> addWorkflowSteps(WorkflowStepsDTO workflowStepsDto) {
         log.info("<<START>> addWorkflowSteps called");
         try {
-            log.info("Role ID: {}", workflowStepsDto.getRole().getUserRoleId());
+            log.info("Role ID: {}", workflowStepsDto.getRoleId());
 
             Integer workFlowDefId = workflowStepsDto.getWorkflowDefinition().getWorkFlowDefinitionId();
-            Integer roleId = workflowStepsDto.getRole().getUserRoleId();
+            Integer roleId = workflowStepsDto.getRoleId();
             Integer stepOrder = workflowStepsDto.getStepOrder();
             if (workflowStepsRepository.existsByStepOrderAndWorkflowDefinitionIdAndRoleId(
                     stepOrder, workFlowDefId, roleId)) {

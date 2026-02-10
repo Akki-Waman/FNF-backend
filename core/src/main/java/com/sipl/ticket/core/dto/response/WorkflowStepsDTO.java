@@ -21,7 +21,8 @@ public class WorkflowStepsDTO extends AuditDto{
     private Integer stepOrder;
     private Integer assignmentMode;
     private String stepName;
-    private RbacUserRoles role;
+    private Integer roleId;
+    private String roleName;
     private BigDecimal minAmount;
     private BigDecimal maxAmount;
     private Boolean isFinalApprover;
