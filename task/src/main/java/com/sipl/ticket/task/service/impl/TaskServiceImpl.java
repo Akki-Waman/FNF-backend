@@ -1237,6 +1237,23 @@ public class TaskServiceImpl implements TaskService {
                 );
             }
 
+            // If trying to complete task (5), timer must be started & stopped
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+
+                if (task.getTimerStartTime() == null
+                        || task.getTimerStopTime() == null) {
+
+                    log.warn(
+                            "Cannot complete task without timer start/stop. taskId={}",
+                            task.getTaskId()
+                    );
+
+                    throw new IllegalStateException(
+                            "Please start and stop task timer before completing the task."
+                    );
+                }
+            }
+
             log.info("Updating task status. taskId={}, oldStatus={}, newStatus={}",
                     dto.getTaskId(), oldStatus, dto.getStatus());
 
@@ -1253,6 +1270,21 @@ public class TaskServiceImpl implements TaskService {
                     false
             );
 
+        }
+        catch (IllegalStateException ex) {
+
+            log.warn(
+                    "Task status validation failed. taskId={}, message={}",
+                    dto != null ? dto.getTaskId() : null,
+                    ex.getMessage()
+            );
+
+            return new ApiResponseDTO<>(
+                    null,
+                    ex.getMessage(),
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
         } catch (Exception ex) {
             log.error("Error while updating task status. taskId={}",
                     dto != null ? dto.getTaskId() : null, ex);
