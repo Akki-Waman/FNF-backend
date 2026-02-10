@@ -667,6 +667,7 @@ public class TicketServiceImpl implements TicketService {
             dto.setStatus(status.getValueDesc());
         }
         dto.setPriority(getPriorityLabel(ticket.getPriority()));
+        dto.setLastReply(ticket.getResponseDateTime());
         List<LocalDateTime> replies =
                 ticketResponseRepository.findLastReplyTime(ticket.getTicketId());
         if (replies != null && !replies.isEmpty()) {
