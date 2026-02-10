@@ -162,9 +162,9 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         if (dto.getResponseBody() == null || dto.getResponseBody().trim().isEmpty()) {
             throw new RuntimeException("Response body is required");
         }
-        if (dto.getResponseType() == null || dto.getResponseType().trim().isEmpty()) {
-            throw new RuntimeException("Response type is required");
-        }
+//        if (dto.getResponseType() == null || dto.getResponseType().trim().isEmpty()) {
+//            throw new RuntimeException("Response type is required");
+//        }
     }
 
     // Save CC emails (new rows)
