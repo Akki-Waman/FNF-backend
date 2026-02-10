@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.WorkflowInstanceDTO;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 public interface WorkFlowInstanceService {
@@ -19,4 +20,11 @@ public interface WorkFlowInstanceService {
     ApiResponseDTO<PagedResponse<WorkflowInstanceDTO>> searchWorkflowInstancesByPagination(WorkflowInstanceSearchDTO searchDto, HttpServletRequest servletRequest);
 
     ApiResponseDTO<WorkflowInstanceDTO> deleteWorkflowInstanceById(Integer id);
+
+    void exportWorkflowInstanceCsv(
+            WorkflowInstanceSearchDTO request,
+            HttpServletRequest servletRequest,
+            HttpServletResponse response);
+
+
 }
