@@ -49,8 +49,8 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
 
                     "AND ( :branchId IS NULL OR p.branch.branchId = :branchId ) " +
 
-                    "AND ( :#{#productIds == null || #productIds.isEmpty()} = true " +
-                    "      OR p.productId IN :productIds ) " +
+                    "AND ( :#{#productName == null || #productName.isEmpty()} = true " +
+                    "      OR p.productName IN :productName ) " +
 
                     "AND ( :#{#brandIds == null || #brandIds.isEmpty()} = true " +
                     "      OR p.brands.brandId IN :brandIds ) " +
@@ -65,7 +65,7 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
                     "      OR p.productSubCategory.productSubCategoryId IN :subCategoryIds ) "
     )
     Page<Products> searchProducts(
-            @Param("productIds") List<Long> productIds,
+            @Param("productName") List<String> productName,
             @Param("brandIds") List<Long> brandIds,
             @Param("originIds") List<Long> originIds,
             @Param("categoryIds") List<Long> categoryIds,
