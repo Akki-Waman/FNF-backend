@@ -6,7 +6,7 @@ import java.util.List;
 @Data
 public class ProductSearchRequestDto extends SearchRequestDto {
 
-    private List<Long> productId;
+    private List<String> productName;
     private List<Long> brandId;
     private List<Long> originId;
     private List<Long> productCategoryId;
