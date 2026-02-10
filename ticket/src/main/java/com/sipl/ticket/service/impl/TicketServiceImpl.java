@@ -80,11 +80,12 @@ public class TicketServiceImpl implements TicketService {
     private final ShiftRepository shiftRepository;
     private final WorkFlowDefinitionRepository workFlowDefinitionRepository;
     private final WorkflowStepsRepository workflowStepsRepository;
+    private final TaskRepository taskRepository;
 
     private final WorkflowInstanceMapper workflowInstanceMapper;
     private final WorkFlowInstanceService workFlowInstanceService;
-   private final WorkflowNotificationService workflowNotificationService;
-   private final EmailWorkflowService emailWorkflowService;
+    private final WorkflowNotificationService workflowNotificationService;
+    private final EmailWorkflowService emailWorkflowService;
     private final @Qualifier("helperUserManager") UserManager userManager;
     private final HttpServletRequest request;
 
@@ -1075,37 +1076,85 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public ApiResponseDTO<TicketCombinedResponseDto> updateTicketStatus(
             TicketStatusRequestDTO dto) {
+
         log.info("Update ticket status request received. ticketId={}, status={}",
                 dto != null ? dto.getTicketId() : null,
                 dto != null ? dto.getStatus() : null
         );
+
         try {
             log.debug("Fetching ticket. ticketId={}", dto.getTicketId());
+
             Ticket ticket = ticketRepository.findById(dto.getTicketId())
                     .orElseThrow(() -> {
                         log.warn("Ticket not found. ticketId={}", dto.getTicketId());
                         return new ResourceNotFoundException("Ticket not found");
                     });
+
             Integer oldStatus = ticket.getStatus();
+
+            // If ticket is Approval Pending (7), do not allow status change
+            if (oldStatus != null && oldStatus == 7) {
+                log.warn(
+                        "Ticket is in Approval Pending state. Status change not allowed. ticketId={}",
+                        ticket.getTicketId()
+                );
+
+                throw new IllegalStateException(
+                        "Ticket is approval pending. Status cannot be changed."
+                );
+            }
+
             log.debug("Loading ticket master maps");
             Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
-            Map<Integer, String> statusMap   = masterService.getTicketStatusMap();
+            Map<Integer, String> statusMap = masterService.getTicketStatusMap();
+
             if (!statusMap.containsKey(dto.getStatus())) {
                 log.warn("Invalid status code received. status={}", dto.getStatus());
                 throw new IllegalArgumentException(
                         "Invalid status code: " + dto.getStatus()
                 );
             }
-            MasterContext masterContext =
-                    new MasterContext(priorityMap, statusMap);
+
+            // If trying to close the ticket (5)
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+
+                boolean hasIncompleteTasks =
+                        taskRepository.existsByTicketIdAndStatusNot(
+                                ticket.getTicketId(),
+                                5
+                        );
+
+                if (hasIncompleteTasks) {
+                    log.warn(
+                            "Cannot close ticket. Pending tasks exist. ticketId={}",
+                            ticket.getTicketId()
+                    );
+
+                    throw new IllegalStateException(
+                            "All tasks must be completed before closing the ticket."
+                    );
+                }
+
+                // Resolution datetime set when ticket is closed
+                ticket.setResolutionDateTime(LocalDateTime.now());
+            }
+
+            /* ================= UPDATE ================= */
             log.info("Updating ticket status. ticketId={}, oldStatus={}, newStatus={}",
                     dto.getTicketId(), oldStatus, dto.getStatus());
+
             ticket.setStatus(dto.getStatus());
             Ticket updatedTicket = ticketRepository.save(ticket);
+
+            MasterContext masterContext =
+                    new MasterContext(priorityMap, statusMap);
+
             TicketCombinedResponseDto responseDto =
                     ticketMapper.toCombinedResponseDto(updatedTicket, masterContext);
 
-            log.info("Ticket status updated successfully. ticketId={}", dto.getTicketId());
+            log.info("Ticket status updated successfully. ticketId={}",
+                    dto.getTicketId());
 
             return new ApiResponseDTO<>(
                     responseDto,
@@ -1114,7 +1163,21 @@ public class TicketServiceImpl implements TicketService {
                     false
             );
 
-        } catch (Exception ex) {
+        }catch (IllegalStateException ex) {
+
+                log.warn(
+                        "Business validation failed while updating ticket status. ticketId={}, message={}",
+                        dto != null ? dto.getTicketId() : null,
+                        ex.getMessage()
+                );
+
+                return new ApiResponseDTO<>(
+                        null,
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            } catch (Exception ex) {
             log.error("Error occurred while updating ticket status. ticketId={}",
                     dto != null ? dto.getTicketId() : null, ex);
 
@@ -1124,6 +1187,7 @@ public class TicketServiceImpl implements TicketService {
             );
         }
     }
+
 
     @Override
     public ApiResponseDTO<String> requestTicketApproval(ApprovalRequestDTO dto) {
