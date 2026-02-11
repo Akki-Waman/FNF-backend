@@ -345,7 +345,6 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                         "--------------------------------------------------\n" +
                         "Ticket ID     : %s\n" +
                         "Issue Subject : %s\n" +
-                        "Response Type : %s\n" +
                         "Status        : %s\n\n" +
                         "Response:\n" +
                         "%s\n" +
@@ -357,7 +356,6 @@ public class TicketResponseServiceImpl implements TicketResponseService {
                 customerName,
                 ticket.getTicketId(),
                 ticket.getSubject(),
-                ticketResponse.getResponseType(),
                 statusLine,
                 ticketResponse.getResponseBody()
         );
