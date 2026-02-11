@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -59,7 +60,7 @@ public class WorkflowActionServiceImpl implements WorkflowActionService {
                                                     "WorkflowInstance not found with ID: "
                                                             + instanceDto.getWorkflowInstanceId()));
             String stepStatus = null;
-            String message;
+            String message = "";
             if (WorkFlowStatusEnum.APPROVED.getCode() == workflowInstance.getWorkFlowStatus() ||
                     WorkFlowStatusEnum.REJECTED.getCode() == (workflowInstance.getWorkFlowStatus())) {
                 String statusName = WorkFlowStatusEnum.fromCode(workflowInstance.getWorkFlowStatus()).name();
@@ -91,21 +92,23 @@ public class WorkflowActionServiceImpl implements WorkflowActionService {
                 int currentOrder = currentStep.getStepOrder();
                 int definitionId = currentStep.getWorkflowDefinition().getWorkFlowDefinitionId();
                 workflowInstance.setWorkFlowStatus(WorkFlowStatusEnum.IN_PROGRESS.getCode());
-                Optional<WorkflowSteps> nextStepOpt =
+                List<WorkflowSteps> nextSteps =
                         workflowStepsRepository.findNextStep(definitionId, currentOrder + 1);
-                if (nextStepOpt.isPresent()) {
-                    workflowInstance.setCurrentStep(nextStepOpt.get());
-                    message = String.format(
-                            "Workflow action Approved. Next step '%s' is ready for action.",
-                            workflowInstance.getCurrentStep().getStepName()
-                    );
-                } else {
+
+                if (!nextSteps.isEmpty()) {
+                    workflowInstance.setCurrentStep(nextSteps.get(0));
+                    message = "Workflow action Approved. Next step '"
+                            + nextSteps.get(0).getStepName()
+                            + "' is ready for action.";
+
+            } else {
                     stepStatus = "APPROVED";
                     workflowInstance.setWorkFlowStatus(WorkFlowStatusEnum.APPROVED.getCode());
                     workflowInstance.setCompletedAt(LocalDateTime.now());
                     message = "Workflow has been approved and completed successfully.";
-                    updateTicketStatus(workflowInstance.getEntityId(),true);
+                    updateTicketStatus(workflowInstance.getEntityId(), true);
                 }
+
             } else {
                 return new ApiResponseDTO<>(null, "Please provide correct action 'Approved' or 'Rejected'.", HttpStatus.BAD_REQUEST, true);
             }

@@ -24,8 +24,9 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws WHERE ws.workflowDefinition.workFlowDefinitionId = :definitionId AND ws.stepOrder = :nextOrder")
-    Optional<WorkflowSteps> findNextStep(
-            @Param("definitionId") Integer definitionId, @Param("nextOrder") Integer nextOrder);
+    List<WorkflowSteps> findNextStep(
+            @Param("definitionId") Integer definitionId,
+            @Param("nextOrder") Integer nextOrder);
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws WHERE ws.stepOrder = :stepOrder AND ws.workflowDefinition.workFlowDefinitionId = :workflowDefinitionId AND ws.role.id = :roleId")
