@@ -590,7 +590,7 @@ public class ProductServiceImpl implements ProductService {
             } else if ("branchId".equalsIgnoreCase(sortBy)) {
                 sortBy = "branch.branchId";
             } else {
-                sortBy = "productName";
+                sortBy = "productId";
             }
 
             Pageable pageable = PageRequest.of(
@@ -603,7 +603,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             Page<Products> pageResult = productRepository.searchProducts(
-                    dto.getProductName(),
+                    dto.getProductId(),
                     dto.getBrandId(),
                     dto.getOriginId(),
                     dto.getProductCategoryId(),
