@@ -9,6 +9,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkFlowDefinitionDTO;
 import com.sipl.ticket.core.helper.WorkflowExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkFlowDefinitionMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.WorkFlowDefinitionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -311,18 +312,20 @@ public class WorkFlowDefinitionServiceImpl implements WorkFlowDefinitionService 
             WorkFlowDefinitionSearchRequestDTO request) {
 
         try {
-            Integer pageNum = Optional.ofNullable(request.getPageNum()).orElse(0);
-            Integer pageSize = Optional.ofNullable(request.getPageSize()).orElse(10);
+            Pageable pageable = PaginationUtil.pageable(
+                    request.getPage(),
+                    request.getSize(),
+                    request.getSortBy(),
+                    request.getSortDir()
+            );
 
             log.info(
                     "Searching WorkFlowDefinitions - name: {}, entityType: {}, pageNum: {}, pageSize: {}",
                     request.getName(),
                     request.getEntityType(),
-                    pageNum,
-                    pageSize
+                    request.getPage(),
+                    request.getSize()
             );
-
-            Pageable pageable = PageRequest.of(pageNum, pageSize);
 
             Page<WorkFlowDefinition> resultPage =
                     workFlowDefinitionRepository.searchWorkFlowDefinitions(

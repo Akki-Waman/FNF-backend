@@ -7,9 +7,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkFlowStepsSearchRequestDTO {
-    private Integer pageNum;
-    private Integer pageSize;
+public class WorkFlowStepsSearchRequestDTO extends SearchRequestDto{
     private Integer workFlowStepsId;
     private Integer workFlowDefinitionId;
     private Integer stepOrder;

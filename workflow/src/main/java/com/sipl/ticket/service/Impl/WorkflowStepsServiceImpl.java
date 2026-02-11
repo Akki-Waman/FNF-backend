@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.WorkflowStepsDTO;
 import com.sipl.ticket.core.helper.WorkflowStepsExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkflowStepsMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.WorkflowStepsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -181,9 +182,12 @@ public class WorkflowStepsServiceImpl implements WorkflowStepsService {
     public ApiResponseDTO<PagedResponse<WorkflowStepsDTO>> searchWorkFlowStepsByPagination(
             WorkFlowStepsSearchRequestDTO request) {
         try {
-            int pageNum = Optional.ofNullable(request.getPageNum()).orElse(0);
-            int pageSize = Optional.ofNullable(request.getPageSize()).orElse(10);
-            Pageable pageable = PageRequest.of(pageNum, pageSize);
+            Pageable pageable = PaginationUtil.pageable(
+                    request.getPage(),
+                    request.getSize(),
+                    request.getSortBy(),
+                    request.getSortDir()
+            );
             Page<WorkflowSteps> workflowStepsPage =
                     workflowStepsRepository.findBySearchQuery(
                             request.getStepName(),
