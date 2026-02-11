@@ -10,6 +10,7 @@ import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.enums.WorkFlowStatusEnum;
 import com.sipl.ticket.core.helper.WorkflowInstanceExcelGenerator;
 import com.sipl.ticket.core.mapper.WorkflowInstanceMapper;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.service.EmailWorkflowService;
 import com.sipl.ticket.service.WorkFlowInstanceService;
@@ -136,9 +137,12 @@ public class WorkflowInstanceServiceImpl implements WorkFlowInstanceService {
             WorkflowInstanceSearchDTO searchDto,
             HttpServletRequest servletRequest) {
         try {
-            int pageNum = searchDto.getPageNum() != null ? searchDto.getPageNum() : 0;
-            int pageSize = searchDto.getPageSize() != null ? searchDto.getPageSize() : 10;
-            Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.DESC, "workflowInstanceId"));
+            Pageable pageable = PaginationUtil.pageable(
+                    searchDto.getPage(),
+                    searchDto.getSize(),
+                    searchDto.getSortBy(),
+                    searchDto.getSortDir()
+            );
             ApiResponseDTO<WorkflowInstanceDTO> validationResponse = validateUser(servletRequest);
             if (validationResponse != null) {
                 return new ApiResponseDTO<>(
