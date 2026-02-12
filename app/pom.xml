@@ -160,6 +160,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>slaRuleDetail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>location</artifactId>
         </dependency>
         <dependency>
