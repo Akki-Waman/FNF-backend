@@ -1,6 +1,7 @@
 package com.sipl.ticket.service.impl;
 
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dto.response.CitySearchResponseDto;
 import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.CityExcelGenerator;
 import com.sipl.ticket.core.util.EntityStateValidator;
@@ -474,7 +475,7 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    public ApiResponseDTO<PagedResponse<CityResponseDto>> searchCities(
+    public ApiResponseDTO<PagedResponse<CitySearchResponseDto>> searchCities(
             CitySearchRequestDto dto) {
 
         try {
@@ -485,7 +486,7 @@ public class CityServiceImpl implements CityService {
                     dto.getSortDir()
             );
 
-            Page<City> pageResult =
+            Page<CitySearchResponseDto> pageResult =
                     repository.searchCities(
                             dto.getQuery(),
                             dto.getIsActive(),
@@ -501,14 +502,10 @@ public class CityServiceImpl implements CityService {
                 );
             }
 
-            List<CityResponseDto> content = pageResult.getContent()
-                    .stream()
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
-
-            PagedResponse<CityResponseDto> pagedResponse =
+            // ✅ DIRECT DTO (no mapper)
+            PagedResponse<CitySearchResponseDto> pagedResponse =
                     new PagedResponse<>(
-                            content,
+                            pageResult.getContent(),
                             pageResult.getNumber(),
                             pageResult.getTotalElements(),
                             pageResult.getTotalPages(),
@@ -533,6 +530,7 @@ public class CityServiceImpl implements CityService {
             );
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)

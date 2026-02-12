@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dto.request.CityRequestDto;
 import com.sipl.ticket.core.dto.request.CitySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CityResponseDto;
+import com.sipl.ticket.core.dto.response.CitySearchResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,7 @@ public interface CityService {
             Long stateId
     );
 
-    ApiResponseDTO<PagedResponse<CityResponseDto>> searchCities(
+    ApiResponseDTO<PagedResponse<CitySearchResponseDto>> searchCities(
             CitySearchRequestDto requestDto
     );
 

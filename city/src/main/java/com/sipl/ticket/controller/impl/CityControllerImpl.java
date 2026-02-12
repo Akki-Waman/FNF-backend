@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dto.request.CityRequestDto;
 import com.sipl.ticket.core.dto.request.CitySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CityResponseDto;
+import com.sipl.ticket.core.dto.response.CitySearchResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.service.CityService;
 import lombok.RequiredArgsConstructor;
@@ -100,12 +101,12 @@ public class CityControllerImpl implements CityController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<CityResponseDto>>> searchCities(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<CitySearchResponseDto>>> searchCities(
             CitySearchRequestDto requestDto) {
 
         log.info("Searching cities with request: {}", requestDto);
 
-        ApiResponseDTO<PagedResponse<CityResponseDto>> response =
+        ApiResponseDTO<PagedResponse<CitySearchResponseDto>> response =
                 cityService.searchCities(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
