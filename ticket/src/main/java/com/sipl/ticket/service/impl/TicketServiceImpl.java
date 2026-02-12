@@ -1261,7 +1261,8 @@ public class TicketServiceImpl implements TicketService {
 
         try {
 
-            List<Ticket> tickets = ticketRepository.findByStatusNot(5);
+            List<Ticket> tickets =
+                    ticketRepository.findByStatusNotIn(Arrays.asList(5, 7));
 
             if (tickets.isEmpty()) {
                 return new ApiResponseDTO<>(

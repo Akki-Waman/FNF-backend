@@ -136,8 +136,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<ChartItemDTO> getTicketsByAssignee();
 
 
-    @Query("SELECT t FROM Ticket t WHERE t.status <> :status")
-    List<Ticket> findByStatusNot(@Param("status") int status);
+    @Query("SELECT t FROM Ticket t WHERE t.status NOT IN :statuses")
+    List<Ticket> findByStatusNotIn(@Param("statuses") List<Integer> statuses);
+
 
 
 }

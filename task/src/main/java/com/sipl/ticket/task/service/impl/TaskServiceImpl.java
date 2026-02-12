@@ -147,7 +147,7 @@ public class TaskServiceImpl implements TaskService {
 
         Branches branch = getBranch(dto.getBranchId());
         Ticket ticket = getTicket(dto.getTicketId());
-
+        ticket.setStatus(2);
         Task task = new Task();
         mapBasicTaskFields(dto, task);
         mapOptionalTaskFields(dto, task);
@@ -181,6 +181,14 @@ public class TaskServiceImpl implements TaskService {
         if (dto.getTicketId() == null) {
             log.warn("Ticket ID is missing for Task with subject={}", dto.getSubject());
             throw new RuntimeException("Ticket is required");
+        }
+
+        Ticket ticket = ticketRepository.findById(dto.getTicketId())
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        if (Integer.valueOf(7).equals(ticket.getStatus())) {
+            log.warn("Task creation blocked. Ticket {} is pending for approval", dto.getTicketId());
+            throw new RuntimeException("Cannot create task. Ticket is pending for approval");
         }
     }
 
@@ -1078,7 +1086,7 @@ public class TaskServiceImpl implements TaskService {
 
         task.setTimerStartTime(now);
         task.setTimerStopTime(null);
-
+        task.setStatus(2);
         taskRepository.save(task);
 
         return buildSuccessResponse(
