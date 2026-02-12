@@ -13,22 +13,19 @@ public class SlaRuleDetailsDto extends AuditDto {
     private Integer slaRuleDetailId;
 
     private SlaProfileResponseDto slaProfile;
-
     private ServiceResponseDTO service;
 
     private Long severityMasterId;
-
     private Long slaTypeMasterId;
 
+    private Integer severityId;
+    private Integer slaTypeId;
+
     private Integer slaHours;
-
     private Integer graceHours;
-
     private Double penaltyPercent;
-
     private Boolean isActive;
-
+    private Boolean isDeleted;
     private Double maxPenaltyPercent;
-
     private String actionOnExceed;
 }

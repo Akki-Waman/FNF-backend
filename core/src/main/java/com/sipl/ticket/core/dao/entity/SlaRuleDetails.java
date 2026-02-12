@@ -36,6 +36,12 @@ public class SlaRuleDetails extends AuditEntity {
     @Column(name = "sla_type_master_id", nullable = false)
     private Long slaTypeMasterId;
 
+    @Column(name = "severity_id", nullable = false)
+    private Integer severityId;
+
+    @Column(name = "sla_type_id", nullable = false)
+    private Integer slaTypeId;
+
     @Column(nullable = false)
     private Integer slaHours;
 
@@ -46,6 +52,9 @@ public class SlaRuleDetails extends AuditEntity {
     private Double penaltyPercent;
 
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @Column(nullable = false)
     private Double maxPenaltyPercent;
