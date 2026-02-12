@@ -60,7 +60,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Object[]> countTicketsByStatus();
 
 
-    @Query("SELECT t.ticketId FROM Ticket t WHERE t.isDeleted = false")
+    @Query("SELECT t.ticketId FROM Ticket t WHERE t.isDeleted = false ORDER BY t.ticketId DESC")
     List<Long> findAllActiveTicketIds();
 
     @Query(

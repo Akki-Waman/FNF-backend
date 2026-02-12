@@ -146,6 +146,8 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         Ticket ticket = getTicket(dto.getTicket());
         ticketResponse.setTicket(ticketRepository.getReferenceById(dto.getTicket()));
         ticketResponse.setIsPublic(Boolean.TRUE.equals(dto.getIsPublic()));
+        Integer oldStatus = ticket.getStatus();
+        ticketResponse.setStatusBefore(statusMap.get(oldStatus));
         ticket.setStatus(dto.getStatus());
         ticketRepository.save(ticket);
         applyResponseSlaLogic(ticket);
