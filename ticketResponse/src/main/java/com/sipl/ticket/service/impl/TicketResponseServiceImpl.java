@@ -466,12 +466,20 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             double penaltyMinutes =
                     Math.max(0, responseHours - slaHours - graceMinutes);
 
-            BigDecimal penaltyPercentage =
+            BigDecimal calculatedPenaltyPercentage  =
                     BigDecimal.valueOf(penaltyMinutes)
                             .multiply(BigDecimal.valueOf(penaltyPercentPerMinute));
+
+            //MAX PENALTY CAP LOGIC ->>
+            BigDecimal maxPenaltyPercent =
+                    BigDecimal.valueOf(rule.getMaxPenaltyPercent());
+
+            if (calculatedPenaltyPercentage.compareTo(maxPenaltyPercent) > 0) {
+                calculatedPenaltyPercentage = maxPenaltyPercent;
+            }
             ticket.setPenaltyAllowed(true);
             ticket.setResponsePenaltyTime((double) penaltyMinutes);
-            ticket.setResponsePenaltyPercentage(penaltyPercentage);
+            ticket.setResponsePenaltyPercentage(calculatedPenaltyPercentage);
         }
     }
 
