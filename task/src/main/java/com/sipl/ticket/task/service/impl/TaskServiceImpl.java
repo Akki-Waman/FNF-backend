@@ -187,7 +187,7 @@ public class TaskServiceImpl implements TaskService {
     private void validateTaskDates(TaskRequestDto dto) {
 
         LocalDate today = LocalDate.now();
-
+        LocalDate yesterday = today.minusDays(1);
         LocalDate startDate = dto.getStartDate();
         LocalDate dueDate = dto.getDueDate();
 
@@ -196,9 +196,9 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Start date cannot be in the past");
         }
 
-        if (dueDate != null && dueDate.isBefore(today)) {
+        if (dueDate != null && dueDate.isBefore(yesterday)) {
             log.warn("Due date {} is in the past for Task with subject={}", dueDate, dto.getSubject());
-            throw new RuntimeException("Due date cannot be in the past");
+            throw new IllegalArgumentException("Due date cannot be in the past");
         }
 
         if (startDate != null && dueDate != null && dueDate.isBefore(startDate)) {
