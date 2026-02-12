@@ -47,6 +47,7 @@
         <module>dashboard</module>
         <module>ticketNote</module>
         <module>workflow</module>
+        <module>slaRuleDetail</module>
 
     </modules>
 
@@ -325,6 +326,11 @@
                 <artifactId>brand</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>com.sipl.ticket</groupId>
+				<artifactId>slaRuleDetail</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.sipl.ticket</groupId>
 				<artifactId>product</artifactId>

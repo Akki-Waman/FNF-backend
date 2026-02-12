@@ -46,4 +46,10 @@ public class SlaRuleDetails extends AuditEntity {
     private Double penaltyPercent;
 
     private Boolean isActive;
+
+    @Column(nullable = false)
+    private Double maxPenaltyPercent;
+
+    @Column(nullable = false, length = 255)
+    private String actionOnExceed;
 }
