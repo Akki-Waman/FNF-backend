@@ -96,4 +96,21 @@ public class SlaRuleDetailControllerImpl implements SlaRuleDetailController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Override
+    public ResponseEntity<byte[]> exportSlaRuleDetailsExcel(
+            SlaRuleDetailsSearchRequestDto request) {
+
+        log.info("<<Start>> exportSlaRuleDetailsExcel");
+
+        byte[] excel = slaRuleDetailService.exportSlaRuleDetailsExcel(request);
+
+        log.info("<<End>> exportSlaRuleDetailsExcel");
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=sla_rule_details.xlsx")
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excel);
+    }
+
 }

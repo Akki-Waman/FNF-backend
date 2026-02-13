@@ -20,4 +20,7 @@ public interface SlaRuleDetailService {
     ApiResponseDTO<PagedResponse<SlaRuleDetailsDto>> search(
             SlaRuleDetailsSearchRequestDto dto
     );
+
+    byte[] exportSlaRuleDetailsExcel(SlaRuleDetailsSearchRequestDto request);
+
 }
