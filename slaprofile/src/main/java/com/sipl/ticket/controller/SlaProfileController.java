@@ -72,7 +72,9 @@ public interface SlaProfileController {
     @GetMapping("")
     ResponseEntity<ApiResponseDTO<SlaProfileResponseDto>> getAllSlaProfiles();
 
-    @GetMapping("/export")
-    ResponseEntity<Void> exportSlaProfilesExcel(HttpServletResponse response);
+    @PostMapping("/export")
+    ResponseEntity<byte[]> exportSlaProfilesExcel(
+            @RequestBody SlaProfileSearchRequestDto request);
+
 
 }

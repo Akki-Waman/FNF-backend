@@ -34,6 +34,6 @@ public interface SlaProfileService {
             SlaProfileSearchRequestDto requestDto
     );
 
-    void exportSlaProfilesExcel(HttpServletResponse response);
+    byte[] exportSlaProfilesExcel(SlaProfileSearchRequestDto request);
 
 }

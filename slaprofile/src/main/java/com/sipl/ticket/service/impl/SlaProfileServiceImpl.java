@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -316,26 +317,48 @@ public class SlaProfileServiceImpl implements SlaProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public void exportSlaProfilesExcel(HttpServletResponse response) {
+    public byte[] exportSlaProfilesExcel(SlaProfileSearchRequestDto request) {
 
-        log.info("Exporting SLA profiles to Excel");
+        log.info("Request | slaProfileId={} | branchId={} | isActive={} | profileName={}",
+                request.getSlaProfileId(),
+                request.getBranchId(),
+                request.getIsActive(),
+                request.getProfileName());
 
         try {
-            List<SlaProfileResponseDto> profiles =
-                    repository.findAll()
-                            .stream()
-                            .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
-                            .map(mapper::toDto)
-                            .collect(Collectors.toList());
 
-            SlaProfileExcelGenerator.generateExcel(profiles, response);
+            Page<SlaProfile> page =
+                    repository.searchSlaProfiles(
+                            request.getSlaProfileId(),
+                            request.getBranchId(),
+                            request.getIsActive(),
+                            request.getProfileName(),
+                            Pageable.unpaged()
+                    );
 
-            log.info("SLA Profile Excel export completed successfully, totalRecords={}", profiles.size());
+            log.info("Total elements = {}", page.getTotalElements());
+
+            List<SlaProfile> list = page.getContent();
+
+            if (list.isEmpty()) {
+                log.warn("No SLA Profiles found");
+            }
+
+            List<SlaProfileResponseDto> dtos = new ArrayList<>();
+
+            for (SlaProfile entity : list) {
+                dtos.add(mapper.toDto(entity));
+            }
+
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
+            return SlaProfileExcelGenerator.generateExcel(dtos);
 
         } catch (Exception e) {
-            log.error("exportSlaProfilesExcel unexpected error", e);
-            throw new RuntimeException("Failed to export SLA profiles Excel", e);
+            log.error("Error while exporting SLA Profiles", e);
+            throw new RuntimeException("Failed to export SLA Profiles Excel", e);
         }
     }
+
 
 }

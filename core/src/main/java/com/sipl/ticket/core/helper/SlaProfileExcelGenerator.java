@@ -5,19 +5,12 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 public class SlaProfileExcelGenerator {
 
-    public static void generateExcel(List<SlaProfileResponseDto> profiles,
-                                     HttpServletResponse response) throws Exception {
-
-        response.setContentType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader(
-                "Content-Disposition", "attachment; filename=sla_profiles.xlsx");
+    public static byte[] generateExcel(List<SlaProfileResponseDto> profiles) throws Exception {
 
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("SLA Profiles");
@@ -63,15 +56,13 @@ public class SlaProfileExcelGenerator {
         CellStyle dateStyle = workbook.createCellStyle();
         dateStyle.setAlignment(HorizontalAlignment.LEFT);
         dateStyle.setDataFormat(
-                workbook.createDataFormat()
-                        .getFormat("dd-MM-yyyy"));
+                workbook.createDataFormat().getFormat("dd-MM-yyyy"));
         setBorders(dateStyle);
 
         CellStyle dateTimeStyle = workbook.createCellStyle();
         dateTimeStyle.setAlignment(HorizontalAlignment.LEFT);
         dateTimeStyle.setDataFormat(
-                workbook.createDataFormat()
-                        .getFormat("dd-MM-yyyy HH:mm:ss"));
+                workbook.createDataFormat().getFormat("dd-MM-yyyy HH:mm:ss"));
         setBorders(dateTimeStyle);
 
         for (SlaProfileResponseDto dto : profiles) {
@@ -140,8 +131,11 @@ public class SlaProfileExcelGenerator {
             sheet.autoSizeColumn(i);
         }
 
-        workbook.write(response.getOutputStream());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        workbook.write(out);
         workbook.close();
+
+        return out.toByteArray();
     }
 
     private static void setBorders(CellStyle style) {

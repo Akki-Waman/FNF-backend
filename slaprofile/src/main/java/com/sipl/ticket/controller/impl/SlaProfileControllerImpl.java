@@ -103,15 +103,20 @@ public class SlaProfileControllerImpl implements SlaProfileController {
     }
 
     @Override
-    public ResponseEntity<Void> exportSlaProfilesExcel(HttpServletResponse response) {
+    public ResponseEntity<byte[]> exportSlaProfilesExcel(
+            SlaProfileSearchRequestDto request) {
 
-        log.info("<<Start>> exportSlaProfilesExcel <<Start>>");
+        log.info("<<Start>> exportSlaProfilesExcel");
 
-        slaProfileService.exportSlaProfilesExcel(response);
+        byte[] excel = slaProfileService.exportSlaProfilesExcel(request);
 
-        log.info("<<End>> exportSlaProfilesExcel  <<End>>");
+        log.info("<<End>> exportSlaProfilesExcel");
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=sla_profiles.xlsx")
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excel);
     }
+
 
 }
