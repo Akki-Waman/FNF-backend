@@ -85,6 +85,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>report</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketResolution</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.sipl.ticket</groupId>
