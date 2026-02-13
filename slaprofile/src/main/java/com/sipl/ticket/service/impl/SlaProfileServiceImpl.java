@@ -219,6 +219,15 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     public ApiResponseDTO<PagedResponse<SlaProfileResponseDto>> searchSlaProfiles(
             SlaProfileSearchRequestDto dto) {
 
+        log.info("Searching SLA Profiles with filters -> slaProfileId: {}, profileName: {}, branchId: {}, isActive: {}, page: {}, size: {}",
+                dto.getSlaProfileId(),
+                dto.getProfileName(),
+                dto.getBranchId(),
+                dto.getIsActive(),
+                dto.getPage(),
+                dto.getSize()
+        );
+
         Pageable pageable = PaginationUtil.pageable(
                 dto.getPage(),
                 dto.getSize(),
@@ -230,8 +239,11 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                 dto.getSlaProfileId(),
                 dto.getBranchId(),
                 dto.getIsActive(),
+                dto.getProfileName(),
                 pageable
         );
+
+        log.info("Database returned {} total SLA Profile records", pageResult.getTotalElements());
 
         List<SlaProfileResponseDto> content =
                 pageResult.getContent()
@@ -240,7 +252,10 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                         .map(mapper::toDto)
                         .collect(Collectors.toList());
 
+        log.info("Filtered non-deleted SLA Profiles count: {}", content.size());
+
         if (content.isEmpty()) {
+            log.warn("No SLA Profiles found for given search criteria");
             return new ApiResponseDTO<>(
                     null,
                     "No SLA Profiles found",
@@ -248,6 +263,11 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                     true
             );
         }
+
+        log.info("SLA Profiles fetched successfully. Returning page: {} of {}",
+                pageResult.getNumber(),
+                pageResult.getTotalPages()
+        );
 
         return new ApiResponseDTO<>(
                 new PagedResponse<>(
@@ -263,6 +283,7 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                 false
         );
     }
+
 
     @Override
     @Transactional(readOnly = true)

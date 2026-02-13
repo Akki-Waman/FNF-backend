@@ -48,14 +48,17 @@ public interface SlaProfileRepository extends JpaRepository<SlaProfile, Integer>
                     " FROM SlaProfile sp " +
                     " WHERE (:slaProfileId IS NULL OR sp.slaProfileId = :slaProfileId) " +
                     " AND (:branchId IS NULL OR sp.branch.branchId = :branchId) " +
-                    " AND (:isActive IS NULL OR sp.isActive = :isActive) "
+                    " AND (:isActive IS NULL OR sp.isActive = :isActive) " +
+                    " AND (:profileName IS NULL OR LOWER(sp.profileName) LIKE LOWER(CONCAT('%', :profileName, '%'))) "
     )
     Page<SlaProfile> searchSlaProfiles(
             @Param("slaProfileId") Integer slaProfileId,
             @Param("branchId") Integer branchId,
             @Param("isActive") Boolean isActive,
+            @Param("profileName") String profileName,
             Pageable pageable
     );
+
 
     @Query("SELECT sp FROM SlaProfile sp " +
             "WHERE sp.branch.branchId = :branchId " +
