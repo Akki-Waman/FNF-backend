@@ -21,10 +21,7 @@ import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.core.util.TicketFileUploadUtil;
 import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.master.service.MasterService;
-import com.sipl.ticket.service.EmailWorkflowService;
-import com.sipl.ticket.service.TicketService;
-import com.sipl.ticket.service.WorkFlowInstanceService;
-import com.sipl.ticket.service.WorkflowNotificationService;
+import com.sipl.ticket.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
@@ -61,7 +58,6 @@ public class TicketServiceImpl implements TicketService {
     private final TicketAttachmentRepository ticketAttachmentRepository;
     private final TicketCcMapper ticketCcMapper;
     private final TicketAttachmentMapper ticketAttachmentMapper;
-    private final TicketFileUploadUtil fileUploadUtil;
     private final UsersRepository userRepository;
     private final LocationRepository locationRepository;
     private final ContactRepository contactsRepository;
@@ -73,7 +69,6 @@ public class TicketServiceImpl implements TicketService {
     private final EmailUtil emailUtil;
     private final SettingRepository settingRepository;
     private final MasterService masterService;
-    private final TicketResponseRepository ticketResponseRepository;
     private final MastersRepository mastersRepository;
     private final TicketNoteMapper ticketNoteMapper;
     private final TicketNoteRepository ticketNoteRepository;
@@ -84,10 +79,13 @@ public class TicketServiceImpl implements TicketService {
 
     private final WorkflowInstanceMapper workflowInstanceMapper;
     private final WorkFlowInstanceService workFlowInstanceService;
-    private final WorkflowNotificationService workflowNotificationService;
     private final EmailWorkflowService emailWorkflowService;
     private final @Qualifier("helperUserManager") UserManager userManager;
     private final HttpServletRequest request;
+    private final TicketResolutionService ticketResolutionService;
+
+    private static final String DEFAULT_RESOLUTION_MESSAGE =
+            "The issue has been analyzed and resolved successfully";
 
 
     @Override
@@ -1141,7 +1139,12 @@ public class TicketServiceImpl implements TicketService {
                     dto.getTicketId(), oldStatus, dto.getStatus());
 
             ticket.setStatus(dto.getStatus());
+
             Ticket updatedTicket = ticketRepository.save(ticket);
+
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+                callAddTicketResolutionOnClose(updatedTicket, dto.getStatus());
+            }
 
             MasterContext masterContext =
                     new MasterContext(priorityMap, statusMap);
@@ -1180,6 +1183,43 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException(
                     "Failed to update ticket status",
                     ex
+            );
+        }
+    }
+
+    private void callAddTicketResolutionOnClose(Ticket ticket, Integer status) {
+
+        try {
+            TicketResolutionRequestDTO resolutionDto =
+                    new TicketResolutionRequestDTO();
+
+            resolutionDto.setTicket(ticket.getTicketId());
+            resolutionDto.setResolutionBody(DEFAULT_RESOLUTION_MESSAGE);
+            resolutionDto.setIsPublic(null);
+
+            resolutionDto.setStatus(status);
+
+            resolutionDto.setCcEmails(Collections.emptyList());
+
+            String resolutionJson =
+                    objectMapper.writeValueAsString(resolutionDto);
+
+            ticketResolutionService.addTicketResolution(resolutionJson, null);
+
+            log.info(
+                    "Auto ticket resolution created for ticketId={}",
+                    ticket.getTicketId()
+            );
+
+        } catch (Exception e) {
+            log.error(
+                    "Failed to auto create ticket resolution. ticketId={}",
+                    ticket.getTicketId(),
+                    e
+            );
+            throw new RuntimeException(
+                    "Ticket closed but resolution creation failed",
+                    e
             );
         }
     }
