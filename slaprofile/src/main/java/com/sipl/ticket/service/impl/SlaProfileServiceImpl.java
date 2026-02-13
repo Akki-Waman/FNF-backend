@@ -43,13 +43,13 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             module = "SLA_PROFILE",
             description = "SLA profile {0} created successfully"
     )
-    public ApiResponseDTO<SlaProfileResponseDto> saveSlaProfile(
-            SlaProfileRequestDto dto) {
+    public ApiResponseDTO<SlaProfileResponseDto> saveSlaProfile(SlaProfileRequestDto dto) {
 
         try {
 
-            if (repository.existsByProfileNameIgnoreCaseAndBranch_BranchId(
-                    dto.getProfileName(), dto.getBranchId())) {
+            if (repository.existsActiveProfileForBranch(
+                    dto.getProfileName(),
+                    dto.getBranchId())) {
 
                 log.warn("Duplicate SLA Profile detected | branchId={}, profileName={}",
                         dto.getBranchId(), dto.getProfileName());
@@ -67,18 +67,14 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             ApiResponseDTO<SlaProfileResponseDto> validationError =
                     validateAndSetRelations(slaProfile, dto);
 
-            if (validationError != null) {
-                log.warn("Validation failed while creating SLA Profile | branchId={}",
-                        dto.getBranchId());
-                return validationError;
-            }
+            if (validationError != null) return validationError;
 
             slaProfile.setIsActive(true);
+            slaProfile.setIsDeleted(false);
 
             SlaProfile saved = repository.save(slaProfile);
 
-            log.info("SLA Profile created successfully | slaProfileId={}",
-                    saved.getSlaProfileId());
+            log.info("SLA Profile created | id={}", saved.getSlaProfileId());
 
             return new ApiResponseDTO<>(
                     mapper.toDto(saved),
@@ -88,9 +84,7 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             );
 
         } catch (Exception e) {
-            log.error("Error while creating SLA Profile | branchId={}, profileName={}",
-                    dto.getBranchId(), dto.getProfileName(), e);
-
+            log.error("Error while creating SLA Profile", e);
             return new ApiResponseDTO<>(
                     null,
                     "Something went wrong while creating SLA Profile",
@@ -104,12 +98,9 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             SlaProfile slaProfile,
             SlaProfileRequestDto dto) {
 
-
         Branches branch = branchRepository.findById(dto.getBranchId()).orElse(null);
 
         if (branch == null || Boolean.FALSE.equals(branch.getIsActive())) {
-            log.warn("Invalid or inactive branch | branchId={}", dto.getBranchId());
-
             return new ApiResponseDTO<>(
                     null,
                     "Invalid branch",
@@ -128,16 +119,12 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             module = "SLA_PROFILE",
             description = "SLA profile {0} updated successfully"
     )
-    public ApiResponseDTO<SlaProfileResponseDto> updateSlaProfile(
-            SlaProfileRequestDto dto) {
+    public ApiResponseDTO<SlaProfileResponseDto> updateSlaProfile(SlaProfileRequestDto dto) {
 
         SlaProfile slaProfile =
                 repository.findById(dto.getSlaProfileId()).orElse(null);
 
-        if (slaProfile == null) {
-            log.warn("SLA Profile not found for update | slaProfileId={}",
-                    dto.getSlaProfileId());
-
+        if (slaProfile == null || Boolean.TRUE.equals(slaProfile.getIsDeleted())) {
             return new ApiResponseDTO<>(
                     null,
                     "SLA Profile not found",
@@ -146,13 +133,10 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             );
         }
 
-        if (repository.existsByProfileNameIgnoreCaseAndBranch_BranchIdAndSlaProfileIdNot(
+        if (repository.existsActiveProfileForBranchAndNotId(
                 dto.getProfileName(),
                 dto.getBranchId(),
                 dto.getSlaProfileId())) {
-
-            log.warn("Duplicate SLA Profile on update | slaProfileId={}, branchId={}",
-                    dto.getSlaProfileId(), dto.getBranchId());
 
             return new ApiResponseDTO<>(
                     null,
@@ -167,16 +151,9 @@ public class SlaProfileServiceImpl implements SlaProfileService {
         ApiResponseDTO<SlaProfileResponseDto> validationError =
                 validateAndSetRelations(slaProfile, dto);
 
-        if (validationError != null) {
-            log.warn("Validation failed while updating SLA Profile | slaProfileId={}",
-                    dto.getSlaProfileId());
-            return validationError;
-        }
+        if (validationError != null) return validationError;
 
         SlaProfile saved = repository.save(slaProfile);
-
-        log.info("SLA Profile updated successfully | slaProfileId={}",
-                saved.getSlaProfileId());
 
         return new ApiResponseDTO<>(
                 mapper.toDto(saved),
@@ -187,31 +164,22 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     }
 
     @Override
-    public ApiResponseDTO<SlaProfileResponseDto> getById(
-            Integer slaProfileId) {
-
-        log.info("getSlaProfileById | slaProfileId={}", slaProfileId);
+    public ApiResponseDTO<SlaProfileResponseDto> getById(Integer slaProfileId) {
 
         return repository.findById(slaProfileId)
-                .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
-                .map(p -> {
-                    log.info("✔ SLA Profile found | slaProfileId={}", slaProfileId);
-                    return new ApiResponseDTO<>(
-                            mapper.toDto(p),
-                            "SLA Profile found",
-                            HttpStatus.OK,
-                            false
-                    );
-                })
-                .orElseGet(() -> {
-                    log.warn("SLA Profile not found | slaProfileId={}", slaProfileId);
-                    return new ApiResponseDTO<>(
-                            null,
-                            "SLA Profile not found",
-                            HttpStatus.NOT_FOUND,
-                            true
-                    );
-                });
+                .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
+                .map(p -> new ApiResponseDTO<>(
+                        mapper.toDto(p),
+                        "SLA Profile found",
+                        HttpStatus.OK,
+                        false
+                ))
+                .orElseGet(() -> new ApiResponseDTO<>(
+                        null,
+                        "SLA Profile not found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                ));
     }
 
     @Override
@@ -220,17 +188,12 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             module = "SLA_PROFILE",
             description = "SLA profile id {0} deleted successfully"
     )
-    public ApiResponseDTO<String> deleteById(
-            Integer slaProfileId) {
-
-        log.info("deleteSlaProfile | slaProfileId={}", slaProfileId);
+    public ApiResponseDTO<String> deleteById(Integer slaProfileId) {
 
         SlaProfile slaProfile =
                 repository.findById(slaProfileId).orElse(null);
 
         if (slaProfile == null) {
-            log.warn("SLA Profile not found for delete | slaProfileId={}", slaProfileId);
-
             return new ApiResponseDTO<>(
                     null,
                     "SLA Profile not found",
@@ -240,9 +203,9 @@ public class SlaProfileServiceImpl implements SlaProfileService {
         }
 
         slaProfile.setIsActive(false);
-        repository.save(slaProfile);
+        slaProfile.setIsDeleted(true);
 
-        log.info("SLA Profile deleted (soft delete) | slaProfileId={}", slaProfileId);
+        repository.save(slaProfile);
 
         return new ApiResponseDTO<>(
                 null,
@@ -255,9 +218,6 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     @Override
     public ApiResponseDTO<PagedResponse<SlaProfileResponseDto>> searchSlaProfiles(
             SlaProfileSearchRequestDto dto) {
-
-        log.info("searchSlaProfiles | branchId={}, isActive={}",
-                dto.getBranchId(), dto.getIsActive());
 
         Pageable pageable = PaginationUtil.pageable(
                 dto.getPage(),
@@ -273,8 +233,14 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                 pageable
         );
 
-        if (pageResult.isEmpty()) {
-            log.warn("No SLA Profiles found for search criteria");
+        List<SlaProfileResponseDto> content =
+                pageResult.getContent()
+                        .stream()
+                        .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
+                        .map(mapper::toDto)
+                        .collect(Collectors.toList());
+
+        if (content.isEmpty()) {
             return new ApiResponseDTO<>(
                     null,
                     "No SLA Profiles found",
@@ -282,14 +248,6 @@ public class SlaProfileServiceImpl implements SlaProfileService {
                     true
             );
         }
-
-        List<SlaProfileResponseDto> content =
-                pageResult.getContent()
-                        .stream()
-                        .map(mapper::toDto)
-                        .collect(Collectors.toList());
-
-        log.info("SLA Profiles fetched | count={}", content.size());
 
         return new ApiResponseDTO<>(
                 new PagedResponse<>(
@@ -310,43 +268,29 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     @Transactional(readOnly = true)
     public ApiResponseDTO<SlaProfileResponseDto> getAllSlaProfiles() {
 
-        try {
-            List<SlaProfileResponseDto> list =
-                    repository.findAll(Sort.by(Sort.Direction.DESC, "slaProfileId"))
-                            .stream()
-                            .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
-                            .map(mapper::toDto)
-                            .collect(Collectors.toList());
+        List<SlaProfileResponseDto> list =
+                repository.findAll(Sort.by(Sort.Direction.DESC, "slaProfileId"))
+                        .stream()
+                        .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
+                        .map(mapper::toDto)
+                        .collect(Collectors.toList());
 
-            if (list.isEmpty()) {
-                log.warn("No active SLA Profiles found");
-                return new ApiResponseDTO<>(
-                        null,
-                        "No SLA Profiles found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            log.info("All SLA Profiles fetched | count={}", list.size());
-
-            return new ApiResponseDTO<>(
-                    list,
-                    HttpStatus.OK,
-                    "SLA Profiles fetched successfully",
-                    false,
-                    null
-            );
-
-        } catch (Exception e) {
-            log.error("Error while fetching all SLA Profiles", e);
+        if (list.isEmpty()) {
             return new ApiResponseDTO<>(
                     null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No SLA Profiles found",
+                    HttpStatus.NOT_FOUND,
                     true
             );
         }
+
+        return new ApiResponseDTO<>(
+                list,
+                HttpStatus.OK,
+                "SLA Profiles fetched successfully",
+                false,
+                null
+        );
     }
 
     @Override
@@ -359,13 +303,13 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             List<SlaProfileResponseDto> profiles =
                     repository.findAll()
                             .stream()
+                            .filter(p -> !Boolean.TRUE.equals(p.getIsDeleted()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
             SlaProfileExcelGenerator.generateExcel(profiles, response);
 
-            log.info("SLA Profile Excel export completed successfully, totalRecords={}",
-                    profiles.size());
+            log.info("SLA Profile Excel export completed successfully, totalRecords={}", profiles.size());
 
         } catch (Exception e) {
             log.error("exportSlaProfilesExcel unexpected error", e);
@@ -374,4 +318,3 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     }
 
 }
-

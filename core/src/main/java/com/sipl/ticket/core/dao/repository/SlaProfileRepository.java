@@ -15,15 +15,31 @@ import java.util.Optional;
 public interface SlaProfileRepository extends JpaRepository<SlaProfile, Integer> {
 
 
-    boolean existsByProfileNameIgnoreCaseAndBranch_BranchId(
-            String profileName,
-            Integer branchId
+    @Query(
+            "SELECT CASE WHEN COUNT(sp) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM SlaProfile sp " +
+                    "WHERE LOWER(sp.profileName) = LOWER(:profileName) " +
+                    "AND sp.branch.branchId = :branchId " +
+                    "AND sp.slaProfileId <> :slaProfileId " +
+                    "AND sp.isDeleted = false"
+    )
+    boolean existsActiveProfileForBranchAndNotId(
+            @Param("profileName") String profileName,
+            @Param("branchId") Integer branchId,
+            @Param("slaProfileId") Integer slaProfileId
     );
 
-    boolean existsByProfileNameIgnoreCaseAndBranch_BranchIdAndSlaProfileIdNot(
-            String profileName,
-            Integer branchId,
-            Integer slaProfileId
+
+    @Query(
+            "SELECT CASE WHEN COUNT(sp) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM SlaProfile sp " +
+                    "WHERE LOWER(sp.profileName) = LOWER(:profileName) " +
+                    "AND sp.branch.branchId = :branchId " +
+                    "AND sp.isDeleted = false"
+    )
+    boolean existsActiveProfileForBranch(
+            @Param("profileName") String profileName,
+            @Param("branchId") Integer branchId
     );
 
 
@@ -49,4 +65,6 @@ public interface SlaProfileRepository extends JpaRepository<SlaProfile, Integer>
             @Param("branchId") Integer branchId,
             @Param("today") LocalDate today
     );
+
+
 }
