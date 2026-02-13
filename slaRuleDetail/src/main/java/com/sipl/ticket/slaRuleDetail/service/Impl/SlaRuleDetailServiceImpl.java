@@ -11,6 +11,7 @@ import com.sipl.ticket.core.dto.request.SlaRuleDetailsSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SlaRuleDetailsDto;
+import com.sipl.ticket.core.helper.SlaRuleDetailsExcelGenerator;
 import com.sipl.ticket.core.mapper.SlaRuleDetailsMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.slaRuleDetail.service.SlaRuleDetailService;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -250,7 +252,11 @@ public class SlaRuleDetailServiceImpl implements SlaRuleDetailService {
     public ApiResponseDTO<PagedResponse<SlaRuleDetailsDto>> search(
             SlaRuleDetailsSearchRequestDto dto) {
 
-        log.info("Searching SLA Rules page={}, size={}", dto.getPage(), dto.getSize());
+        log.info("Searching SLA Rules page={}, size={}, slaProfileId={}, isActive={}",
+                dto.getPage(),
+                dto.getSize(),
+                dto.getSlaProfileId(),
+                dto.getIsActive());
 
         Pageable pageable = PaginationUtil.pageable(
                 dto.getPage(),
@@ -259,7 +265,12 @@ public class SlaRuleDetailServiceImpl implements SlaRuleDetailService {
                 dto.getSortDir()
         );
 
-        Page<SlaRuleDetails> pageResult = repository.findAllNotDeleted(pageable);
+        Page<SlaRuleDetails> pageResult =
+                repository.findAllNotDeleted(
+                        dto.getSlaProfileId(),
+                        dto.getIsActive(),
+                        pageable
+                );
 
         List<SlaRuleDetailsDto> content =
                 pageResult.getContent()
@@ -295,6 +306,7 @@ public class SlaRuleDetailServiceImpl implements SlaRuleDetailService {
     }
 
 
+
     @Override
     public ApiResponseDTO<SlaRuleDetailsDto> getAll() {
 
@@ -327,4 +339,47 @@ public class SlaRuleDetailServiceImpl implements SlaRuleDetailService {
                 null
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] exportSlaRuleDetailsExcel(SlaRuleDetailsSearchRequestDto request) {
+
+        log.info("Request | slaProfileId={} | isActive={}",
+                request.getSlaProfileId(),
+                request.getIsActive());
+
+        try {
+
+            Page<SlaRuleDetails> page =
+                    repository.findAllNotDeleted(
+                            request.getSlaProfileId(),
+                            request.getIsActive(),
+                            Pageable.unpaged()
+                    );
+
+            log.info("Total elements = {}", page.getTotalElements());
+
+            List<SlaRuleDetails> list = page.getContent();
+
+            if (list.isEmpty()) {
+                log.warn("No SLA Rule Details found");
+            }
+
+            List<SlaRuleDetailsDto> dtos = new ArrayList<>();
+
+            for (SlaRuleDetails entity : list) {
+                dtos.add(mapper.toDto(entity));
+            }
+
+            log.info("Mapping completed | DTO count = {}", dtos.size());
+
+            return SlaRuleDetailsExcelGenerator.generateExcel(dtos);
+
+        } catch (Exception e) {
+            log.error("Error while exporting SLA Rule Details", e);
+            throw new RuntimeException("Failed to export SLA Rule Details Excel", e);
+        }
+    }
+
+
 }

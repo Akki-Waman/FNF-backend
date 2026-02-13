@@ -46,4 +46,9 @@ public interface SlaRuleDetailController {
     ResponseEntity<ApiResponseDTO<PagedResponse<SlaRuleDetailsDto>>> search(
             @RequestBody SlaRuleDetailsSearchRequestDto dto
     );
+
+    @PostMapping("/export")
+    ResponseEntity<byte[]> exportSlaRuleDetailsExcel(
+            @RequestBody SlaRuleDetailsSearchRequestDto request);
+
 }

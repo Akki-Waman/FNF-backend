@@ -30,8 +30,14 @@ public interface SlaRuleDetailsRepository extends JpaRepository<SlaRuleDetails, 
             @Param("slaTypeId") Long slaTypeId
     );
 
-    @Query("SELECT sr FROM SlaRuleDetails sr WHERE sr.isDeleted = false")
-    Page<SlaRuleDetails> findAllNotDeleted(Pageable pageable);
+    @Query("SELECT sr FROM SlaRuleDetails sr " +
+            "WHERE sr.isDeleted = false " +
+            "AND (:slaProfileId IS NULL OR sr.slaProfile.slaProfileId = :slaProfileId) " +
+            "AND (:isActive IS NULL OR sr.isActive = :isActive)")
+    Page<SlaRuleDetails> findAllNotDeleted(
+            @Param("slaProfileId") Integer slaProfileId,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable);
 
 
 }
