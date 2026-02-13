@@ -509,13 +509,19 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
 
         return String.format(
                 "Dear %s,\n\n" +
-                        "Your ticket has been resolved successfully.\n\n" +
-                        "Ticket ID : %s\n" +
-                        "Subject   : %s\n" +
-                        "Resolution:\n%s\n\n" +
-                        "Regards,\nTicket Management System",
-                Optional.ofNullable(ticket.getComplaintName())
-                        .orElse("Customer"),
+                        "Thank you for your patience.\n\n" +
+                        "We would like to inform you that your support ticket has been resolved.\n\n" +
+                        "--------------------------------------------------\n" +
+                        "Ticket ID     : %s\n" +
+                        "Issue Subject : %s\n" +
+                        "Resolution:\n" +
+                        "%s\n" +
+                        "--------------------------------------------------\n\n" +
+                        "If you require any further assistance, please reply to this email.\n\n" +
+                        "Warm Regards,\n" +
+                        "Ticket Management System\n" +
+                        "IT Support Team",
+                ticket.getComplaintName(),
                 ticket.getTicketId(),
                 ticket.getSubject(),
                 ticketResolution.getResolutionBody()
