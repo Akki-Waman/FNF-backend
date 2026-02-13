@@ -10,6 +10,7 @@ import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
+import com.sipl.ticket.core.dto.request.TicketResolutionRequestDTO;
 import com.sipl.ticket.core.dto.request.TicketResponseRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.TicketResponseCombinedDto;
@@ -19,6 +20,7 @@ import com.sipl.ticket.core.mapper.TicketResponseCcMapper;
 import com.sipl.ticket.core.mapper.TicketResponseMapper;
 import com.sipl.ticket.core.util.EmailUtil;
 import com.sipl.ticket.master.service.MasterService;
+import com.sipl.ticket.service.TicketResolutionService;
 import com.sipl.ticket.service.TicketResponseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +60,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final SlaProfileRepository slaProfileRepository;
     private final SlaRuleDetailsRepository slaRuleDetailsRepository;
     private final MasterService masterService;
+    private final TicketResolutionService ticketResolutionService;
 
 
     public static final Long SLA_TYPE_RESPONSE_ID = 1L;
@@ -77,6 +80,23 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             // 1️⃣ Parse DTO
             TicketResponseRequestDTO dto =
                     objectMapper.readValue(ticketResponseRequestDto, TicketResponseRequestDTO.class);
+
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+
+                callResolutionOnClose(dto);
+
+                return new ApiResponseDTO<>(
+                        null,
+                        null,
+                        null,
+                        "Ticket resolution added successfully",
+                        HttpStatus.CREATED,
+                        false,
+                        null,
+                        null
+                );
+            }
+
 
             // 2️⃣ Validate and save main TicketResponse
             TicketResponse ticketResponse = saveTicketResponse(dto);
@@ -492,8 +512,55 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         ticket.setResponsePenaltyPercentage(null);
     }
 
+    private void callResolutionOnClose(TicketResponseRequestDTO dto) {
 
+        try {
+            if (dto.getResponseBody() == null || dto.getResponseBody().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Response body is required to close the ticket"
+                );
+            }
 
+            TicketResolutionRequestDTO resolutionDto =
+                    new TicketResolutionRequestDTO();
+
+            resolutionDto.setTicket(dto.getTicket());
+
+            resolutionDto.setResolutionBody(dto.getResponseBody());
+
+            resolutionDto.setIsPublic(
+                    dto.getIsPublic() != null ? dto.getIsPublic() : true
+            );
+
+            resolutionDto.setStatus(dto.getStatus());
+
+            resolutionDto.setCcEmails(dto.getCcEmails());
+
+            String resolutionJson =
+                    objectMapper.writeValueAsString(resolutionDto);
+
+            ticketResolutionService.addTicketResolution(
+                    resolutionJson,
+                    null
+            );
+
+            log.info(
+                    "Ticket closed & resolution created using responseBody. ticketId={}",
+                    dto.getTicket()
+            );
+
+        } catch (Exception e) {
+            log.error(
+                    "Failed to create resolution on CLOSE. ticketId={}",
+                    dto.getTicket(),
+                    e
+            );
+            throw new RuntimeException(
+                    "Ticket closed but resolution creation failed",
+                    e
+            );
+        }
+    }
 
 }
 

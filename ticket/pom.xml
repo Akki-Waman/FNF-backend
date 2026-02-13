@@ -66,6 +66,10 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>workflow</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketResolution</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
