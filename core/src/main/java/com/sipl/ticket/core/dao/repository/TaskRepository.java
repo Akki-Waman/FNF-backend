@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -100,6 +101,8 @@ List<TaskResponseDTO> findTask(
             @Param("ticketId") Long ticketId,
             @Param("status") Integer status
     );
+
+    Page<Task> findByTaskIdIn(Set<Long> taskIds, Pageable pageable);
 
 }
 

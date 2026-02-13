@@ -41,15 +41,18 @@ public class TaskControllerImpl implements TaskController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
-            TaskSearchRequestDto requestDto) {
+            TaskSearchRequestDto requestDto,
+            HttpServletRequest request) {
 
         log.info("<<START>> searchTasks <<START>>");
 
         ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> response =
-                taskService.searchTasks(requestDto);
+                taskService.searchTasks(requestDto, request);
+
         log.info("<<END>> searchTasks <<END>>");
         return ResponseEntity.ok(response);
     }
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> updateTask(String taskRequestDto, List<MultipartFile> files) {

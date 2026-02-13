@@ -23,8 +23,10 @@ public interface TaskService {
     );
 
     ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
-            TaskSearchRequestDto requestDto
+            TaskSearchRequestDto requestDto,
+            HttpServletRequest request
     );
+
 
     ApiResponseDTO<CombinedTaskResponseDto> updateTask(
             String taskRequestDto,
