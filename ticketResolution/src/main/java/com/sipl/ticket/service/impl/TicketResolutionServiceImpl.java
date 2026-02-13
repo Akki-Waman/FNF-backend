@@ -179,7 +179,6 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
 
         // FINAL STATUS UPDATE
         ticket.setStatus(dto.getStatus());
-        ticket.setResolutionDateTime(LocalDateTime.now());
         ticketRepository.save(ticket);
         log.info("ticket repo save =>>>");
         // SLA LOGIC
