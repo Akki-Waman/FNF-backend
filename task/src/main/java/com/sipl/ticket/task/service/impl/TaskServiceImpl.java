@@ -12,6 +12,7 @@ import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TaskExcelExportHelper;
 import com.sipl.ticket.core.mapper.*;
+import com.sipl.ticket.core.util.JwtUtil;
 import com.sipl.ticket.core.util.UserManager;
 import com.sipl.ticket.master.service.MasterService;
 import com.sipl.ticket.task.service.TaskService;
@@ -22,13 +23,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +64,7 @@ public class TaskServiceImpl implements TaskService {
     private final UserRolesRepository userRolesRepository;
     private final UserManager userManager;
     private final MasterService masterService;
+    private final JwtUtil jwtUtil;
 
 
     @Override
@@ -382,12 +388,42 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
-            TaskSearchRequestDto dto) {
+            TaskSearchRequestDto dto,
+            HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+
+        String username = jwtUtil.extractUsername(token);
+
+        log.info("Username from JWT: {}", username);
+
+        Users user = usersRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Long userId = user.getId();
+
+
+        UserRoles userRole = userRolesRepository.findSingleByUserId(userId);
+
+        boolean isAdmin = false;
+        if (userRole != null && userRole.getUserRole() != null) {
+            isAdmin = "Admin".equalsIgnoreCase(userRole.getUserRole().getUserRoleName());
+        }
+        log.info("Is admin: {}", isAdmin);
 
         log.info("Searching tasks with request: {}", dto);
 
         String sortBy = dto.getSortBy();
-
         if ("ticketId".equalsIgnoreCase(sortBy)) {
             sortBy = "ticket.ticketId";
         } else if ("id".equalsIgnoreCase(sortBy)) {
@@ -403,13 +439,48 @@ public class TaskServiceImpl implements TaskService {
                 dto.getSize(),
                 sort
         );
-        Page<Task> pageResult = taskRepository.searchTasks(
-                dto.getTicketId(),
-                dto.getBranchId(),
-                dto.getQuery(),
-                dto.getTaskStatus(),
-                pageable
-        );
+
+        Page<Task> pageResult;
+
+        if (isAdmin) {
+            pageResult = taskRepository.searchTasks(
+                    dto.getTicketId(),
+                    dto.getBranchId(),
+                    dto.getQuery(),
+                    dto.getTaskStatus(),
+                    pageable
+            );
+        } else {
+            List<Long> assigneeTaskIds =
+                    taskAssigneeRepository.findByUser_Id(userId)
+                            .stream()
+                            .map(a -> a.getTask().getTaskId())
+                            .collect(Collectors.toList());
+
+            List<Long> followerTaskIds =
+                    taskFollowerRepository.findByUser_Id(userId)
+                            .stream()
+                            .map(f -> f.getTask().getTaskId())
+                            .collect(Collectors.toList());
+
+            Set<Long> allTaskIds = new HashSet<>();
+            allTaskIds.addAll(assigneeTaskIds);
+            allTaskIds.addAll(followerTaskIds);
+
+            log.info("Assignee tasks: {}, Follower tasks: {}, Combined: {}", assigneeTaskIds.size(), followerTaskIds.size(), allTaskIds.size());
+
+            if (allTaskIds.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        new PagedResponse<>(Collections.emptyList(), 0, 0, 0, dto.getSize(), true),
+                        "No tasks found",
+                        HttpStatus.OK,
+                        false
+                );
+            }
+
+            pageResult = taskRepository.findByTaskIdIn(allTaskIds, pageable);
+        }
+
         if (pageResult.isEmpty()) {
             return new ApiResponseDTO<>(
                     null,
@@ -428,12 +499,10 @@ public class TaskServiceImpl implements TaskService {
                             TaskCombinedSearchResponseDTO response =
                                     new TaskCombinedSearchResponseDTO();
 
-                            // 🔹 Main task
                             response.setTaskCustomResponseDTO(
                                     taskMapper.toCustomDto(task)
                             );
 
-                            // 🔹 Assignees
                             response.setTaskAssigneeCustomResponseDTOS(
                                     taskAssigneeRepository.findByTaskTaskId(taskId)
                                             .stream()
@@ -441,7 +510,6 @@ public class TaskServiceImpl implements TaskService {
                                             .collect(Collectors.toList())
                             );
 
-                            // 🔹 Followers
                             response.setTaskFollowerCustomResponseDTOS(
                                     taskFollowerRepository.findByTaskTaskId(taskId)
                                             .stream()
@@ -449,7 +517,6 @@ public class TaskServiceImpl implements TaskService {
                                             .collect(Collectors.toList())
                             );
 
-                            // 🔹 Tags
                             response.setTaskTagCustomResponseDTOS(
                                     taskTagRepository.findByTaskTaskId(taskId)
                                             .stream()
@@ -457,7 +524,6 @@ public class TaskServiceImpl implements TaskService {
                                             .collect(Collectors.toList())
                             );
 
-                            // 🔹 Attachments
                             response.setTaskAttachmentCustomResponseDTOS(
                                     taskAttachmentRepository.findByTaskTaskId(taskId)
                                             .stream()
@@ -483,6 +549,7 @@ public class TaskServiceImpl implements TaskService {
                 false
         );
     }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -1278,8 +1345,7 @@ public class TaskServiceImpl implements TaskService {
                     false
             );
 
-        }
-        catch (IllegalStateException ex) {
+        } catch (IllegalStateException ex) {
 
             log.warn(
                     "Task status validation failed. taskId={}, message={}",

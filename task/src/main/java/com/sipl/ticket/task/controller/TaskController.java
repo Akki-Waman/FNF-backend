@@ -35,8 +35,10 @@ public interface TaskController {
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
-            @RequestBody TaskSearchRequestDto requestDto
+            @RequestBody TaskSearchRequestDto requestDto,
+            HttpServletRequest request
     );
+
 
     @ApiOperation(
             value = "Update a existing task",
