@@ -7,6 +7,8 @@ public class SlaProfileSearchRequestDto extends SearchRequestDto {
 
     private Integer slaProfileId;
 
+    private String profileName;
+
     private Integer branchId;
 
 }
