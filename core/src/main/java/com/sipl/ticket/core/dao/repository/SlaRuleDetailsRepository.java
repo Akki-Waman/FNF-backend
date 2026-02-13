@@ -2,6 +2,8 @@ package com.sipl.ticket.core.dao.repository;
 
 
 import com.sipl.ticket.core.dao.entity.SlaRuleDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +20,8 @@ public interface SlaRuleDetailsRepository extends JpaRepository<SlaRuleDetails, 
                     "AND sr.service.serviceId = :serviceId " +
                     "AND sr.severityMasterId = :severityId " +
                     "AND sr.slaTypeMasterId = :slaTypeId " +
-                    "AND sr.isActive = true"
+                    "AND sr.isActive = true " +
+                    "AND sr.isDeleted = false"
     )
     Optional<SlaRuleDetails> findActiveRule(
             @Param("profileId") Integer profileId,
@@ -26,5 +29,9 @@ public interface SlaRuleDetailsRepository extends JpaRepository<SlaRuleDetails, 
             @Param("severityId") Integer severityId,
             @Param("slaTypeId") Long slaTypeId
     );
+
+    @Query("SELECT sr FROM SlaRuleDetails sr WHERE sr.isDeleted = false")
+    Page<SlaRuleDetails> findAllNotDeleted(Pageable pageable);
+
 
 }
