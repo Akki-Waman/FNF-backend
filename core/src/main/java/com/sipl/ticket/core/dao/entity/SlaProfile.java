@@ -34,4 +34,8 @@ public class SlaProfile extends AuditEntity {
     private LocalDate effectiveTo;
 
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
 }
