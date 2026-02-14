@@ -203,6 +203,16 @@ public class TicketServiceImpl implements TicketService {
                     contactsRepository.findById(dto.getContact().getContactId())
                             .orElseThrow(() -> new RuntimeException("Contact not found"))
             );
+        else {
+            if (dto.getComplaintName() == null || dto.getComplaintName().trim().isEmpty()
+                    || dto.getComplaintMobileNo() == null || dto.getComplaintMobileNo().trim().isEmpty()) {
+
+                throw new RuntimeException("Complaint Name and Complaint Mobile Number are required.");
+            }
+
+            ticket.setComplaintName(dto.getComplaintName());
+            ticket.getComplaintMobileNo();
+        }
     }
 
 
