@@ -3,6 +3,8 @@ package com.sipl.ticket.core.dao.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 
@@ -22,7 +24,7 @@ public class ActivityLog extends AuditEntity{
     private String description;
 
     private String staffName;
-
+    @CreatedBy
     @ManyToOne
     @JoinColumn(
             name = "performed_by",

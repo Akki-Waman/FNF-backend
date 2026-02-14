@@ -1,4 +1,4 @@
-package com.sipl.ticket.activityLog.dto.response;
+package com.sipl.ticket.core.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

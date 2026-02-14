@@ -4,6 +4,7 @@ import com.sipl.ticket.activityLog.controller.ActivityLogController;
 import com.sipl.ticket.activityLog.service.ActivityLogService;
 
 import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
+import com.sipl.ticket.core.dto.response.ActivityLogDashboardDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 
 import javax.servlet.http.HttpServletResponse;
 

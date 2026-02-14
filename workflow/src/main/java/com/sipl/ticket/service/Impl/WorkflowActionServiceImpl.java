@@ -144,7 +144,7 @@ public class WorkflowActionServiceImpl implements WorkflowActionService {
                         "Ticket not found with id: " + entityId
                 ));
         if (isApproved) {
-            ticket.setStatus(1); // open
+            ticket.setStatus(8); // approved
             ticket.setIsApproverRequired(false);
         } else {
             ticket.setStatus(5); //closed

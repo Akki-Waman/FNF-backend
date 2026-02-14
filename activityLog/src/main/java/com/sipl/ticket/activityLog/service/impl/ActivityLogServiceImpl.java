@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dao.entity.ActivityLog;
 import com.sipl.ticket.core.dao.entity.Users;
 import com.sipl.ticket.core.dao.repository.ActivityLogRepository;
 import com.sipl.ticket.core.dto.request.ActivityLogReportRequestDto;
+import com.sipl.ticket.core.dto.response.ActivityLogDashboardDto;
 import com.sipl.ticket.core.dto.response.ActivityLogReportResponseDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.helper.ActivityLogExportHelper;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import com.sipl.ticket.activityLog.dto.response.ActivityLogDashboardDto;
 
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
@@ -122,16 +122,25 @@ public class ActivityLogServiceImpl implements ActivityLogService {
 
 
 
-    private ActivityLogDashboardDto mapToDashboardDto(ActivityLog log) {
+    private ActivityLogDashboardDto mapToDashboardDto(ActivityLog activityLog) {
 
         ActivityLogDashboardDto dto = new ActivityLogDashboardDto();
 
-        dto.setMessage(log.getDescription());
-        dto.setModule(log.getStaffName());
-        dto.setCreatedTime(log.getCreatedTime());
+        dto.setMessage(activityLog.getDescription());
+        log.info("performed by"+activityLog.getPerformedBy().getId());
+        if (activityLog.getPerformedBy() != null) {
+            dto.setModule(
+                    activityLog.getPerformedBy().getFirstName() + " " +
+                            activityLog.getPerformedBy().getLastName()
 
-        if (log.getCreatedBy() != null) {
-            Users u = log.getCreatedBy();
+            );
+        } else {
+            dto.setModule("SYSTEM");
+        }
+        dto.setCreatedTime(activityLog.getCreatedTime());
+
+        if (activityLog.getCreatedBy() != null) {
+            Users u = activityLog.getCreatedBy();
             dto.setCreatedBy(u.getFirstName() + " " + u.getLastName());
         } else {
             dto.setCreatedBy("SYSTEM");
