@@ -266,7 +266,7 @@ public class ReportServiceImpl implements ReportService {
                         .orElse(0.0);
                 avgReplyHours = Math.round(avgReplyHours * 100.0) / 100.0;
                 content.add(new StaffTicketResponseDTO(
-                        user.getUserName(),
+                        user.getFirstName()+" "+user.getLastName(),
                         totalAssigned,
                         openTickets,
                         closedTickets,
