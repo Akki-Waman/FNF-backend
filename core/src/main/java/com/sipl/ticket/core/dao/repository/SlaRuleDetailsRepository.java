@@ -39,5 +39,4 @@ public interface SlaRuleDetailsRepository extends JpaRepository<SlaRuleDetails, 
             @Param("isActive") Boolean isActive,
             Pageable pageable);
 
-
 }

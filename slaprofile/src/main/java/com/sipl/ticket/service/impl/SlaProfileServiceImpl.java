@@ -221,8 +221,7 @@ public class SlaProfileServiceImpl implements SlaProfileService {
             SlaProfileSearchRequestDto dto) {
 
         log.info("Searching SLA Profiles with filters -> slaProfileId: {}, profileName: {}, branchId: {}, isActive: {}, page: {}, size: {}",
-                dto.getSlaProfileId(),
-                dto.getProfileName(),
+                dto.getQuery(),
                 dto.getBranchId(),
                 dto.getIsActive(),
                 dto.getPage(),
@@ -237,10 +236,9 @@ public class SlaProfileServiceImpl implements SlaProfileService {
         );
 
         Page<SlaProfile> pageResult = repository.searchSlaProfiles(
-                dto.getSlaProfileId(),
+                dto.getQuery(),
                 dto.getBranchId(),
                 dto.getIsActive(),
-                dto.getProfileName(),
                 pageable
         );
 
@@ -320,19 +318,17 @@ public class SlaProfileServiceImpl implements SlaProfileService {
     public byte[] exportSlaProfilesExcel(SlaProfileSearchRequestDto request) {
 
         log.info("Request | slaProfileId={} | branchId={} | isActive={} | profileName={}",
-                request.getSlaProfileId(),
+                request.getQuery(),
                 request.getBranchId(),
-                request.getIsActive(),
-                request.getProfileName());
+                request.getIsActive());
 
         try {
 
             Page<SlaProfile> page =
                     repository.searchSlaProfiles(
-                            request.getSlaProfileId(),
+                            request.getQuery(),
                             request.getBranchId(),
                             request.getIsActive(),
-                            request.getProfileName(),
                             Pageable.unpaged()
                     );
 

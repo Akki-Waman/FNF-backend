@@ -74,11 +74,11 @@ public class SlaRuleDetailsExcelGenerator {
                         dto.getService().getServiceId());
             }
 
-            if (dto.getSeverityId() != null)
-                row.createCell(4).setCellValue(dto.getSeverityId());
-
-            if (dto.getSlaTypeId() != null)
-                row.createCell(5).setCellValue(dto.getSlaTypeId());
+//            if (dto.getSeverityId() != null)
+//                row.createCell(4).setCellValue(dto.getSeverityId());
+//
+//            if (dto.getSlaTypeId() != null)
+//                row.createCell(5).setCellValue(dto.getSlaTypeId());
 
             if (dto.getSlaHours() != null)
                 row.createCell(6).setCellValue(dto.getSlaHours());

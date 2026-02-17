@@ -163,4 +163,8 @@ public class Ticket extends AuditEntity{
 
     @Column(name="is_approved")
     private Boolean isApproved;
+
+    @OneToMany(mappedBy = "ticket")
+    private List<Task> tasks;
+
 }

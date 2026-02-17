@@ -25,4 +25,5 @@ public class ResponsePenaltyResponseDTO {
     private Boolean responseWithin72Hours;
     private String penaltyTime;
     private Double penaltyPercentage;
+    private String responsePendingDays;
 }

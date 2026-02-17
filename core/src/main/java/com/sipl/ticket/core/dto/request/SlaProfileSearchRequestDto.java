@@ -4,11 +4,6 @@ import lombok.Data;
 
 @Data
 public class SlaProfileSearchRequestDto extends SearchRequestDto {
-
-    private Integer slaProfileId;
-
-    private String profileName;
-
+    private String query;
     private Integer branchId;
-
 }
