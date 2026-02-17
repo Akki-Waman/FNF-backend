@@ -26,8 +26,10 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +171,18 @@ public class ReportServiceImpl implements ReportService {
                                 ticket.getResponseDateTime()
                         ).toHours() <= 72
         );
+        LocalDate issueLogged =
+                Optional.ofNullable(ticket.getCreatedTime())
+                        .map(LocalDateTime::toLocalDate)
+                        .orElse(null);
 
+        String highlightDays = "0";
+        if (issueLogged != null) {
+            long days = ChronoUnit.DAYS.between(issueLogged, LocalDate.now());
+            highlightDays = String.valueOf(days);
+        }
+
+        dto.setResponsePendingDays(highlightDays);
         return dto;
     }
 
@@ -455,17 +468,18 @@ public class ReportServiceImpl implements ReportService {
                         .orElse(null)
         );
 
-        dto.setIssueLogged(
+        LocalDate issueLogged =
                 Optional.ofNullable(ticket.getCreatedTime())
                         .map(LocalDateTime::toLocalDate)
-                        .orElse(null)
-        );
+                        .orElse(null);
 
-        dto.setIssueResolved(
+        LocalDate issueResolved =
                 Optional.ofNullable(ticket.getResolutionDateTime())
                         .map(LocalDateTime::toLocalDate)
-                        .orElse(null)
-        );
+                        .orElse(null);
+
+        dto.setIssueLogged(issueLogged);
+        dto.setIssueResolved(issueResolved);
 
         dto.setResolutionTime(convertHoursToDays(ticket.getResolutionTimeHours()));
 
@@ -476,17 +490,50 @@ public class ReportServiceImpl implements ReportService {
         );
 
         dto.setStatus(setTicketStatus(ticket));
-        dto.setTaskStatus(null); //TODO: don't what exact value is need to set
 
-        dto.setWithInWeek(
-                ticket.getResolutionDateTime() != null &&
-                        ticket.getCreatedTime() != null &&
-                        Duration.between(
-                                ticket.getCreatedTime(),
-                                ticket.getResolutionDateTime()
-                        ).toDays() <= 7
-        );
+    /* =====================================================
+       1️⃣ withInWeek  (<= 7 days)
+    ===================================================== */
+        boolean withInWeek = false;
+        if (issueLogged != null && issueResolved != null) {
+            withInWeek = ChronoUnit.DAYS.between(issueLogged, issueResolved) <= 7;
+        }
+        dto.setWithInWeek(withInWeek);
 
+
+    /* =====================================================
+       2️⃣ taskStatus  (completed/total)
+    ===================================================== */
+        int totalTasks = 0;
+        int completedTasks = 0;
+
+        if (ticket.getTasks() != null) {
+            totalTasks = ticket.getTasks().size();
+
+            completedTasks = (int) ticket.getTasks().stream()
+                    .filter(t -> t.getStatus() == 5)
+                    .count();
+        }
+
+        dto.setTaskStatus(completedTasks + "/" + totalTasks);
+
+
+    /* =====================================================
+       3️⃣ highlightDays (created → resolved days diff)
+    ===================================================== */
+        String highlightDays = "0";
+
+        if (issueLogged != null) {
+            long days = ChronoUnit.DAYS.between(issueLogged, LocalDate.now());
+            highlightDays = String.valueOf(days);
+        }
+
+        dto.setHighlightDays(highlightDays);
+
+
+    /* =====================================================
+       penaltyDays (already present)
+    ===================================================== */
         dto.setPenaltyDays(
                 ticket.getResponsePenaltyTime() != null
                         ? convertHoursToDays(ticket.getResolutionPenaltyTime())

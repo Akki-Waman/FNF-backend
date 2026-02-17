@@ -23,4 +23,5 @@ public class ResolutionPenaltyResponseDTO {
     private Boolean withInWeek;
     private String penaltyDays;
     private Double penaltyPercentage;
+    private String highlightDays;
 }

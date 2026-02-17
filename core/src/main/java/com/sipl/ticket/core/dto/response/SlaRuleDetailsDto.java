@@ -17,10 +17,6 @@ public class SlaRuleDetailsDto extends AuditDto {
 
     private Long severityMasterId;
     private Long slaTypeMasterId;
-
-    private Integer severityId;
-    private Integer slaTypeId;
-
     private Integer slaHours;
     private Integer graceHours;
     private Double penaltyPercent;
