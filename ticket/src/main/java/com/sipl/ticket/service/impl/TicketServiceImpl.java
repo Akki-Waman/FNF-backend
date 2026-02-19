@@ -27,10 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.dom4j.Branch;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,8 +41,10 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,6 +92,12 @@ public class TicketServiceImpl implements TicketService {
     private static final String DEFAULT_RESOLUTION_MESSAGE =
             "The issue has been analyzed and resolved successfully";
 
+    @Value("${tickets}")
+    private Long templateId;
+
+    @Value("${sender_mail}")
+    private String senderMail;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -108,7 +119,12 @@ public class TicketServiceImpl implements TicketService {
                     saveTicketAttachments(files, ticket, ticket.getAssignedTo());
             CombinedTicketResponseDto responseDto =
                     buildResponse(ticket, tags, ccs, attachments);
-            sendTicketCreationEmail(ticket);
+            TicketEmailRequestDto mailDto =
+                    ticketMapper.toTicketEmailRequestDto(ticket); // map entity → DTO
+
+            mailDto.setCcEmails(
+                    ccs.stream().map(TicketCc::getCc).collect(Collectors.toList()));
+            sendTicketCreationEmail(mailDto, templateId);
             return new ApiResponseDTO<>(
                     responseDto,
                     null,
@@ -157,6 +173,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.setShift(shiftForTicket);
         return ticketRepository.save(ticket);
     }
+
     private Shift getShiftForTicket(List<Shift> shifts) {
         if (shifts == null || shifts.isEmpty()) return null;
 
@@ -398,96 +415,78 @@ public class TicketServiceImpl implements TicketService {
     }
 
 
-
-    private void sendTicketCreationEmail(Ticket ticket) {
-        List<String> toEmails = new ArrayList<>();
-        String subject = null;
-        String body = null;
-        boolean emailSent = false;
-        String senderEmail = null;
+    @Async
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    private void sendTicketCreationEmail(TicketEmailRequestDto ticketDto, Long templateId) {
         try {
-            EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+            // Build the email request from DTO
+            EmailNotificationRequest emailRequest = buildTicketCreationEmailRequest(ticketDto, templateId);
 
-            // ---------------- TO ----------------
-             toEmails = new ArrayList<>();
-
-            // Assigned user email
-            if (ticket.getAssignedTo() != null &&
-                    ticket.getAssignedTo().getEmailId() != null) {
-                toEmails.add(ticket.getEmailAddress());
-            }
-
-            // Customer email
-            if (ticket.getEmailAddress() != null) {
-                toEmails.add(ticket.getEmailAddress());
-            }
-
-            emailRequest.setTo(toEmails);
-
-            // ---------------- CC ----------------
-            List<String> ccEmails =
-                    ticketCcRepository.findCcEmailsByTicketId(ticket.getTicketId());
-
-            log.info("CC emails from DB: {}", ccEmails);
-
-            emailRequest.setCc(ccEmails);
-            // ---------------- SUBJECT ----------------
-            subject = "New Ticket Created | Ticket ID : " + ticket.getTicketId();
-            emailRequest.setSubject(subject);
-
-            // ---------------- BODY ----------------
-             body = String.format(
-                    "Dear Customer,\n\n" +
-                            "Thank you for contacting the IT Support Team.\n\n" +
-                            "We have successfully created your support ticket with the following details:\n\n" +
-                            "--------------------------------------------------\n" +
-                            "Ticket ID     : %s\n" +
-                            "Issue Subject : %s\n" +
-                            "Description   : %s\n" +
-                            "Priority      : %s\n" +
-                            "Department    : %s\n" +
-                            "Assigned To   : %s\n" +
-                            "--------------------------------------------------\n\n" +
-                            "Our team is currently working on your request and will keep you informed of the progress.\n\n" +
-                            "Please mention the Ticket ID in all future communications.\n\n" +
-                            "Warm Regards,\n" +
-                            "Ticket Management System\n" +
-                            "IT Support Team",
-                    ticket.getTicketId(),
-                    ticket.getSubject(),
-                    ticket.getDescription(),
-                    getPriorityLabel(ticket.getPriority()),
-                    ticket.getDepartment().getDepartmentName(),
-                    ticket.getAssignedTo().getFirstName() + " " +
-                            Objects.toString(ticket.getAssignedTo().getLastName(), "")
-            );
-
-
-            emailRequest.setBody(body);
-            Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
-             senderEmail = setting.get().getSettingValue();
-            emailRequest.setSender(senderEmail);
-            emailRequest.setPriority(NotificationPriority.DEFAULT);
-
+            // Send the email
             emailUtil.sendEmail(
                     emailRequest,
-                    "TICKET_CREATE_" + ticket.getTicketId()
+                    "TICKET_CREATE_" + ticketDto.getTicketId()
             );
-            emailSent = true;
+
+            log.info("Ticket creation email sent successfully for TicketId={}", ticketDto.getTicketId());
 
         } catch (Exception e) {
-            log.error("Failed to send ticket creation email for ticketId={}",
-                    ticket.getTicketId(), e);
-        } finally {
-            emailUtil.saveEmailLog(
-                    toEmails != null ? toEmails : Collections.emptyList(),
-                    subject != null ? subject : "N/A",
-                    body != null ? body : "N/A",
-                    senderEmail,
-                    emailSent ? "SUCCESS" : "FAILED",
-                    emailSent ? "Email sent successfully" : "Email sending failed"
-            );
+            log.error("Ticket creation email failed for TicketId={}", ticketDto.getTicketId(), e);
         }
+    }
+
+    private EmailNotificationRequest buildTicketCreationEmailRequest(TicketEmailRequestDto ticketDto, Long templateId) {
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+
+        // ---------------- TO / CC ----------------
+        List<String> toEmails = new ArrayList<>();
+        if (ticketDto.getAssignedTo() != null && ticketDto.getAssignedTo().getEmailId() != null) {
+            toEmails.add(ticketDto.getAssignedTo().getEmailId());
+        }
+        if (ticketDto.getEmailAddress() != null) {
+            toEmails.add(ticketDto.getEmailAddress());
+        }
+
+        emailRequest.setTo(toEmails);
+        emailRequest.setCc(Optional.ofNullable(ticketDto.getCcEmails()).orElse(List.of()));
+
+        // ---------------- SENDER ----------------
+        Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
+        String senderEmail = senderMail;
+        emailRequest.setSender(senderEmail);
+
+        // ---------------- SUBJECT ----------------
+        String subject = "New Ticket Created | Ticket ID : " + ticketDto.getTicketId();
+        emailRequest.setSubject(subject);
+        emailRequest.setTemplateId(templateId);
+        emailRequest.setPriority(NotificationPriority.DEFAULT);
+
+        // ---------------- TEMPLATE DATA ----------------
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        Map<String, String> templateData = new HashMap<>();
+        templateData.put("TICKET_ID", String.valueOf(ticketDto.getTicketId()));
+        templateData.put("TICKET_SUBJECT", Optional.ofNullable(ticketDto.getSubject()).orElse("-"));
+        templateData.put("TICKET_DESCRIPTION", Optional.ofNullable(ticketDto.getDescription()).orElse("-"));
+        templateData.put("CUSTOMER_NAME", Optional.ofNullable(ticketDto.getComplaintName()).orElse("Customer"));
+        templateData.put("DESCRIPTION", Optional.ofNullable(ticketDto.getDescription()).orElse("-"));
+        String priorityLabel =
+                ticketDto.getPriority() != null
+                        ? getPriorityLabel(ticketDto.getPriority())
+                        : "-";
+        templateData.put("PRIORITY", priorityLabel);
+        templateData.put("DEPARTMENT", ticketDto.getDepartment() != null ?
+                ticketDto.getDepartment().getDepartmentName() : "-");
+        templateData.put("ASSIGNED_TO", ticketDto.getAssignedTo() != null ?
+                ticketDto.getAssignedTo().getFirstName() + " " +
+                        Objects.toString(ticketDto.getAssignedTo().getLastName(), "") : "Unassigned");
+        templateData.put("DATE", LocalDate.now().format(formatter));
+        templateData.put("SUBJECT", subject);
+
+        emailRequest.setTemplateData(templateData);
+
+        log.info("TicketCreation Email → TO={}, CC={}, templateId={}", toEmails, emailRequest.getCc(), templateId);
+
+        return emailRequest;
     }
 
 
