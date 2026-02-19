@@ -3,6 +3,7 @@ package com.sipl.ticket.core.mapper;
 import com.sipl.ticket.core.dao.entity.MasterContext;
 import com.sipl.ticket.core.dao.entity.Tags;
 import com.sipl.ticket.core.dao.entity.Ticket;
+import com.sipl.ticket.core.dto.request.TicketEmailRequestDto;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
 import com.sipl.ticket.core.dto.response.TicketCombinedResponseDto;
 import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
@@ -68,6 +69,8 @@ public interface TicketMapper extends AuditEntityMapper {
             Ticket ticket,
             @Context MasterContext masterContext
     );
+
+    TicketEmailRequestDto toTicketEmailRequestDto(Ticket ticket);
 }
 
 
