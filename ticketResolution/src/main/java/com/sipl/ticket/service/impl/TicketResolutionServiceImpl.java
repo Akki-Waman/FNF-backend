@@ -9,9 +9,12 @@ import com.sipl.notification.enums.NotificationPriority;
 import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
+import com.sipl.ticket.core.dto.request.TicketResolutionEmailRequestDto;
 import com.sipl.ticket.core.dto.request.TicketResolutionRequestDTO;
+import com.sipl.ticket.core.dto.request.TicketResponseSentMailRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.TicketResolutionCombinedDto;
+import com.sipl.ticket.core.mapper.TicketMapper;
 import com.sipl.ticket.core.mapper.TicketResolutionAttachmentMapper;
 import com.sipl.ticket.core.mapper.TicketResolutionCcMapper;
 import com.sipl.ticket.core.mapper.TicketResolutionMapper;
@@ -20,6 +23,7 @@ import com.sipl.ticket.master.service.MasterService;
 import com.sipl.ticket.service.TicketResolutionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +52,7 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
     private final TicketResolutionCcMapper ticketResolutionCcMapper;
     private final TicketResolutionCcRepository ticketResolutionCcRepository;
     private final TicketResolutionAttachmentRepository ticketResolutionAttachmentRepository;
+    private final TicketMapper ticketMapper;
 
     private final DocumentClientService documentClientService;
     private final EmailUtil emailUtil;
@@ -58,6 +64,11 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
 
     public static final Long SLA_TYPE_RESOLUTION_ID = 2L;
 
+    @Value("${ticket_resolution}")
+    private Long templateId;
+
+    @Value("${sender_mail}")
+    private String senderMail;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -115,9 +126,11 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
                                             "Ticket resolution not found after save"
                                     ));
 
-            // 7️⃣ Send email
-            sendTicketResolutionEmail(fullResolution);
 
+            TicketResolutionEmailRequestDto mailDto =
+                    buildTicketResolutionMailDto(fullResolution, ccs);
+
+            sendTicketResolutionEmail(mailDto, templateId);
             return new ApiResponseDTO<>(
                     responseDto,
                     null,
@@ -411,122 +424,160 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
     @Async
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     private void sendTicketResolutionEmail(
-            TicketResolution ticketResolution) {
-
-        Ticket ticket = ticketResolution.getTicket();
-
-        List<String> toEmails = new ArrayList<>();
-        List<String> ccEmails = Collections.emptyList();
-
-        String subject = "N/A";
-        String body = "N/A";
-        String senderEmail = null;
-        boolean emailSent = false;
+            TicketResolutionEmailRequestDto resolutionDto,
+            Long templateId) {
 
         try {
+
             EmailNotificationRequest emailRequest =
-                    new EmailNotificationRequest();
+                    buildTicketResolutionEmailRequest(resolutionDto, templateId);
 
-            // ---------------- TO ----------------
-            Optional.ofNullable(ticket.getAssignedTo())
-                    .map(Users::getEmailId)
-                    .ifPresent(toEmails::add);
-
-            Optional.ofNullable(ticket.getEmailAddress())
-                    .ifPresent(toEmails::add);
-
-            emailRequest.setTo(toEmails);
-
-            // ---------------- CC ----------------
-            ccEmails =
-                    ticketResolutionCcRepository
-                            .findCcEmailsByTicketResolutionId(
-                                    ticketResolution.getTicketResolutionId()
-                            );
-
-            log.info("Ticket Resolution CC emails: {}", ccEmails);
-            emailRequest.setCc(ccEmails);
-
-            // ---------------- SUBJECT ----------------
-            subject =
-                    "Ticket Resolved | Ticket ID : " +
-                            ticket.getTicketId();
-
-            emailRequest.setSubject(subject);
-
-            // ---------------- BODY ----------------
-            body = buildResolutionEmailBody(
-                    ticket,
-                    ticketResolution
-            );
-
-            emailRequest.setBody(body);
-
-            // ---------------- SENDER ----------------
-            senderEmail =
-                    settingRepository.findByScreen("EMAIL")
-                            .map(Setting::getSettingValue)
-                            .orElseThrow(() ->
-                                    new IllegalStateException(
-                                            "Sender email not configured"));
-
-            emailRequest.setSender(senderEmail);
-            emailRequest.setPriority(NotificationPriority.DEFAULT);
-
-            // ---------------- SEND ----------------
             emailUtil.sendEmail(
                     emailRequest,
-                    "TICKET_RESOLUTION_" +
-                            ticketResolution.getTicketResolutionId()
+                    "TICKET_RESOLUTION_" + resolutionDto.getTicketResolutionId()
             );
 
-            emailSent = true;
+            log.info("Ticket resolution email sent successfully for TicketId={}",
+                    resolutionDto.getTicket().getTicketId());
 
         } catch (Exception e) {
-            log.error(
-                    "Failed to send ticket resolution email. ticketResolutionId={}",
-                    ticketResolution.getTicketResolutionId(),
-                    e
-            );
 
-        } finally {
-            emailUtil.saveEmailLog(
-                    toEmails,
-                    subject,
-                    body,
-                    senderEmail,
-                    emailSent ? "SUCCESS" : "FAILED",
-                    emailSent
-                            ? "Email sent successfully"
-                            : "Email sending failed"
-            );
+            log.error("Ticket resolution email failed for TicketId={}",
+                    resolutionDto.getTicket().getTicketId(), e);
         }
     }
 
-    private String buildResolutionEmailBody(
-            Ticket ticket,
-            TicketResolution ticketResolution) {
+    private EmailNotificationRequest buildTicketResolutionEmailRequest(
+            TicketResolutionEmailRequestDto dto,
+            Long templateId) {
 
-        return String.format(
-                "Dear %s,\n\n" +
-                        "Thank you for your patience.\n\n" +
-                        "We would like to inform you that your support ticket has been resolved.\n\n" +
-                        "--------------------------------------------------\n" +
-                        "Ticket ID     : %s\n" +
-                        "Issue Subject : %s\n" +
-                        "Resolution:\n" +
-                        "%s\n" +
-                        "--------------------------------------------------\n\n" +
-                        "If you require any further assistance, please reply to this email.\n\n" +
-                        "Warm Regards,\n" +
-                        "Ticket Management System\n" +
-                        "IT Support Team",
-                ticket.getComplaintName(),
-                ticket.getTicketId(),
-                ticket.getSubject(),
-                ticketResolution.getResolutionBody()
-        );
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+
+        // ================= TO =================
+        List<String> toEmails = Optional.ofNullable(dto.getEmailIds())
+                .orElse(List.of())
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (toEmails.isEmpty()) {
+            throw new IllegalArgumentException("No recipient email found for Ticket Resolution mail");
+        }
+
+        emailRequest.setTo(toEmails);
+
+        // ================= CC =================
+        List<String> ccEmails = Optional.ofNullable(dto.getCcMailIds())
+                .orElse(List.of())
+                .stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        emailRequest.setCc(ccEmails);
+
+        // ================= SENDER =================
+        emailRequest.setSender(senderMail);
+
+        // ================= SUBJECT =================
+        Long ticketId = Optional.ofNullable(dto.getTicket())
+                .map(t -> t.getTicketId())
+                .orElse(null);
+
+        emailRequest.setSubject("Ticket Resolved | Ticket ID : " + ticketId);
+
+        emailRequest.setTemplateId(templateId);
+        emailRequest.setPriority(NotificationPriority.DEFAULT);
+
+        // ================= TEMPLATE DATA =================
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        Map<String, String> templateData = new HashMap<>();
+
+        templateData.put("TICKET_ID", String.valueOf(ticketId));
+
+        templateData.put("TICKET_SUBJECT",
+                Optional.ofNullable(dto.getTicket())
+                        .map(t -> t.getSubject())
+                        .orElse("-"));
+
+        templateData.put("CUSTOMER_NAME",
+                Optional.ofNullable(dto.getTicket())
+                        .map(t -> t.getComplaintName())
+                        .orElse("Customer"));
+
+        templateData.put("RESOLUTION",
+                Optional.ofNullable(dto.getResponseBody()).orElse("-"));
+
+        templateData.put("STATUS_BEFORE",
+                Optional.ofNullable(dto.getStatusBefore()).orElse("-"));
+
+        templateData.put("STATUS_AFTER",
+                Optional.ofNullable(dto.getStatusAfter()).orElse("-"));
+
+        templateData.put("RESOLVED_DATE",
+                LocalDate.now().format(formatter));
+
+        templateData.put("ASSIGNED_TO",
+                Optional.ofNullable(dto.getTicket())
+                        .map(t -> t.getAssignedTo())
+                        .map(u -> u.getUserName())
+                        .orElse("-"));
+
+        emailRequest.setTemplateData(templateData);
+        log.info("TicketResolution Email → TO={}, CC={}, templateId={}",
+                toEmails, ccEmails, templateId);
+
+        return emailRequest;
     }
 
+
+    private TicketResolutionEmailRequestDto buildTicketResolutionMailDto(
+            TicketResolution resolution,
+            List<TicketResolutionCc> ccs) {
+
+        TicketResolutionEmailRequestDto dto = new TicketResolutionEmailRequestDto();
+
+        dto.setTicketResolutionId(resolution.getTicketResolutionId());
+
+        // ================= Ticket =================
+        MasterContext masterContext = new MasterContext(
+                masterService.getTicketPriorityMap(),
+                masterService.getTicketStatusMap()
+        );
+
+        dto.setTicket(ticketMapper.toTicketDto(resolution.getTicket(), masterContext));
+
+        // ================= Resolution =================
+        dto.setResponseBody(resolution.getResolutionBody());
+        dto.setIsPublic(resolution.getIsPublic());
+        dto.setStatusBefore(resolution.getStatusBefore());
+        dto.setStatusAfter(resolution.getStatusAfter());
+
+        // ================= TO (CUSTOMER EMAIL)  ⭐⭐⭐ IMPORTANT ⭐⭐⭐
+        String customerEmail = resolution.getTicket().getEmailAddress();
+
+        dto.setEmailIds(
+                customerEmail == null
+                        ? List.of()
+                        : List.of(customerEmail)
+        );
+
+        // ================= CC =================
+        dto.setCcMailIds(
+                ccs == null
+                        ? List.of()
+                        : ccs.stream()
+                        .map(TicketResolutionCc::getEmail)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+        );
+
+        log.info("Resolution Mail DTO prepared | resolutionId={} | to={} | ccCount={}",
+                dto.getTicketResolutionId(),
+                dto.getEmailIds(),
+                dto.getCcMailIds().size());
+
+        return dto;
+    }
 }
 
