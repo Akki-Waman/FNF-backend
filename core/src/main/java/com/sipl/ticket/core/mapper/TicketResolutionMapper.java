@@ -2,6 +2,7 @@ package com.sipl.ticket.core.mapper;
 
 import com.sipl.ticket.core.dao.entity.MasterContext;
 import com.sipl.ticket.core.dao.entity.TicketResolution;
+import com.sipl.ticket.core.dto.request.TicketResolutionEmailRequestDto;
 import com.sipl.ticket.core.dto.request.TicketResolutionRequestDTO;
 import com.sipl.ticket.core.dto.response.TicketResolutionDTO;
 import org.mapstruct.Context;
@@ -32,4 +33,6 @@ public interface TicketResolutionMapper extends AuditEntityMapper {
     List<TicketResolutionDTO> mapTicketResolutionListToDtoList(
             List<TicketResolution> ticketResolutionList
     );
+
+    TicketResolutionEmailRequestDto toEmailDto(TicketResolution fullResolution);
 }
