@@ -171,18 +171,19 @@ public class ReportServiceImpl implements ReportService {
                                 ticket.getResponseDateTime()
                         ).toHours() <= 72
         );
-        LocalDate issueLogged =
-                Optional.ofNullable(ticket.getCreatedTime())
-                        .map(LocalDateTime::toLocalDate)
-                        .orElse(null);
+        String pendingDays = "0";
 
-        String highlightDays = "0";
-        if (issueLogged != null) {
-            long days = ChronoUnit.DAYS.between(issueLogged, LocalDate.now());
-            highlightDays = String.valueOf(days);
+        if (ticket.getResponseTimeHours() == null && ticket.getCreatedTime() != null) {
+
+            long days = ChronoUnit.DAYS.between(
+                    ticket.getCreatedTime().toLocalDate(),
+                    LocalDate.now()
+            );
+
+            pendingDays = String.valueOf(days);
         }
 
-        dto.setResponsePendingDays(highlightDays);
+        dto.setResponsePendingDays(pendingDays);
         return dto;
     }
 
@@ -523,9 +524,11 @@ public class ReportServiceImpl implements ReportService {
     ===================================================== */
         String highlightDays = "0";
 
-        if (issueLogged != null) {
+        if (ticket.getResolutionTimeHours() == null && issueLogged != null) {
+
             long days = ChronoUnit.DAYS.between(issueLogged, LocalDate.now());
-            highlightDays = String.valueOf(days);
+
+            highlightDays = String.valueOf(Math.max(days, 0));
         }
 
         dto.setHighlightDays(highlightDays);
