@@ -79,25 +79,30 @@ public class JwtUtil {
     }
 
 
-    public Boolean validateToken(String token, UserDetails userDetails, HttpServletRequest request) {
+//    public Boolean validateToken(String token, UserDetails userDetails, HttpServletRequest request) {
+//        final String username = extractUsername(token);
+//        Map<String, Object> claims = extractAllClaims(token);
+//        HashMap<String, Boolean> urlList = (HashMap<String, Boolean>) claims.get("urlList");
+//        String requestURL = request.getRequestURI();
+//
+//        AntPathMatcher pathMatcher = new AntPathMatcher();
+//
+//        Boolean valueMappedAgainstURL = null;
+//
+//        for (String urlPattern : urlList.keySet()) {
+//
+//            if (pathMatcher.match(urlPattern, requestURL)) {
+//
+//                valueMappedAgainstURL = urlList.get(urlPattern);
+//
+//                break;
+//            }
+//        }
+//        return  (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && valueMappedAgainstURL!=null);
+//    }
+
+    public Boolean validateTokenWithUrlCheck(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        Map<String, Object> claims = extractAllClaims(token);
-        HashMap<String, Boolean> urlList = (HashMap<String, Boolean>) claims.get("urlList");
-        String requestURL = request.getRequestURI();
-
-        AntPathMatcher pathMatcher = new AntPathMatcher();
-
-        Boolean valueMappedAgainstURL = null;
-
-        for (String urlPattern : urlList.keySet()) {
-
-            if (pathMatcher.match(urlPattern, requestURL)) {
-
-                valueMappedAgainstURL = urlList.get(urlPattern);
-
-                break;
-            }
-        }
-        return  (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && valueMappedAgainstURL!=null);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 }
