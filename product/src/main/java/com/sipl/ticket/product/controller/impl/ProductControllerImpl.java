@@ -80,11 +80,11 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<Void> exportProductsExcel(HttpServletResponse response,Integer branchId) {
+    public ResponseEntity<Void> exportProductsExcel(HttpServletResponse response) {
 
         log.info("<<Start>> exportProductsExcel endpoint called <<Start>>");
 
-        productService.exportProductsExcel(response,branchId);
+        productService.exportProductsExcel(response);
 
         log.info("<<End>> exportProductsExcel endpoint called <<End>>");
 

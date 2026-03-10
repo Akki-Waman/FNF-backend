@@ -23,7 +23,7 @@ public interface ProductService {
 
     ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>searchProducts(ProductSearchRequestDto requestDto);
 
-    void exportProductsExcel(HttpServletResponse response,Integer branchId);
+    void exportProductsExcel(HttpServletResponse response);
 
     ResponseEntity<Resource> downloadProductFile(String fileName);
 

@@ -70,9 +70,7 @@ public interface ProductController {
     );
 
     @GetMapping("/export")
-    ResponseEntity<Void> exportProductsExcel(HttpServletResponse response,
-                                             @RequestParam(required = false) Integer branchId
-    );
+    ResponseEntity<Void> exportProductsExcel(HttpServletResponse response);
 
     @ApiOperation(
             value = "Download product file",

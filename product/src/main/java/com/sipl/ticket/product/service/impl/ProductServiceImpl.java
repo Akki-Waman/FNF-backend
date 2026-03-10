@@ -657,7 +657,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public void exportProductsExcel(HttpServletResponse response, Integer branchId) {
+    public void exportProductsExcel(HttpServletResponse response) {
 
         log.info("Exporting active products to Excel");
 
