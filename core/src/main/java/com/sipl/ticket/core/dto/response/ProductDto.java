@@ -69,9 +69,6 @@ public class ProductDto extends AuditDto {
 
     private Boolean isSync;
 
-    private Integer branchId;
-
-    private String branchName;
 
 
 }
