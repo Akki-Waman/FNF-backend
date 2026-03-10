@@ -523,7 +523,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ApiResponseDTO<ProductDto> getAllProduct(Integer branchId) {
+    public ApiResponseDTO<ProductDto> getAllProduct() {
         try {
             List<Products> productList = productRepository.findByIsActiveTrue();
 

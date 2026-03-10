@@ -57,7 +57,6 @@ public interface ProductController {
             response = ProductDto.class)
     @GetMapping("")
     public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct(
-            @RequestParam(required = false) Integer branchId
     );
 
     @ApiOperation(

@@ -61,9 +61,9 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct(Integer branchId) {
+    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct() {
         log.info("<<START>> getAllProduct called <<START>>");
-        ApiResponseDTO<ProductDto> apiResponse = productService.getAllProduct(branchId);
+        ApiResponseDTO<ProductDto> apiResponse = productService.getAllProduct();
         ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
                 new ResponseEntity<>(apiResponse, HttpStatus.OK);
         log.info("<<END>> getAllProduct  <<END>>");

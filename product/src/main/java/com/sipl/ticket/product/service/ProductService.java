@@ -19,7 +19,7 @@ public interface ProductService {
 
     ApiResponseDTO<CombinedProductResponseDto> getByProduct(Long productId);
 
-    ApiResponseDTO<ProductDto> getAllProduct(Integer branchId);
+    ApiResponseDTO<ProductDto> getAllProduct();
 
     ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>searchProducts(ProductSearchRequestDto requestDto);
 
