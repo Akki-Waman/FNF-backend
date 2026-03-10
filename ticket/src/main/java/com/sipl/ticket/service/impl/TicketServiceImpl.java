@@ -152,9 +152,6 @@ public class TicketServiceImpl implements TicketService {
 
     private Ticket saveTicket(NewTicketsRequestDTO dto) {
         validateTicketRequest(dto);
-        Users assignedUser =
-                userRepository.findById(dto.getAssignedTo().getId())
-                        .orElseThrow(() -> new RuntimeException("Assigned user not found"));
         Branches branch = branchesRepository.findById(dto.getBranch().getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
         Department department = departmentRepository.findById(dto.getDepartment().getDepartmentId())
@@ -164,7 +161,6 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = new Ticket();
         mapBasicTicketFields(dto, ticket);
         mapOptionalTicketFields(dto, ticket);
-        ticket.setAssignedTo(assignedUser);
         ticket.setBranch(branch);
         ticket.setDepartment(department);
         ticket.setLocation(location);
@@ -215,6 +211,13 @@ public class TicketServiceImpl implements TicketService {
                                     dto.getClientProducts().getClientProductId())
                             .orElseThrow(() -> new RuntimeException("Client product not found"))
             );
+
+        if(dto.getAssignedTo() != null) {
+            Users assignedUser =
+                    userRepository.findById(dto.getAssignedTo().getId())
+                            .orElseThrow(() -> new RuntimeException("Assigned user not found"));
+            ticket.setAssignedTo(assignedUser);
+        }
         if (dto.getContact() != null)
             ticket.setContact(
                     contactsRepository.findById(dto.getContact().getContactId())
@@ -243,9 +246,7 @@ public class TicketServiceImpl implements TicketService {
         if (dto.getDepartment() == null) {
             throw new RuntimeException("Department is required");
         }
-        if (dto.getAssignedTo() == null) {
-            throw new RuntimeException("Assigned user is required");
-        }
+
     }
 
     private void mapBasicTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
