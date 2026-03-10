@@ -61,9 +61,9 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct(Integer branchId) {
+    public ResponseEntity<ApiResponseDTO<ProductDto>> getAllProduct() {
         log.info("<<START>> getAllProduct called <<START>>");
-        ApiResponseDTO<ProductDto> apiResponse = productService.getAllProduct(branchId);
+        ApiResponseDTO<ProductDto> apiResponse = productService.getAllProduct();
         ResponseEntity<ApiResponseDTO<ProductDto>> responseEntity =
                 new ResponseEntity<>(apiResponse, HttpStatus.OK);
         log.info("<<END>> getAllProduct  <<END>>");
@@ -80,11 +80,11 @@ public class ProductControllerImpl implements ProductController {
     }
 
     @Override
-    public ResponseEntity<Void> exportProductsExcel(HttpServletResponse response,Integer branchId) {
+    public ResponseEntity<Void> exportProductsExcel(HttpServletResponse response) {
 
         log.info("<<Start>> exportProductsExcel endpoint called <<Start>>");
 
-        productService.exportProductsExcel(response,branchId);
+        productService.exportProductsExcel(response);
 
         log.info("<<End>> exportProductsExcel endpoint called <<End>>");
 

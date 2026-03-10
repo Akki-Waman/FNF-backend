@@ -85,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
         try {
             NewProductRequestDto productRequestDto =
                     objectMapper.readValue(productRequestDtoString, NewProductRequestDto.class);
+            log.info("product dto"+productRequestDto);
             if (productRequestDto.getProductDto() == null) {
                 return new ApiResponseDTO<>(
                         null, null, null, "Product DTO cannot be null.", HttpStatus.BAD_REQUEST, true, null, null);
@@ -365,17 +366,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void setNestedEntities(Products productEntity, ProductDto productDto) {
-        if (productDto.getBranchId() == null) {
-            throw new IllegalArgumentException("Branch is required.");
-        }
 
-        Branches branch =
-                branchesRepository
-                        .findByBranchId(productDto.getBranchId())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException("Invalid branch id"));
-
-        productEntity.setBranch(branch);
         if (productDto.getProductSubCategory() != null) {
 
             Optional<ProductSubCategories> productSubCategoryFromDb =
@@ -532,9 +523,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ApiResponseDTO<ProductDto> getAllProduct(Integer branchId) {
+    public ApiResponseDTO<ProductDto> getAllProduct() {
         try {
-            List<Products> productList = productRepository.findByIsActiveTrue(branchId);
+            List<Products> productList = productRepository.findByIsActiveTrue();
 
             if (productList.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -608,7 +599,6 @@ public class ProductServiceImpl implements ProductService {
                     dto.getOriginId(),
                     dto.getProductCategoryId(),
                     dto.getProductSubCategoryId(),
-                    dto.getBranchId(),
                     pageable
             );
 
@@ -667,12 +657,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public void exportProductsExcel(HttpServletResponse response, Integer branchId) {
+    public void exportProductsExcel(HttpServletResponse response) {
 
         log.info("Exporting active products to Excel");
 
         try {
-            List<ProductDto> products = productRepository.findByIsActiveTrue(branchId)
+            List<ProductDto> products = productRepository.findByIsActiveTrue()
                     .stream()
                     .map(productMapper::toDto)
                     .collect(Collectors.toList());

@@ -19,11 +19,11 @@ public interface ProductService {
 
     ApiResponseDTO<CombinedProductResponseDto> getByProduct(Long productId);
 
-    ApiResponseDTO<ProductDto> getAllProduct(Integer branchId);
+    ApiResponseDTO<ProductDto> getAllProduct();
 
     ApiResponseDTO<PagedResponse<CombinedProductResponseDto>>searchProducts(ProductSearchRequestDto requestDto);
 
-    void exportProductsExcel(HttpServletResponse response,Integer branchId);
+    void exportProductsExcel(HttpServletResponse response);
 
     ResponseEntity<Resource> downloadProductFile(String fileName);
 

@@ -119,14 +119,6 @@ public class Products extends AuditEntity {
             foreignKey = @ForeignKey(name = "fk_products_default_tax_head_id"))
     private GstSlabMaster defaultTaxHead;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "branch_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_products_branch_id")
-    )
-    private Branches branch;
-
     @Column(name = "is_delete")
     private Boolean isDelete = true;
 

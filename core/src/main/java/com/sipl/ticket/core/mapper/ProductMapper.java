@@ -30,7 +30,6 @@ public interface ProductMapper extends AuditEntityMapper {
     @Mapping(target = "productCategory", ignore = true)
     @Mapping(target = "defaultTaxHead", ignore = true)
     @Mapping(target = "account", ignore = true)
-    @Mapping(target = "branch" ,ignore=true)
     Products updateEntity(@MappingTarget Products existingEntity, ProductDto productDto);
 
     List<ProductDto> mapProductsListToDtoList(List<Products> productsList);

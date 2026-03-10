@@ -33,12 +33,9 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
             "from Products p " +
                     "where p.isActive = true " +
                     "and p.isDelete = false " +
-                    "and (:branchId is null or p.branch.branchId = :branchId) "+
-            "order by p.productName asc"
+                    "order by p.productName asc"
     )
-    List<Products> findByIsActiveTrue(
-            @Param("branchId") Integer branchId
-    );
+    List<Products> findByIsActiveTrue();
 
 
 
@@ -46,8 +43,6 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
             "SELECT p " +
                     "FROM Products p " +
                     "WHERE p.isActive = true AND p.isDelete = false " +
-
-                    "AND ( :branchId IS NULL OR p.branch.branchId = :branchId ) " +
 
                     "AND ( :#{#productId == null || #productId.isEmpty()} = true " +
                     "      OR p.productId IN :productId ) " +
@@ -70,7 +65,6 @@ public interface ProductRepository extends JpaRepository<Products, Long> {
             @Param("originIds") List<Long> originIds,
             @Param("categoryIds") List<Long> categoryIds,
             @Param("subCategoryIds") List<Long> subCategoryIds,
-            @Param("branchId") Integer branchId,
             Pageable pageable
     );
 
