@@ -167,4 +167,6 @@ public class Ticket extends AuditEntity{
     @OneToMany(mappedBy = "ticket")
     private List<Task> tasks;
 
+    @Column(name = "customer_complaint_datetime")
+    private LocalDateTime customerComplaintDateTime;
 }

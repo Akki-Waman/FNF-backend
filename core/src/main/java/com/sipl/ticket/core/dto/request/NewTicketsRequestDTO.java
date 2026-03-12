@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -34,4 +35,5 @@ public class NewTicketsRequestDTO {
     private String priorityLabel;
     private Boolean isApproverRequired;
     private Boolean isApproved;
+    private LocalDateTime customerComplaintDateTime;
 }

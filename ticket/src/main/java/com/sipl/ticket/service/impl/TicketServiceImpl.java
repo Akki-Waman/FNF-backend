@@ -199,6 +199,9 @@ public class TicketServiceImpl implements TicketService {
 
     private void mapOptionalTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
         ticket.setPriority(dto.getPriority());
+        if (dto.getCustomerComplaintDateTime() != null) {
+            ticket.setCustomerComplaintDateTime(dto.getCustomerComplaintDateTime());
+        }
         ticket.setStatus(dto.getStatus());
         if (dto.getService() != null)
             ticket.setService(
@@ -798,6 +801,10 @@ public class TicketServiceImpl implements TicketService {
 
         if (dto.getBranch() != null)
             ticket.setBranch(getBranch(dto));
+
+        if (dto.getCustomerComplaintDateTime() != null)
+            ticket.setCustomerComplaintDateTime(dto.getCustomerComplaintDateTime());
+
     }
 
 
