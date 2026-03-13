@@ -221,12 +221,15 @@ public class TicketServiceImpl implements TicketService {
                             .orElseThrow(() -> new RuntimeException("Assigned user not found"));
             ticket.setAssignedTo(assignedUser);
         }
-        if (dto.getContact() != null)
-            ticket.setContact(
-                    contactsRepository.findById(dto.getContact().getContactId())
-                            .orElseThrow(() -> new RuntimeException("Contact not found"))
-            );
-        else {
+        if (dto.getContact() != null  && dto.getContact().getContactId() != null) {
+            Contact contactdb = contactsRepository.findById(dto.getContact().getContactId())
+                    .orElseThrow(() -> new RuntimeException("Contact not found"));
+
+            ticket.setContact(contactdb);
+            ticket.setComplaintName(contactdb.getContactName());
+            ticket.setComplaintMobileNo(contactdb.getMobileNo());
+            ticket.setUseContactFk(true);
+        } else {
             if (dto.getComplaintName() == null || dto.getComplaintName().trim().isEmpty()
                     || dto.getComplaintMobileNo() == null || dto.getComplaintMobileNo().trim().isEmpty()) {
 
@@ -235,6 +238,7 @@ public class TicketServiceImpl implements TicketService {
 
             ticket.setComplaintName(dto.getComplaintName());
             ticket.getComplaintMobileNo();
+            ticket.setUseContactFk(false);
         }
     }
 
@@ -255,8 +259,6 @@ public class TicketServiceImpl implements TicketService {
     private void mapBasicTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
         ticket.setSubject(dto.getSubject().trim());
         ticket.setDescription(dto.getDescription());
-        ticket.setComplaintName(dto.getComplaintName());
-        ticket.setComplaintMobileNo(dto.getComplaintMobileNo());
         ticket.setEmailAddress(dto.getEmailAddress());
     }
 

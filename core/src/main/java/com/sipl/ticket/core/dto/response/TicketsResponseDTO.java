@@ -56,4 +56,6 @@ public class TicketsResponseDTO extends AuditDto {
     private Boolean penaltyAllowed;
     private ShiftResponseDTO shift;
     private LocalDateTime customerComplaintDateTime;
+    private Boolean useContactFk;
+
 }
