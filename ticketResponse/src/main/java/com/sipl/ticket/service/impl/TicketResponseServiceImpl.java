@@ -70,6 +70,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final TicketResolutionService ticketResolutionService;
     private final TicketMapper ticketMapper;
     private final MastersRepository mastersRepository;
+    private final TicketNoteRepository ticketNoteRepository;
 
     @Value("${ticket_response}")
     private Long templateId;
@@ -93,6 +94,15 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             TicketResponseRequestDTO dto =
                     objectMapper.readValue(ticketResponseRequestDto, TicketResponseRequestDTO.class);
             if (dto.getStatus() != null && dto.getStatus() == 5) {
+
+                boolean noteExists =
+                        ticketNoteRepository.existsActiveByTicketId(dto.getTicket());
+                if (!noteExists) {
+                    throw new IllegalStateException(
+                            "Ticket note mandatory before closing the ticket"
+                    );
+                }
+
                 callResolutionOnClose(dto);
                 return new ApiResponseDTO<>(
                         null,

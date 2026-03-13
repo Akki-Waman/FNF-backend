@@ -23,5 +23,11 @@ public interface TicketNoteRepository extends JpaRepository<TicketNote, Long> {
     )
     Optional<TicketNote> findActiveByTicketId(@Param("ticketId") Long ticketId);
 
+    @Query(" SELECT CASE WHEN COUNT(tn) > 0 THEN true ELSE false END "+
+       "FROM TicketNote tn "+
+       "WHERE tn.ticket.ticketId = :ticketId "+
+       "AND tn.isDeleted = false ")
+    boolean existsActiveByTicketId(@Param("ticketId") Long ticketId);
+
 }
 
