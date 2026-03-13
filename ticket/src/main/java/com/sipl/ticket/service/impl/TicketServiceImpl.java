@@ -781,8 +781,12 @@ public class TicketServiceImpl implements TicketService {
         if (dto.getPriority() != null)
             ticket.setPriority(dto.getPriority());
 
-        if (dto.getStatus() != null)
+        if (dto.getStatus() != null) {
+            if (dto.getStatus() == 5) {
+                validateTicketNoteBeforeClose(ticket.getTicketId());
+            }
             ticket.setStatus(dto.getStatus());
+        }
 
         ticket.setAssignedTo(assignedUser);
 
@@ -1148,7 +1152,8 @@ public class TicketServiceImpl implements TicketService {
                             "All tasks must be completed before closing the ticket."
                     );
                 }
-
+                // ⭐ Ticket Note Validation
+                validateTicketNoteBeforeClose(ticket.getTicketId());
                 // Resolution datetime set when ticket is closed
                 ticket.setResolutionDateTime(LocalDateTime.now());
             }
@@ -1408,6 +1413,19 @@ public class TicketServiceImpl implements TicketService {
         log.info("Workflow instance created successfully for ticketId: {}", ticket.getTicketId());
         return instanceResponse.getData();
     }
+
+    private void validateTicketNoteBeforeClose(Long ticketId) {
+
+        boolean noteExists =
+                ticketNoteRepository.existsActiveByTicketId(ticketId);
+
+        if (!noteExists) {
+            throw new IllegalStateException(
+                    "Ticket note mandatory before closing the ticket"
+            );
+        }
+    }
+
 }
 
 
