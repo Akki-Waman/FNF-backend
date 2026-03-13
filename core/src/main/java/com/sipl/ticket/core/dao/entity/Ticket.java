@@ -169,4 +169,7 @@ public class Ticket extends AuditEntity{
 
     @Column(name = "customer_complaint_datetime")
     private LocalDateTime customerComplaintDateTime;
+
+    @Column(name = "use_contact_fk")
+    private Boolean useContactFk;
 }
