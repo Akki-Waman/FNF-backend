@@ -98,6 +98,8 @@ public class TicketServiceImpl implements TicketService {
     @Value("${sender_mail}")
     private String senderMail;
 
+    @Value("${ticket_closed}")
+    private Long ticketClosedTemplateId;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -786,6 +788,11 @@ public class TicketServiceImpl implements TicketService {
                 validateTicketNoteBeforeClose(ticket.getTicketId());
             }
             ticket.setStatus(dto.getStatus());
+            // send mail logic
+//            TicketEmailRequestDto mailDto =
+//                    ticketMapper.toTicketEmailRequestDto(ticket);
+//
+//            sendTicketClosedEmail(mailDto, templateId);
         }
 
         ticket.setAssignedTo(assignedUser);
@@ -1156,6 +1163,12 @@ public class TicketServiceImpl implements TicketService {
                 validateTicketNoteBeforeClose(ticket.getTicketId());
                 // Resolution datetime set when ticket is closed
                 ticket.setResolutionDateTime(LocalDateTime.now());
+
+                // send mail logic
+//                TicketEmailRequestDto mailDto =
+//                        ticketMapper.toTicketEmailRequestDto(ticket);
+//
+//                sendTicketClosedEmail(mailDto, ticketClosedTemplateId);
             }
 
             /* ================= UPDATE ================= */
@@ -1424,6 +1437,94 @@ public class TicketServiceImpl implements TicketService {
                     "Ticket note mandatory before closing the ticket"
             );
         }
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    private void sendTicketClosedEmail(TicketEmailRequestDto ticketDto, Long templateId) {
+        try {
+            // Build the email request from DTO
+            EmailNotificationRequest emailRequest = buildTicketClosedEmailRequest(ticketDto, templateId);
+
+            // Send the email
+            emailUtil.sendEmail(
+                    emailRequest,
+                    "TICKET_CLOSED_" + ticketDto.getTicketId()
+            );
+
+            log.info("Ticket closed email sent successfully for TicketId={}", ticketDto.getTicketId());
+
+        } catch (Exception e) {
+            log.error("Ticket closed email failed for TicketId={}", ticketDto.getTicketId(), e);
+        }
+    }
+
+    private EmailNotificationRequest buildTicketClosedEmailRequest(TicketEmailRequestDto ticketDto, Long templateId) {
+
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest();
+
+        // ---------------- TO / CC ----------------
+        List<String> toEmails = new ArrayList<>();
+
+        if (ticketDto.getAssignedTo() != null && ticketDto.getAssignedTo().getEmailId() != null) {
+            toEmails.add(ticketDto.getAssignedTo().getEmailId());
+        }
+
+        if (ticketDto.getEmailAddress() != null) {
+            toEmails.add(ticketDto.getEmailAddress());
+        }
+
+        emailRequest.setTo(toEmails);
+        emailRequest.setCc(Optional.ofNullable(ticketDto.getCcEmails()).orElse(List.of()));
+
+        // ---------------- SENDER ----------------
+        Optional<Setting> setting = settingRepository.findByScreen("EMAIL");
+        String senderEmail = senderMail;
+        emailRequest.setSender(senderEmail);
+
+        // ---------------- SUBJECT ----------------
+        String subject = "Ticket Closed | Ticket ID : " + ticketDto.getTicketId();
+        emailRequest.setSubject(subject);
+        emailRequest.setTemplateId(templateId);
+        emailRequest.setPriority(NotificationPriority.DEFAULT);
+
+        // ---------------- TEMPLATE DATA ----------------
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        Map<String, String> templateData = new HashMap<>();
+
+        templateData.put("TICKET_ID", String.valueOf(ticketDto.getTicketId()));
+        templateData.put("TICKET_SUBJECT", Optional.ofNullable(ticketDto.getSubject()).orElse("-"));
+        templateData.put("TICKET_DESCRIPTION", Optional.ofNullable(ticketDto.getDescription()).orElse("-"));
+        templateData.put("CUSTOMER_NAME", Optional.ofNullable(ticketDto.getComplaintName()).orElse("Customer"));
+
+        String priorityLabel =
+                ticketDto.getPriority() != null
+                        ? getPriorityLabel(ticketDto.getPriority())
+                        : "-";
+
+        templateData.put("PRIORITY", priorityLabel);
+
+        templateData.put("DEPARTMENT",
+                ticketDto.getDepartment() != null
+                        ? ticketDto.getDepartment().getDepartmentName()
+                        : "-");
+
+        templateData.put("ASSIGNED_TO",
+                ticketDto.getAssignedTo() != null
+                        ? ticketDto.getAssignedTo().getFirstName() + " " +
+                        Objects.toString(ticketDto.getAssignedTo().getLastName(), "")
+                        : "Unassigned");
+
+        templateData.put("DATE", LocalDate.now().format(formatter));
+
+        templateData.put("SUBJECT", subject);
+
+        emailRequest.setTemplateData(templateData);
+
+        log.info("TicketClosed Email → TO={}, CC={}, templateId={}", toEmails, emailRequest.getCc(), templateId);
+
+        return emailRequest;
     }
 
 }
