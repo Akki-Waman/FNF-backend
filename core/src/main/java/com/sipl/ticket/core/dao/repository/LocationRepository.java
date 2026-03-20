@@ -64,5 +64,5 @@ public interface LocationRepository extends JpaRepository<Locations, Long> {
             @Param("branchId") Integer branchId
     );
 
-    boolean existsByLocationNameIgnoreCaseAndLocationIdNotAndIsDeletedFalse(String name, Long locationId);
+    boolean existsByLocationNameIgnoreCaseAndBranchIdAndLocationIdNotAndIsDeletedFalse(String name, Integer branchId, Long locationId);
 }
