@@ -122,7 +122,7 @@ private final BranchRepository branchRepository;
         if (dto.getLocationName() != null && !dto.getLocationName().trim().isEmpty()) {
             String name = dto.getLocationName().trim();
 
-            if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
+            if (repository.existsByLocationNameIgnoreCaseAndLocationIdNotAndIsDeletedFalse(
                     name, dto.getLocationId())) {
                 throw new IllegalStateException("Location '" + name + "' already exists");
             }
