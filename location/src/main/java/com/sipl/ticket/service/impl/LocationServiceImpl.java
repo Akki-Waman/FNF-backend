@@ -122,7 +122,7 @@ private final BranchRepository branchRepository;
         if (dto.getLocationName() != null && !dto.getLocationName().trim().isEmpty()) {
             String name = dto.getLocationName().trim();
 
-            if (repository.existsByLocationNameIgnoreCaseAndBranchIdAndLocationIdNotAndIsDeletedFalse(
+            if (repository.existsByLocationNameIgnoreCaseAndBranch_BranchIdAndLocationIdNotAndIsDeletedFalse(
                     name,
                     dto.getBranchId(),
                     dto.getLocationId())) {
