@@ -83,13 +83,10 @@ public class JwtUtil {
         try {
             final String username = extractUsername(token);
             log.info("Username After extraction: {}", username);
-
             Map<String, Object> claims = extractAllClaims(token);
             HashMap<String, Boolean> urlList = (HashMap<String, Boolean>) claims.get("urlList");
 
             String requestURL = request.getRequestURI().trim().toLowerCase();
-            log.info("Request URL: {}", requestURL);
-
             if (urlList == null || urlList.isEmpty()) {
                 log.error("urlList is null or empty");
                 return false;
@@ -101,11 +98,9 @@ public class JwtUtil {
             for (String urlPattern : urlList.keySet()) {
 
                 String cleanPattern = urlPattern.trim().toLowerCase();
-                log.info("Checking Pattern: {}", cleanPattern);
 
                 if (pathMatcher.match(cleanPattern, requestURL)) {
                     valueMappedAgainstURL = urlList.get(urlPattern);
-                    log.info("Matched value: {}", valueMappedAgainstURL);
                     break;
                 }
             }
