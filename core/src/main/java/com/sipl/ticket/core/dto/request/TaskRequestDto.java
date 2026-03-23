@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,9 @@ public class TaskRequestDto {
     private Boolean isPublic;
     private Boolean isBillable;
     private BigDecimal hourlyRate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dueDate;
     private Integer priority;
     private String repeatType;
