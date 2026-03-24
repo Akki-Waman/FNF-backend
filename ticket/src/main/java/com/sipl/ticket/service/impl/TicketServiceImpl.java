@@ -732,14 +732,7 @@ public class TicketServiceImpl implements TicketService {
             Users assignedUser = validateAndGetAssignedUser(dto);
             updateTicketCoreFields(ticket, dto, assignedUser);
             Ticket updatedTicket = ticketRepository.save(ticket);
-            if (dto.getNotes() != null && !dto.getNotes().isBlank()) {
-                TicketNote note = new TicketNote();
-                note.setTicket(updatedTicket);
-                note.setNotes(dto.getNotes());
-                note.setIsDeleted(false);
-
-                ticketNoteRepository.save(note);
-            }
+            saveTicketNote(dto, updatedTicket);
             if (dto.getStatus() != null && dto.getStatus() == 5) {
                 validateTicketNoteBeforeClose(updatedTicket.getTicketId());
                 updatedTicket.setStatus(5);
@@ -747,9 +740,7 @@ public class TicketServiceImpl implements TicketService {
                 updatedTicket = ticketRepository.save(updatedTicket);
             }
             List<TicketNoteResponseDTO> notes =
-                    ticketNoteMapper.mapTicketNoteListToDtoList(
-                            ticketNoteRepository.findByTicketId(updatedTicket.getTicketId())
-                    );
+                    getTicketNotes(updatedTicket.getTicketId());
             List<TicketTag> tags =
                     updateTicketTags(dto.getTagIds(), updatedTicket);
             List<TicketCc> ccs =
@@ -789,6 +780,38 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+    private void saveTicketNote(NewTicketsRequestDTO dto, Ticket ticket) {
+
+        if (dto.getNotes() == null || dto.getNotes().isBlank()) {
+            log.debug("No notes provided for ticketId={}", ticket.getTicketId());
+            return;
+        }
+
+        log.info("Saving note for ticketId={}", ticket.getTicketId());
+
+        TicketNote note = new TicketNote();
+        note.setTicket(ticket);
+        note.setNotes(dto.getNotes());
+        note.setIsDeleted(false);
+
+        ticketNoteRepository.save(note);
+
+        log.info("Note saved successfully for ticketId={}", ticket.getTicketId());
+    }
+    private List<TicketNoteResponseDTO> getTicketNotes(Long ticketId) {
+
+        log.info("Fetching notes for ticketId={}", ticketId);
+
+        List<TicketNote> noteEntities =
+                ticketNoteRepository.findByTicketId(ticketId);
+
+        List<TicketNoteResponseDTO> notes =
+                ticketNoteMapper.mapTicketNoteListToDtoList(noteEntities);
+
+        log.info("Total {} notes fetched for ticketId={}", notes.size(), ticketId);
+
+        return notes;
+    }
 
     private void updateTicketCoreFields(
             Ticket ticket,
