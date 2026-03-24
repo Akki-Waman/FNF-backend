@@ -35,5 +35,6 @@ public class NewTicketsRequestDTO {
     private String priorityLabel;
     private Boolean isApproverRequired;
     private Boolean isApproved;
+    private String notes;
     private LocalDateTime customerComplaintDateTime;
 }

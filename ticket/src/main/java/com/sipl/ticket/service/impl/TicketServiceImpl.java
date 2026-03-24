@@ -414,12 +414,22 @@ public class TicketServiceImpl implements TicketService {
                 masterService.getTicketStatusMap();
         MasterContext masterContext =
                 new MasterContext(priorityMap, statusMap);
-        return new CombinedTicketResponseDto(
-                ticketMapper.toTicketDto(ticket, masterContext),
-                ticketTagMapper.mapTagsListToDtoList(tags),
-                ticketCcMapper.mapTagsListToDtoList(ccs),
+        CombinedTicketResponseDto dto = new CombinedTicketResponseDto();
+
+        dto.setTicketsResponseDTO(
+                ticketMapper.toTicketDto(ticket, masterContext)
+        );
+        dto.setTicketTagResponseDTOS(
+                ticketTagMapper.mapTagsListToDtoList(tags)
+        );
+        dto.setTicketCcResponseDTOS(
+                ticketCcMapper.mapTagsListToDtoList(ccs)
+        );
+        dto.setAttachments(
                 ticketAttachmentMapper.mapTagsListToDtoList(attachments)
         );
+
+        return dto;
     }
 
 
@@ -722,6 +732,24 @@ public class TicketServiceImpl implements TicketService {
             Users assignedUser = validateAndGetAssignedUser(dto);
             updateTicketCoreFields(ticket, dto, assignedUser);
             Ticket updatedTicket = ticketRepository.save(ticket);
+            if (dto.getNotes() != null && !dto.getNotes().isBlank()) {
+                TicketNote note = new TicketNote();
+                note.setTicket(updatedTicket);
+                note.setNotes(dto.getNotes());
+                note.setIsDeleted(false);
+
+                ticketNoteRepository.save(note);
+            }
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+                validateTicketNoteBeforeClose(updatedTicket.getTicketId());
+                updatedTicket.setStatus(5);
+
+                updatedTicket = ticketRepository.save(updatedTicket);
+            }
+            List<TicketNoteResponseDTO> notes =
+                    ticketNoteMapper.mapTicketNoteListToDtoList(
+                            ticketNoteRepository.findByTicketId(updatedTicket.getTicketId())
+                    );
             List<TicketTag> tags =
                     updateTicketTags(dto.getTagIds(), updatedTicket);
             List<TicketCc> ccs =
@@ -734,6 +762,7 @@ public class TicketServiceImpl implements TicketService {
                                     new RuntimeException("Ticket not found after update"));
             CombinedTicketResponseDto responseDto =
                     buildResponse(fullTicket, tags, ccs, attachments);
+            responseDto.setNotes(notes);
             log.info("<<END>> updateTickets service SUCCESS ticketId={}", updatedTicket.getTicketId());
             return new ApiResponseDTO<>(
                     responseDto,
@@ -783,17 +812,17 @@ public class TicketServiceImpl implements TicketService {
         if (dto.getPriority() != null)
             ticket.setPriority(dto.getPriority());
 
-        if (dto.getStatus() != null) {
-            if (dto.getStatus() == 5) {
-                validateTicketNoteBeforeClose(ticket.getTicketId());
-            }
-            ticket.setStatus(dto.getStatus());
-            // send mail logic
-//            TicketEmailRequestDto mailDto =
-//                    ticketMapper.toTicketEmailRequestDto(ticket);
-//
-//            sendTicketClosedEmail(mailDto, templateId);
-        }
+//        if (dto.getStatus() != null) {
+//            if (dto.getStatus() == 5) {
+//                validateTicketNoteBeforeClose(ticket.getTicketId());
+//            }
+//            ticket.setStatus(dto.getStatus());
+//            // send mail logic
+////            TicketEmailRequestDto mailDto =
+////                    ticketMapper.toTicketEmailRequestDto(ticket);
+////
+////            sendTicketClosedEmail(mailDto, templateId);
+//        }
 
         ticket.setAssignedTo(assignedUser);
 
