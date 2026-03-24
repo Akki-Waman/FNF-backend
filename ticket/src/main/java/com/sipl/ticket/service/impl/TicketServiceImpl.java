@@ -200,8 +200,9 @@ public class TicketServiceImpl implements TicketService {
 
 
     private void mapOptionalTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
-        ticket.setPriority(dto.getPriority());
-        if (dto.getCustomerComplaintDateTime() != null) {
+        if (dto.getPriority() != null) {
+            ticket.setPriority(dto.getPriority());
+        }        if (dto.getCustomerComplaintDateTime() != null) {
             ticket.setCustomerComplaintDateTime(dto.getCustomerComplaintDateTime());
         }
         ticket.setStatus(dto.getStatus());
