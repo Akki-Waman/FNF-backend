@@ -200,8 +200,9 @@ public class TicketServiceImpl implements TicketService {
 
 
     private void mapOptionalTicketFields(NewTicketsRequestDTO dto, Ticket ticket) {
-        ticket.setPriority(dto.getPriority());
-        if (dto.getCustomerComplaintDateTime() != null) {
+        if (dto.getPriority() != null) {
+            ticket.setPriority(dto.getPriority());
+        }        if (dto.getCustomerComplaintDateTime() != null) {
             ticket.setCustomerComplaintDateTime(dto.getCustomerComplaintDateTime());
         }
         ticket.setStatus(dto.getStatus());
@@ -414,12 +415,22 @@ public class TicketServiceImpl implements TicketService {
                 masterService.getTicketStatusMap();
         MasterContext masterContext =
                 new MasterContext(priorityMap, statusMap);
-        return new CombinedTicketResponseDto(
-                ticketMapper.toTicketDto(ticket, masterContext),
-                ticketTagMapper.mapTagsListToDtoList(tags),
-                ticketCcMapper.mapTagsListToDtoList(ccs),
+        CombinedTicketResponseDto dto = new CombinedTicketResponseDto();
+
+        dto.setTicketsResponseDTO(
+                ticketMapper.toTicketDto(ticket, masterContext)
+        );
+        dto.setTicketTagResponseDTOS(
+                ticketTagMapper.mapTagsListToDtoList(tags)
+        );
+        dto.setTicketCcResponseDTOS(
+                ticketCcMapper.mapTagsListToDtoList(ccs)
+        );
+        dto.setAttachments(
                 ticketAttachmentMapper.mapTagsListToDtoList(attachments)
         );
+
+        return dto;
     }
 
 
@@ -721,7 +732,14 @@ public class TicketServiceImpl implements TicketService {
                     .orElseThrow(() -> new RuntimeException("Ticket not found"));
             Users assignedUser = validateAndGetAssignedUser(dto);
             updateTicketCoreFields(ticket, dto, assignedUser);
+            saveTicketNote(dto, ticket);
+            if (dto.getStatus() != null && dto.getStatus() == 5) {
+                validateTicketNoteBeforeClose(ticket.getTicketId());
+                ticket.setStatus(5);
+            }
             Ticket updatedTicket = ticketRepository.save(ticket);
+            List<TicketNoteResponseDTO> notes =
+                    getTicketNotes(updatedTicket.getTicketId());
             List<TicketTag> tags =
                     updateTicketTags(dto.getTagIds(), updatedTicket);
             List<TicketCc> ccs =
@@ -734,6 +752,7 @@ public class TicketServiceImpl implements TicketService {
                                     new RuntimeException("Ticket not found after update"));
             CombinedTicketResponseDto responseDto =
                     buildResponse(fullTicket, tags, ccs, attachments);
+            responseDto.setNotes(notes);
             log.info("<<END>> updateTickets service SUCCESS ticketId={}", updatedTicket.getTicketId());
             return new ApiResponseDTO<>(
                     responseDto,
@@ -760,6 +779,38 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
+    private void saveTicketNote(NewTicketsRequestDTO dto, Ticket ticket) {
+
+        if (dto.getNotes() == null || dto.getNotes().isBlank()) {
+            log.debug("No notes provided for ticketId={}", ticket.getTicketId());
+            return;
+        }
+
+        log.info("Saving note for ticketId={}", ticket.getTicketId());
+
+        TicketNote note = new TicketNote();
+        note.setTicket(ticket);
+        note.setNotes(dto.getNotes());
+        note.setIsDeleted(false);
+
+        ticketNoteRepository.save(note);
+
+        log.info("Note saved successfully for ticketId={}", ticket.getTicketId());
+    }
+    private List<TicketNoteResponseDTO> getTicketNotes(Long ticketId) {
+
+        log.info("Fetching notes for ticketId={}", ticketId);
+
+        List<TicketNote> noteEntities =
+                ticketNoteRepository.findByTicketId(ticketId);
+
+        List<TicketNoteResponseDTO> notes =
+                ticketNoteMapper.mapTicketNoteListToDtoList(noteEntities);
+
+        log.info("Total {} notes fetched for ticketId={}", notes.size(), ticketId);
+
+        return notes;
+    }
 
     private void updateTicketCoreFields(
             Ticket ticket,
@@ -783,17 +834,12 @@ public class TicketServiceImpl implements TicketService {
         if (dto.getPriority() != null)
             ticket.setPriority(dto.getPriority());
 
-        if (dto.getStatus() != null) {
-            if (dto.getStatus() == 5) {
-                validateTicketNoteBeforeClose(ticket.getTicketId());
-            }
-            ticket.setStatus(dto.getStatus());
-            // send mail logic
-//            TicketEmailRequestDto mailDto =
-//                    ticketMapper.toTicketEmailRequestDto(ticket);
-//
-//            sendTicketClosedEmail(mailDto, templateId);
-        }
+//            // send mail logic
+////            TicketEmailRequestDto mailDto =
+////                    ticketMapper.toTicketEmailRequestDto(ticket);
+////
+////            sendTicketClosedEmail(mailDto, templateId);
+//        }
 
         ticket.setAssignedTo(assignedUser);
 
