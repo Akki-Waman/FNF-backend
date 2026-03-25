@@ -13,5 +13,4 @@ public class TicketSearchRequestDto extends SearchRequestDto{
     private String query;
     private Integer ticketStatus;
     private List<Long> companyIds;
-    private Long createdBy;
 }

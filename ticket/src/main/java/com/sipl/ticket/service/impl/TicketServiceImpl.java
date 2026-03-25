@@ -624,7 +624,7 @@ public class TicketServiceImpl implements TicketService {
             }
 
             Page<Ticket> pageResult =
-                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(),companyIds,dto.getCreatedBy(), pageable);
+                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(),companyIds, pageable);
 
             if (pageResult.isEmpty()) {
                 log.warn("No tickets found for query='{}'", dto.getQuery());
@@ -1030,7 +1030,7 @@ public class TicketServiceImpl implements TicketService {
 
             List<Ticket> tickets =
                     ticketRepository
-                            .searchTickets(search, null, null,null,null, Pageable.unpaged())
+                            .searchTickets(search, null, null,null, Pageable.unpaged())
                             .getContent();
 
             log.info("Tickets fetched successfully | count={}", tickets.size());
