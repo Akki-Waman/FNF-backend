@@ -71,11 +71,7 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
     )
     List<ClientProducts> findActiveForExport();
 
-    @Query(
-            "SELECT cp FROM ClientProducts cp " +
-                    "WHERE cp.clientProductId = :id " +
-                    "AND cp.isActive = true"
-    )
+    @Query("SELECT cp FROM ClientProducts cp WHERE cp.id = :id AND cp.isActive = true")
     Optional<ClientProducts> findActiveById(@Param("id") Long id);
 
     @Query(
@@ -87,7 +83,5 @@ public interface ClientProductsRepository extends JpaRepository<ClientProducts, 
     List<ClientProducts> findClientProducts(
             @Param("branchId") Integer branchId
     );
-
-
 
 }
