@@ -292,6 +292,12 @@ public class ClientProductServiceImpl implements ClientProductService {
 
             List<ClientProductsResponseDTO> response =
                     clientProductMapper.toDtoList(products);
+            response.forEach(dto -> {
+                String serial = dto.getSerialNumber() != null ? dto.getSerialNumber() : "";
+                String deviceNameWithSerial = dto.getDeviceName() +
+                        (!serial.isEmpty() ? " - " + serial : "");
+                dto.setDeviceName(deviceNameWithSerial);
+            });
 
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
