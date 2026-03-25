@@ -732,14 +732,12 @@ public class TicketServiceImpl implements TicketService {
                     .orElseThrow(() -> new RuntimeException("Ticket not found"));
             Users assignedUser = validateAndGetAssignedUser(dto);
             updateTicketCoreFields(ticket, dto, assignedUser);
-            Ticket updatedTicket = ticketRepository.save(ticket);
-            saveTicketNote(dto, updatedTicket);
+            saveTicketNote(dto, ticket);
             if (dto.getStatus() != null && dto.getStatus() == 5) {
-                validateTicketNoteBeforeClose(updatedTicket.getTicketId());
-                updatedTicket.setStatus(5);
-
-                updatedTicket = ticketRepository.save(updatedTicket);
+                validateTicketNoteBeforeClose(ticket.getTicketId());
+                ticket.setStatus(5);
             }
+            Ticket updatedTicket = ticketRepository.save(ticket);
             List<TicketNoteResponseDTO> notes =
                     getTicketNotes(updatedTicket.getTicketId());
             List<TicketTag> tags =
@@ -836,11 +834,6 @@ public class TicketServiceImpl implements TicketService {
         if (dto.getPriority() != null)
             ticket.setPriority(dto.getPriority());
 
-//        if (dto.getStatus() != null) {
-//            if (dto.getStatus() == 5) {
-//                validateTicketNoteBeforeClose(ticket.getTicketId());
-//            }
-//            ticket.setStatus(dto.getStatus());
 //            // send mail logic
 ////            TicketEmailRequestDto mailDto =
 ////                    ticketMapper.toTicketEmailRequestDto(ticket);
