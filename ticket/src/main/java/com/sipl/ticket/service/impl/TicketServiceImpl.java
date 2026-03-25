@@ -724,6 +724,18 @@ public class TicketServiceImpl implements TicketService {
                             .collect(Collectors.toList())
             );
         }
+
+        if (ticket.getBranch() != null &&
+                ticket.getBranch().getCompany() != null) {
+
+            dto.setCompanyId(
+                    ticket.getBranch().getCompany().getCompanyId()
+            );
+
+            dto.setCompanyName(
+                    ticket.getBranch().getCompany().getCompanyName()
+            );
+        }
         return dto;
     }
 
@@ -1011,10 +1023,6 @@ public class TicketServiceImpl implements TicketService {
     ) {
 
         String format = request.getFormat();
-        ExportFilterDTO filters = request.getFilters();
-        String search = filters != null ? filters.getSearch() : null;
-
-        log.info("Ticket export requested | format={} | search={}", format, search);
 
         if (format == null ||
                 !List.of("excel", "csv", "pdf")
@@ -1026,11 +1034,25 @@ public class TicketServiceImpl implements TicketService {
 
         try {
 
-            log.info("Fetching tickets for export | search={}", search);
+            String search = request.getSearch();
+            Integer branchId = request.getBranchId();
+            Integer status = request.getStatus();
+            List<Long> companyIds = request.getCompanyIds();
+
+            log.info(
+                    "Ticket export requested | format={} | search={} | branchId={} | status={} | companyIds={}",
+                    format, search, branchId, status, companyIds
+            );
 
             List<Ticket> tickets =
                     ticketRepository
-                            .searchTickets(search, null, null,null, Pageable.unpaged())
+                            .searchTickets(
+                                    search,
+                                    branchId,
+                                    status,
+                                    companyIds,
+                                    Pageable.unpaged()
+                            )
                             .getContent();
 
             log.info("Tickets fetched successfully | count={}", tickets.size());
@@ -1046,6 +1068,7 @@ public class TicketServiceImpl implements TicketService {
 
             List<TicketsResponseDTO> dtos =
                     ticketMapper.toTicketDtoList(tickets, masterContext);
+
             TicketExcelExportHelper.export(dtos, format, response);
 
             log.info(
@@ -1058,6 +1081,7 @@ public class TicketServiceImpl implements TicketService {
             throw new RuntimeException("Failed to export tickets", e);
         }
     }
+
     @Override
     @Transactional(readOnly = true)
     public ApiResponseDTO<Long> getAllTicketIds() {
