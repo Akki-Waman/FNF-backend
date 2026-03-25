@@ -37,15 +37,46 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("UPDATE Ticket t SET t.isDeleted = true WHERE t.ticketId IN (:ids)")
     int softDeleteByIds(@Param("ids") List<Long> ids);
 
-    @Query(
-            "SELECT t FROM Ticket t " +
-                    "WHERE t.isDeleted = false " +
-                    "AND ( :branchId IS NULL OR t.branch.branchId = :branchId ) " +
+    @Query(value =
+            "SELECT t.* FROM tickets t " +
+                    "LEFT JOIN rbac_user_master u ON t.created_by = u.user_id " +
+                    "WHERE t.is_deleted = 0 " +
+                    "AND ( :branchId IS NULL OR t.branch_id = :branchId ) " +
                     "AND ( :status IS NULL OR t.status = :status ) " +
-                    "AND ( :query IS NULL OR :query = '' " +
-                    "      OR t.searchText LIKE CONCAT('%', LOWER(:query), '%') )"
-    )
-    Page<Ticket> searchTickets(@Param("query") String query, @Param("branchId") Integer branchId,@Param("status") Integer status, Pageable pageable);
+                    "AND ( COALESCE(:companyIds, NULL) IS NULL " +
+                    "       OR t.branch_id IN ( " +
+                    "           SELECT b.branch_id FROM branches b " +
+                    "           WHERE b.company_id IN (:companyIds) " +
+                    "       ) ) " +
+                    "AND ( :query IS NULL OR :query = '' OR ( " +
+                    "        t.search_text LIKE '%' + :query + '%' " +
+                    "        OR u.user_name LIKE '%' + :query + '%' " +
+                    "    ) )",
+
+            countQuery =
+                    "SELECT COUNT(*) FROM tickets t " +
+                            "LEFT JOIN rbac_user_master u ON t.created_by = u.user_id " +
+                            "WHERE t.is_deleted = 0 " +
+                            "AND ( :branchId IS NULL OR t.branch_id = :branchId ) " +
+                            "AND ( :status IS NULL OR t.status = :status ) " +
+                            "AND ( COALESCE(:companyIds, NULL) IS NULL " +
+                            "       OR t.branch_id IN ( " +
+                            "           SELECT b.branch_id FROM branches b " +
+                            "           WHERE b.company_id IN (:companyIds) " +
+                            "       ) ) " +
+                            "AND ( :query IS NULL OR :query = '' OR ( " +
+                            "        t.search_text LIKE '%' + :query + '%' " +
+                            "        OR u.user_name LIKE '%' + :query + '%' " +
+                            "    ) )",
+
+            nativeQuery = true)
+    Page<Ticket> searchTickets(
+            @Param("query") String query,
+            @Param("branchId") Integer branchId,
+            @Param("status") Integer status,
+            @Param("companyIds") List<Long> companyIds,
+            Pageable pageable
+    );
 
     @Query(
             "SELECT sm.valueDesc, COUNT(t.ticketId) " +

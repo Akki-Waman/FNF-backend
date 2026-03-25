@@ -354,6 +354,7 @@ public class ReportServiceImpl implements ReportService {
                             query,
                             branchId,
                             status,
+                            null,
                             pageable
                     );
 
@@ -578,6 +579,7 @@ public class ReportServiceImpl implements ReportService {
                             query,
                             branchId,
                             status,
+                            null,
                             pageable
                     );
 

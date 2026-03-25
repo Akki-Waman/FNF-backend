@@ -600,15 +600,31 @@ public class TicketServiceImpl implements TicketService {
         );
 
         try {
+            String sortBy = dto.getSortBy();
+
+            if (sortBy == null || sortBy.equalsIgnoreCase("id")) {
+                sortBy = "ticket_id";
+            }
+
             Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
                     dto.getSize(),
-                    dto.getSortBy(),
+                    sortBy,
                     dto.getSortDir()
             );
+            List<Long> companyIds = dto.getCompanyIds();
+
+            if (companyIds != null && companyIds.isEmpty()) {
+                companyIds = null;
+            }
+
+            String query = dto.getQuery();
+            if (query != null && query.trim().isEmpty()) {
+                query = null;
+            }
 
             Page<Ticket> pageResult =
-                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(), pageable);
+                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(),companyIds, pageable);
 
             if (pageResult.isEmpty()) {
                 log.warn("No tickets found for query='{}'", dto.getQuery());
@@ -1014,7 +1030,7 @@ public class TicketServiceImpl implements TicketService {
 
             List<Ticket> tickets =
                     ticketRepository
-                            .searchTickets(search, null, null,Pageable.unpaged())
+                            .searchTickets(search, null, null,null, Pageable.unpaged())
                             .getContent();
 
             log.info("Tickets fetched successfully | count={}", tickets.size());
