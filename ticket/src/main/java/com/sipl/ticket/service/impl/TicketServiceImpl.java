@@ -737,7 +737,7 @@ public class TicketServiceImpl implements TicketService {
                 validateTicketNoteBeforeClose(ticket.getTicketId());
                 ticket.setStatus(5);
             }
-            Ticket updatedTicket = ticketRepository.save(ticket);
+             Ticket updatedTicket = ticketRepository.save(ticket);
             List<TicketNoteResponseDTO> notes =
                     getTicketNotes(updatedTicket.getTicketId());
             List<TicketTag> tags =

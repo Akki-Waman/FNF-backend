@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -165,13 +166,12 @@ public class ClientProductServiceImpl implements ClientProductService {
     }
 
 
-
     @ActivityLoggable(
             action = "UPDATE",
             module = "CLIENT_PRODUCTS",
             description = "Client product {0} updated successfully"
     )
-    public ApiResponseDTO<ClientProductsResponseDTO> updateClientProducts(Long clientProductId,ClientProductsRequestDTO dto) {
+    public ApiResponseDTO<ClientProductsResponseDTO> updateClientProducts(Long clientProductId, ClientProductsRequestDTO dto) {
         log.info("Updating client product with serialNo: {}, imeiNo: {}", dto.getSerialNumber(), dto.getImeiNo());
         try {
             Optional<ClientProducts> optionalEntity = clientProductsRepository.findById(clientProductId);
@@ -186,7 +186,7 @@ public class ClientProductServiceImpl implements ClientProductService {
             ClientProducts entity = optionalEntity.get();
             if (StringUtils.hasText(dto.getSerialNumber()) &&
                     clientProductsRepository.existsBySerialNumberIgnoreCaseAndClientProductIdNot(
-                            dto.getSerialNumber().trim(),clientProductId)) {
+                            dto.getSerialNumber().trim(), clientProductId)) {
                 return new ApiResponseDTO<>(
                         null,
                         "Client product with Serial Number '" + dto.getSerialNumber() + "' already exists.",
@@ -320,7 +320,6 @@ public class ClientProductServiceImpl implements ClientProductService {
     }
 
 
-
     @Override
     public ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>> searchClientProducts(
             ClientProductSearchRequestDto requestDto) {
@@ -450,12 +449,19 @@ public class ClientProductServiceImpl implements ClientProductService {
 
         try {
             return clientProductsRepository.findActiveById(id)
-                    .map(cp -> new ApiResponseDTO<>(
-                            clientProductMapper.toDto(cp),
-                            "Client product found",
-                            HttpStatus.OK,
-                            false
-                    ))
+                    .map(cp -> {
+
+                        ClientProductsResponseDTO dto = clientProductMapper.toDto(cp);
+                        String deviceNameWithSerial = cp.getDeviceName() + " - " + cp.getSerialNumber();
+                        dto.setDeviceName(deviceNameWithSerial);
+
+                        return new ApiResponseDTO<>(
+                                dto,
+                                "Client product found",
+                                HttpStatus.OK,
+                                false
+                        );
+                    })
                     .orElseGet(() -> new ApiResponseDTO<>(
                             null,
                             "Client product not found",
@@ -473,6 +479,7 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
+
     @Override
     public void exportClientProducts(
             ClientProductSearchRequestDto requestDto,
@@ -529,8 +536,6 @@ public class ClientProductServiceImpl implements ClientProductService {
             );
         }
     }
-
-
 
 
 }
