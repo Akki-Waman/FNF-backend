@@ -1,15 +1,13 @@
 package com.sipl.ticket.core.helper;
 
 import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
-import com.lowagie.text.Document;
-import com.lowagie.text.Element;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -37,7 +35,9 @@ public class TicketExcelExportHelper {
             "Last Reply",
             "Created",
             "Complaint Name",
-            "Complaint Mobile No"
+            "Complaint Mobile No",
+            "Start Date Time",
+            "End Date Time"
     };
 
     public static void export(
@@ -57,6 +57,7 @@ public class TicketExcelExportHelper {
         }
     }
 
+    // ================= EXCEL =================
     private static void writeExcel(
             List<TicketsResponseDTO> tickets,
             HttpServletResponse response
@@ -92,33 +93,31 @@ public class TicketExcelExportHelper {
             setCell(r, 9, format(d.getCreatedTime()), dataStyle);
             setCell(r, 10, d.getComplaintName(), dataStyle);
             setCell(r, 11, d.getComplaintMobileNo(), dataStyle);
+            setCell(r, 12, format(d.getStartDateTime()), dataStyle);
+            setCell(r, 13, format(d.getEndDateTime()), dataStyle);
         }
 
-        sheet.setAutoFilter(
-                new CellRangeAddress(0, rowIndex - 1, 0, HEADERS.length - 1)
-        );
+        sheet.setAutoFilter(new CellRangeAddress(0, rowIndex - 1, 0, HEADERS.length - 1));
 
         for (int i = 0; i < HEADERS.length; i++) {
             sheet.autoSizeColumn(i);
         }
 
-        response.setContentType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader(
-                "Content-Disposition", "attachment; filename=tickets.xlsx");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=tickets.xlsx");
 
         workbook.write(response.getOutputStream());
         workbook.close();
     }
 
+    // ================= CSV =================
     private static void writeCsv(
             List<TicketsResponseDTO> tickets,
             HttpServletResponse response
     ) throws Exception {
 
         response.setContentType("text/csv");
-        response.setHeader(
-                "Content-Disposition", "attachment; filename=tickets.csv");
+        response.setHeader("Content-Disposition", "attachment; filename=tickets.csv");
 
         StringBuilder csv = new StringBuilder();
         csv.append(String.join(",", HEADERS)).append("\n");
@@ -135,21 +134,22 @@ public class TicketExcelExportHelper {
             csv.append(csvDate(d.getModifiedTime())).append(",");
             csv.append(csvDate(d.getCreatedTime())).append(",");
             csv.append(q(d.getComplaintName())).append(",");
-            csv.append("'").append(safe(d.getComplaintMobileNo())).append("'")
-                    .append("\n");
+            csv.append("'").append(safe(d.getComplaintMobileNo())).append("'").append(",");
+            csv.append(csvDate(d.getStartDateTime())).append(",");
+            csv.append(csvDate(d.getEndDateTime())).append("\n"); // ✅ FIXED
         }
 
         response.getWriter().write(csv.toString());
     }
 
+    // ================= PDF =================
     private static void writePdf(
             List<TicketsResponseDTO> tickets,
             HttpServletResponse response
     ) throws Exception {
 
         response.setContentType("application/pdf");
-        response.setHeader(
-                "Content-Disposition", "attachment; filename=tickets.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=tickets.pdf");
 
         Document document = new Document(PageSize.A4.rotate());
         PdfWriter.getInstance(document, response.getOutputStream());
@@ -160,13 +160,15 @@ public class TicketExcelExportHelper {
 
         com.lowagie.text.Font headerFont =
                 new com.lowagie.text.Font(
-                        com.lowagie.text.Font.HELVETICA, 10,
+                        com.lowagie.text.Font.HELVETICA,
+                        10,
                         com.lowagie.text.Font.BOLD
                 );
 
         com.lowagie.text.Font dataFont =
                 new com.lowagie.text.Font(
-                        com.lowagie.text.Font.HELVETICA, 9
+                        com.lowagie.text.Font.HELVETICA,
+                        9
                 );
 
         for (String h : HEADERS) {
@@ -189,28 +191,25 @@ public class TicketExcelExportHelper {
             table.addCell(new Phrase(format(d.getCreatedTime()), dataFont));
             table.addCell(new Phrase(safe(d.getComplaintName()), dataFont));
             table.addCell(new Phrase(safe(d.getComplaintMobileNo()), dataFont));
+            table.addCell(new Phrase(format(d.getStartDateTime()), dataFont));
+            table.addCell(new Phrase(format(d.getEndDateTime()), dataFont));
         }
 
         document.add(table);
         document.close();
     }
 
+    // ================= HELPERS =================
     private static String dept(TicketsResponseDTO d) {
-        return d.getDepartment() != null
-                ? d.getDepartment().getDepartmentName()
-                : "";
+        return d.getDepartment() != null ? d.getDepartment().getDepartmentName() : "";
     }
 
     private static String service(TicketsResponseDTO d) {
-        return d.getService() != null
-                ? d.getService().getServiceName()
-                : "";
+        return d.getService() != null ? d.getService().getServiceName() : "";
     }
 
     private static String contact(TicketsResponseDTO d) {
-        return d.getContact() != null
-                ? d.getContact().getContactName()
-                : "";
+        return d.getContact() != null ? d.getContact().getContactName() : "";
     }
 
     private static String format(LocalDateTime dt) {
@@ -230,9 +229,7 @@ public class TicketExcelExportHelper {
         return "\"" + v.replace("\"", "\"\"") + "\"";
     }
 
-    private static void setCell(
-            Row r, int idx, Object val, CellStyle style
-    ) {
+    private static void setCell(Row r, int idx, Object val, CellStyle style) {
         Cell c = r.createCell(idx);
         if (val != null) c.setCellValue(val.toString());
         c.setCellStyle(style);
@@ -247,20 +244,12 @@ public class TicketExcelExportHelper {
         s.setAlignment(HorizontalAlignment.CENTER);
         s.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        s.setBorderTop(BorderStyle.THIN);
-        s.setBorderBottom(BorderStyle.THIN);
-        s.setBorderLeft(BorderStyle.THIN);
-        s.setBorderRight(BorderStyle.THIN);
         return s;
     }
 
     private static CellStyle excelDataStyle(Workbook wb) {
         CellStyle s = wb.createCellStyle();
         s.setAlignment(HorizontalAlignment.LEFT);
-        s.setBorderTop(BorderStyle.THIN);
-        s.setBorderBottom(BorderStyle.THIN);
-        s.setBorderLeft(BorderStyle.THIN);
-        s.setBorderRight(BorderStyle.THIN);
         return s;
     }
 }

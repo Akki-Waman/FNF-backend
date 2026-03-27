@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -17,4 +18,7 @@ public class ExportSearchRequestDTO {
     private Integer branchId;
     private Integer status;
     private List<Long> companyIds;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
+
 }

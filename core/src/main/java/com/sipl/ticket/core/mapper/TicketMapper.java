@@ -48,6 +48,14 @@ public interface TicketMapper extends AuditEntityMapper {
             target = "tags",
             expression = "java(mapTags(ticket))"
     )
+    @Mapping(
+            target = "startDateTime",
+            expression = "java(ticket.getResponseDateTime() != null ? ticket.getResponseDateTime() : ticket.getCreatedTime())"
+    )
+    @Mapping(
+            target = "endDateTime",
+            expression = "java(ticket.getResolutionDateTime())"
+    )
     TicketsResponseDTO toTicketDto(
             Ticket ticket,
             @Context MasterContext context

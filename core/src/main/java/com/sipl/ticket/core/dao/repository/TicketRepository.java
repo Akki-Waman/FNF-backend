@@ -48,6 +48,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                     "           SELECT b.branch_id FROM branches b " +
                     "           WHERE b.company_id IN (:companyIds) " +
                     "       ) ) " +
+                    "AND ( :startDateTime IS NULL OR t.created_on >= :startDateTime ) " +
+                    "AND ( :endDateTime IS NULL OR t.created_on <= :endDateTime ) " +
                     "AND ( :query IS NULL OR :query = '' OR ( " +
                     "        t.search_text LIKE '%' + :query + '%' " +
                     "        OR u.user_name LIKE '%' + :query + '%' " +
@@ -64,6 +66,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                             "           SELECT b.branch_id FROM branches b " +
                             "           WHERE b.company_id IN (:companyIds) " +
                             "       ) ) " +
+                            "AND ( :startDateTime IS NULL OR t.created_on >= :startDateTime ) " +
+                            "AND ( :endDateTime IS NULL OR t.created_on <= :endDateTime ) " +
                             "AND ( :query IS NULL OR :query = '' OR ( " +
                             "        t.search_text LIKE '%' + :query + '%' " +
                             "        OR u.user_name LIKE '%' + :query + '%' " +
@@ -75,6 +79,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             @Param("branchId") Integer branchId,
             @Param("status") Integer status,
             @Param("companyIds") List<Long> companyIds,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime,
             Pageable pageable
     );
 
