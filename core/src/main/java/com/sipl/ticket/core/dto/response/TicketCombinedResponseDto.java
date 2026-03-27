@@ -27,5 +27,6 @@ public class TicketCombinedResponseDto extends AuditDto{
     private List<String> tagName;
     private Long companyId;
     private String companyName;
-
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
 }

@@ -58,4 +58,6 @@ public class TicketsResponseDTO extends AuditDto {
     private LocalDateTime customerComplaintDateTime;
     private Boolean useContactFk;
 
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
 }

@@ -624,7 +624,8 @@ public class TicketServiceImpl implements TicketService {
             }
 
             Page<Ticket> pageResult =
-                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(),companyIds, pageable);
+                    ticketRepository.searchTickets(dto.getQuery(),dto.getBranchId(),dto.getTicketStatus(),companyIds, dto.getStartDateTime(),
+                            dto.getEndDateTime(), pageable);
 
             if (pageResult.isEmpty()) {
                 log.warn("No tickets found for query='{}'", dto.getQuery());
@@ -692,6 +693,8 @@ public class TicketServiceImpl implements TicketService {
         }
         dto.setCreatedTime(ticket.getCreatedTime());
         dto.setModifiedTime(ticket.getModifiedTime());
+        dto.setStartDateTime(ticket.getResponseDateTime());
+        dto.setEndDateTime(ticket.getResolutionDateTime());
         dto.setTicketId(ticket.getTicketId());
         dto.setSubject(ticket.getSubject());
         dto.setComplaintName(ticket.getComplaintName());
@@ -1051,6 +1054,8 @@ public class TicketServiceImpl implements TicketService {
                                     branchId,
                                     status,
                                     companyIds,
+                                    request.getStartDateTime(),
+                                    request.getEndDateTime(),
                                     Pageable.unpaged()
                             )
                             .getContent();
