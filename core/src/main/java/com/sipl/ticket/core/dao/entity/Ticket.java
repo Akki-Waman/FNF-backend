@@ -68,7 +68,7 @@ public class Ticket extends AuditEntity{
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ServiceEntity service;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     @JoinColumn(name = "assigned_to")
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Users assignedTo;
