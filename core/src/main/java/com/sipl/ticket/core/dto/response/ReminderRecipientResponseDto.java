@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class ReminderRecipientResponseDto {
+public class ReminderRecipientResponseDto extends AuditDto {
 
     private Long userId;
 

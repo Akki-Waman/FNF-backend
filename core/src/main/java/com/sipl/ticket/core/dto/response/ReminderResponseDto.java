@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ReminderResponseDto {
+public class ReminderResponseDto extends AuditDto {
 
     private Long id;
     private Long ticketId;
