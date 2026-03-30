@@ -1,50 +1,60 @@
 package com.sipl.ticket.core.dao.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "ticket_reminders")
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "ticket_reminders")
+@Audited
 public class TicketReminder extends AuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "ticket_id", nullable = false)
     private Long ticketId;
 
+    @Column(name = "reminder_time", nullable = false)
     private LocalDateTime reminderTime;
 
-    private Boolean isRecurring = false;
+    @Column(name = "is_recurring")
+    private Boolean isRecurring;
 
-    private Integer recurrenceInterval ;
+    @Column(name = "recurrence_interval")
+    private Integer recurrenceInterval;
 
+    @Column(name = "recurrence_end_time")
     private LocalDateTime recurrenceEndTime;
 
+    @Column(name = "next_run_time", nullable = false)
     private LocalDateTime nextRunTime;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id")
-    private Masters status;
+    @Column(name = "status", nullable = false)
+    private Integer status;
 
+    @Column(name = "retry_count")
     private Integer retryCount;
 
-    private Integer maxRetry ;
+    @Column(name = "max_retry")
+    private Integer maxRetry;
 
+    @Column(name = "last_error")
     private String lastError;
 
-    private Long createdBy;
-
-    @OneToMany(mappedBy = "reminder", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "reminder",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<ReminderRecipient> recipients;
 }

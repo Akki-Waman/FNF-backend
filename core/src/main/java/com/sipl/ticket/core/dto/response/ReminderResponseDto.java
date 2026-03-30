@@ -15,6 +15,9 @@ public class ReminderResponseDto {
 
     private LocalDateTime reminderTime;
     private LocalDateTime nextRunTime;
+    private Boolean isRecurring;
+    private Integer recurrenceInterval;
+    private LocalDateTime recurrenceEndTime;
 
     private String status;
 

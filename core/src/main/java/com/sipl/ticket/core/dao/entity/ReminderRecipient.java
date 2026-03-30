@@ -1,44 +1,47 @@
 package com.sipl.ticket.core.dao.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reminder_recipients")
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "reminder_recipients")
+@Audited
 public class ReminderRecipient extends AuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "channel_type_id")
-    private Masters channelType;
+    @Column(name = "channel_type_id", nullable = false)
+    private Integer channelType;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id")
-    private Masters status;
+    @Column(name = "status", nullable = false)
+    private Integer status;
 
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
-    private Integer retryCount ;
+    @Column(name = "retry_count")
+    private Integer retryCount;
 
+    @Column(name = "last_error")
     private String lastError;
 
+    @Column(name = "user_role")
     private String userRole;
 
-    @ManyToOne
-    @JoinColumn(name = "reminder_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reminder_id", nullable = false)
     private TicketReminder reminder;
 }
