@@ -169,7 +169,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         validateTicketResponseRequest(dto);
         Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
         Map<Integer, String> statusMap   = masterService.getTicketStatusMap();
-        MasterContext masterContext = new MasterContext(priorityMap, statusMap);
+        MasterContext masterContext = new MasterContext(priorityMap, statusMap,null);
         if (!statusMap.containsKey(dto.getStatus())) {
             throw new IllegalArgumentException("Invalid status code: " + dto.getStatus());
         }
@@ -496,7 +496,8 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         // Build TicketsResponseDTO
         MasterContext masterContext = new MasterContext(
                 masterService.getTicketPriorityMap(),
-                masterService.getTicketStatusMap()
+                masterService.getTicketStatusMap(),
+                null
         );
         dto.setTicket(ticketMapper.toTicketDto(response.getTicket(), masterContext));
 

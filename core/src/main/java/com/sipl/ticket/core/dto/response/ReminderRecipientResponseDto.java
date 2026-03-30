@@ -6,13 +6,13 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 public class ReminderRecipientResponseDto extends AuditDto {
 
     private Long userId;
 
-    private String channelType;
-    private String status;
-
+    private Integer channelType;
+    private Integer status;
+    private String statusLabel;
+    private String channelTypeLabel;
     private LocalDateTime sentAt;
 }

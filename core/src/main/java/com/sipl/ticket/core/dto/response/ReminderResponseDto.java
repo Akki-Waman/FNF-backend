@@ -1,13 +1,16 @@
 package com.sipl.ticket.core.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReminderResponseDto extends AuditDto {
 
     private Long id;
@@ -19,7 +22,8 @@ public class ReminderResponseDto extends AuditDto {
     private Integer recurrenceInterval;
     private LocalDateTime recurrenceEndTime;
 
-    private String status;
+    private Integer status;
+    private String statusLabel;
 
     private List<ReminderRecipientResponseDto> recipients;
 }

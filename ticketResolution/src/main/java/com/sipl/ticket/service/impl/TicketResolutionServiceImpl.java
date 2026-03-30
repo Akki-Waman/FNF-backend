@@ -177,7 +177,7 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
         }
 
         MasterContext masterContext =
-                new MasterContext(null, statusMap);
+                new MasterContext(null,null, statusMap);
 
         TicketResolution ticketResolution =
                 ticketResolutionMapper.toEntity(dto, masterContext);
@@ -542,7 +542,8 @@ public class TicketResolutionServiceImpl implements TicketResolutionService {
         // ================= Ticket =================
         MasterContext masterContext = new MasterContext(
                 masterService.getTicketPriorityMap(),
-                masterService.getTicketStatusMap()
+                masterService.getTicketStatusMap(),
+                null
         );
 
         dto.setTicket(ticketMapper.toTicketDto(resolution.getTicket(), masterContext));

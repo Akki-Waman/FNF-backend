@@ -997,7 +997,7 @@ public class TaskServiceImpl implements TaskService {
                     masterService.getTaskPriorityMap();
 
             MasterContext masterContext =
-                    new MasterContext(priorityMap, statusMap);
+                    new MasterContext(priorityMap, statusMap,null);
 
             List<TaskExportDTO> dtos =
                     tasks.stream()

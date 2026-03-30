@@ -414,7 +414,7 @@ public class TicketServiceImpl implements TicketService {
         Map<Integer, String> statusMap =
                 masterService.getTicketStatusMap();
         MasterContext masterContext =
-                new MasterContext(priorityMap, statusMap);
+                new MasterContext(priorityMap, statusMap,null);
         CombinedTicketResponseDto dto = new CombinedTicketResponseDto();
 
         dto.setTicketsResponseDTO(
@@ -1069,7 +1069,7 @@ public class TicketServiceImpl implements TicketService {
                     masterService.getTicketStatusMap();
 
             MasterContext masterContext =
-                    new MasterContext(priorityMap, statusMap);
+                    new MasterContext(priorityMap, statusMap,null);
 
             List<TicketsResponseDTO> dtos =
                     ticketMapper.toTicketDtoList(tickets, masterContext);
@@ -1157,7 +1157,7 @@ public class TicketServiceImpl implements TicketService {
                             "Ticket not found with id: " + ticketId));
             Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
             Map<Integer, String> statusMap = masterService.getTicketStatusMap();
-            MasterContext masterContext = new MasterContext(priorityMap, statusMap);
+            MasterContext masterContext = new MasterContext(priorityMap, statusMap,null);
             TicketsResponseDTO ticketDto = ticketMapper.toTicketDto(ticket, masterContext);
             List<TicketTagResponseDTO> tagDtos =
                     ticketTagMapper.toDtoList(ticketTagRepository.findByTicketId(ticketId));
@@ -1275,7 +1275,7 @@ public class TicketServiceImpl implements TicketService {
             }
 
             MasterContext masterContext =
-                    new MasterContext(priorityMap, statusMap);
+                    new MasterContext(priorityMap, statusMap,null);
 
             TicketCombinedResponseDto responseDto =
                     ticketMapper.toCombinedResponseDto(updatedTicket, masterContext);
