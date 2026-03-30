@@ -49,6 +49,7 @@
         <module>workflow</module>
         <module>slaRuleDetail</module>
         <module>ticketResolution</module>
+        <module>ticketReminder</module>
 
     </modules>
 
@@ -380,6 +381,11 @@
             <dependency>
                 <groupId>com.sipl.ticket</groupId>
                 <artifactId>ticketNote</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sipl.ticket</groupId>
+                <artifactId>ticketReminder</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
