@@ -18,12 +18,12 @@ import java.util.List;
 public interface ReminderRecipientMapper extends AuditEntityMapper {
 
     @Mapping(
-            target = "channel",
+            target = "channelTypeLabel",
             expression = "java(context.resolveChannel(entity.getChannelType()))"
     )
     @Mapping(
-            target = "status",
-            expression = "java(context.resolveRecipientStatus(entity.getStatus()))"
+            target = "statusLabel",
+            expression = "java(context.resolveStatus(entity.getStatus()))"
     )
     ReminderRecipientResponseDto toDto(
             ReminderRecipient entity,
