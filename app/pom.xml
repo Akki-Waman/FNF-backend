@@ -235,6 +235,10 @@
             <artifactId>workflow</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketReminder</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
