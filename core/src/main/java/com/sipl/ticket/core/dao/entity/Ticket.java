@@ -172,4 +172,8 @@ public class Ticket extends AuditEntity{
 
     @Column(name = "use_contact_fk")
     private Boolean useContactFk;
+
+    @OneToMany(mappedBy = "ticket", fetch = FetchType.LAZY)
+    private List<TicketNote> notes;
+
 }

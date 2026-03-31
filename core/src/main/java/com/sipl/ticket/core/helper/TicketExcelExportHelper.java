@@ -32,8 +32,11 @@ public class TicketExcelExportHelper {
             "Contact",
             "Status",
             "Priority",
+            "Created By",
+            "First Note",
+            "Location",
             "Last Reply",
-            "Created",
+            "Created Date",
             "Complaint Name",
             "Complaint Mobile No",
             "Start Date Time",
@@ -89,12 +92,17 @@ public class TicketExcelExportHelper {
             setCell(r, 5, contact(d), dataStyle);
             setCell(r, 6, d.getStatusLabel(), dataStyle);
             setCell(r, 7, d.getPriorityLabel(), dataStyle);
-            setCell(r, 8, format(d.getModifiedTime()), dataStyle);
-            setCell(r, 9, format(d.getCreatedTime()), dataStyle);
-            setCell(r, 10, d.getComplaintName(), dataStyle);
-            setCell(r, 11, d.getComplaintMobileNo(), dataStyle);
-            setCell(r, 12, format(d.getStartDateTime()), dataStyle);
-            setCell(r, 13, format(d.getEndDateTime()), dataStyle);
+
+            setCell(r, 8, d.getCreatedByUsername(), dataStyle);
+            setCell(r, 9, d.getFirstNote(), dataStyle);
+            setCell(r, 10, d.getLocationName(), dataStyle);
+
+            setCell(r, 11, format(d.getModifiedTime()), dataStyle);
+            setCell(r, 12, format(d.getCreatedTime()), dataStyle);
+            setCell(r, 13, d.getComplaintName(), dataStyle);
+            setCell(r, 14, d.getComplaintMobileNo(), dataStyle);
+            setCell(r, 15, format(d.getStartDateTime()), dataStyle);
+            setCell(r, 16, format(d.getEndDateTime()), dataStyle);
         }
 
         sheet.setAutoFilter(new CellRangeAddress(0, rowIndex - 1, 0, HEADERS.length - 1));
@@ -131,12 +139,17 @@ public class TicketExcelExportHelper {
             csv.append(q(contact(d))).append(",");
             csv.append(q(d.getStatusLabel())).append(",");
             csv.append(q(d.getPriorityLabel())).append(",");
+
+            csv.append(q(d.getCreatedByUsername())).append(",");
+            csv.append(q(d.getFirstNote())).append(",");
+            csv.append(q(d.getLocationName())).append(",");
+
             csv.append(csvDate(d.getModifiedTime())).append(",");
             csv.append(csvDate(d.getCreatedTime())).append(",");
             csv.append(q(d.getComplaintName())).append(",");
             csv.append("'").append(safe(d.getComplaintMobileNo())).append("'").append(",");
             csv.append(csvDate(d.getStartDateTime())).append(",");
-            csv.append(csvDate(d.getEndDateTime())).append("\n"); // ✅ FIXED
+            csv.append(csvDate(d.getEndDateTime())).append("\n");
         }
 
         response.getWriter().write(csv.toString());
@@ -187,6 +200,11 @@ public class TicketExcelExportHelper {
             table.addCell(new Phrase(contact(d), dataFont));
             table.addCell(new Phrase(safe(d.getStatusLabel()), dataFont));
             table.addCell(new Phrase(safe(d.getPriorityLabel()), dataFont));
+
+            table.addCell(new Phrase(safe(d.getCreatedByUsername()), dataFont));
+            table.addCell(new Phrase(safe(d.getFirstNote()), dataFont));
+            table.addCell(new Phrase(safe(d.getLocationName()), dataFont));
+
             table.addCell(new Phrase(format(d.getModifiedTime()), dataFont));
             table.addCell(new Phrase(format(d.getCreatedTime()), dataFont));
             table.addCell(new Phrase(safe(d.getComplaintName()), dataFont));
