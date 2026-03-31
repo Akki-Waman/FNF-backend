@@ -60,7 +60,7 @@ public class Ticket extends AuditEntity{
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ClientProducts clientProducts;
 
-    @Column(name = "priority", nullable = false)
+    @Column(name = "priority")
     private Integer priority;
 
     @ManyToOne
