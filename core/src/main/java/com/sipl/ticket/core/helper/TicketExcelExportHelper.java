@@ -33,7 +33,7 @@ public class TicketExcelExportHelper {
             "Status",
             "Priority",
             "Created By",
-            "First Note",
+            "Last Note",
             "Location",
             "Last Reply",
             "Created Date",
