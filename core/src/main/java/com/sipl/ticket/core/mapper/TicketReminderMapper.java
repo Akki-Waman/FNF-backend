@@ -22,7 +22,7 @@ public interface TicketReminderMapper extends AuditEntityMapper {
     @InheritConfiguration(name = "toDto")
     @Mapping(
             target = "statusLabel",
-            expression = "java(context.resolveStatus(entity.getStatus()))"
+            expression = "java(context != null ? context.resolveStatus(entity.getStatus()) : null)"
     )
     ReminderResponseDto toDto(
             TicketReminder entity,
