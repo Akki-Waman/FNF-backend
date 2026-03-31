@@ -33,7 +33,7 @@ public class SecurityConfig {
             "/configuration/security",
             "/webjars/**",
             "/v3/api-docs/**",
-//            "/api/v1/**",
+            "/api/v1/**",
             "/swagger-ui.html/**",
             "/swagger-ui/**",
             "/monitoring/**"};

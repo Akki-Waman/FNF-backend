@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ReminderResponseDto extends AuditDto {
 
-    private Long id;
+    private Long ticketReminderId;
     private Long ticketId;
 
     private LocalDateTime reminderTime;
