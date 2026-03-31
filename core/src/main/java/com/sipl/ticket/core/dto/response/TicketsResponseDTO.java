@@ -60,4 +60,8 @@ public class TicketsResponseDTO extends AuditDto {
 
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+
+    private String createdByUsername;
+    private String firstNote;
+    private String locationName;
 }
