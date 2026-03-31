@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class ReminderCreateRequestDto {
+    private Long ticketReminderId;
 
     private Long ticketId;
     private LocalDateTime reminderTime;

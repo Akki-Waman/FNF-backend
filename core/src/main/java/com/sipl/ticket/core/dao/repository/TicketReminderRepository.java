@@ -18,7 +18,7 @@ public interface TicketReminderRepository extends JpaRepository<TicketReminder, 
 
     @Query("SELECT r FROM TicketReminder r " +
             "LEFT JOIN FETCH r.recipients rec " +
-            "WHERE r.ticketId = :ticketId " +
+            "WHERE r.ticket.id = :ticketId " +
             "AND r.status = 0")
     List<TicketReminder> findActiveByTicketId(Long ticketId);
 

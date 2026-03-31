@@ -74,7 +74,8 @@ public class ReminderServiceImpl implements ReminderService {
     private TicketReminder buildReminder(ReminderCreateRequestDto request) {
 
         TicketReminder reminder = new TicketReminder();
-
+        log.info("Checking ticketId: {}", request.getTicketId());
+        log.info("Ticket exists? {}", ticketRepository.existsById(request.getTicketId()));
         Ticket ticket = ticketRepository.findById(request.getTicketId())
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
