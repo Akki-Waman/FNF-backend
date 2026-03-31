@@ -1,16 +1,13 @@
 package com.sipl.ticket.service.impl;
 
-import com.sipl.ticket.core.dao.entity.MasterContext;
-import com.sipl.ticket.core.dao.entity.Masters;
-import com.sipl.ticket.core.dao.entity.ReminderRecipient;
-import com.sipl.ticket.core.dao.entity.TicketReminder;
+import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketReminderRepository;
+import com.sipl.ticket.core.dao.repository.TicketRepository;
 import com.sipl.ticket.core.dto.request.ReminderCreateRequestDto;
 import com.sipl.ticket.core.dto.request.ReminderRecipientRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ReminderResponseDto;
-import com.sipl.ticket.core.dto.response.ReminderRecipientResponseDto;
 import com.sipl.ticket.core.mapper.TicketReminderMapper;
 import com.sipl.ticket.service.ReminderService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +27,7 @@ public class ReminderServiceImpl implements ReminderService {
     private final TicketReminderRepository reminderRepository;
     private final TicketReminderMapper reminderMapper;
     private final MastersRepository mastersRepository;
+    private final TicketRepository ticketRepository;
 
     @Override
     public ApiResponseDTO<ReminderResponseDto> createReminder(
@@ -39,68 +37,16 @@ public class ReminderServiceImpl implements ReminderService {
 
         try {
 
-            TicketReminder reminder = new TicketReminder();
-            reminder.setTicketId(request.getTicketId());
-            reminder.setReminderTime(request.getReminderTime());
-            reminder.setNextRunTime(request.getReminderTime());
-            reminder.setIsRecurring(request.getIsRecurring());
-            reminder.setRecurrenceInterval(request.getRecurrenceInterval());
-            reminder.setRecurrenceEndTime(request.getRecurrenceEndTime());
-            reminder.setStatus(1);
-            reminder.setRetryCount(0);
-            reminder.setMaxRetry(3);
+            TicketReminder reminder = buildReminder(request);
 
-            log.info("Reminder time={}, nextRunTime={}",
-                    reminder.getReminderTime(), reminder.getNextRunTime());
-
-            List<ReminderRecipient> recipients = new ArrayList<>();
-
-            if (request.getRecipients() != null) {
-
-                log.info("Total recipients received={}", request.getRecipients().size());
-
-                for (ReminderRecipientRequestDto r : request.getRecipients()) {
-
-                    ReminderRecipient rec = new ReminderRecipient();
-                    rec.setUserId(r.getUserId());
-                    rec.setChannelType(mapChannel(r.getChannelType()));
-                    rec.setStatus(1);
-                    rec.setRetryCount(0);
-                    rec.setReminder(reminder);
-
-                    log.info("Recipient userId={}, channelType={}",
-                            rec.getUserId(), rec.getChannelType());
-
-                    recipients.add(rec);
-                }
-            }
-
+            List<ReminderRecipient> recipients = buildRecipients(request, reminder);
             reminder.setRecipients(recipients);
 
             TicketReminder saved = reminderRepository.save(reminder);
 
-            log.info("Reminder saved with id={}", saved.getId());
+            log.info("Reminder saved with id={}", saved.getTicketReminderId());
 
-            Map<Integer, String> statusMap = mastersRepository
-                    .findByColumnNameIgnoreCase("reminder status")
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Masters::getColumnValue,
-                            Masters::getValueDesc
-                    ));
-
-            Map<Integer, String> channelMap = mastersRepository
-                    .findByColumnNameIgnoreCase("channel type")
-                    .stream()
-                    .collect(Collectors.toMap(
-                            Masters::getColumnValue,
-                            Masters::getValueDesc
-                    ));
-
-            log.info("Status map={}", statusMap);
-            log.info("Channel map={}", channelMap);
-
-            MasterContext context = new MasterContext(null, statusMap, channelMap);
+            MasterContext context = buildMasterContext();
 
             ReminderResponseDto responseDto =
                     reminderMapper.toDto(saved, context);
@@ -125,14 +71,105 @@ public class ReminderServiceImpl implements ReminderService {
         }
     }
 
+    private TicketReminder buildReminder(ReminderCreateRequestDto request) {
+
+        TicketReminder reminder = new TicketReminder();
+
+        Ticket ticket = ticketRepository.findById(request.getTicketId())
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        reminder.setTicket(ticket);
+        reminder.setReminderTime(request.getReminderTime());
+        reminder.setNextRunTime(request.getReminderTime());
+        reminder.setIsRecurring(request.getIsRecurring());
+        reminder.setRecurrenceInterval(request.getRecurrenceInterval());
+        reminder.setRecurrenceEndTime(request.getRecurrenceEndTime());
+        reminder.setStatus(1);
+        reminder.setRetryCount(0);
+        reminder.setMaxRetry(3);
+
+        log.info("Reminder initialized for ticketId={}", request.getTicketId());
+        log.debug("Reminder details: time={}, nextRunTime={}, recurring={}",
+                reminder.getReminderTime(),
+                reminder.getNextRunTime(),
+                reminder.getIsRecurring());
+
+        return reminder;
+    }
+
+    private List<ReminderRecipient> buildRecipients(
+            ReminderCreateRequestDto request,
+            TicketReminder reminder) {
+
+        List<ReminderRecipient> recipients = new ArrayList<>();
+
+        if (request.getRecipients() == null || request.getRecipients().isEmpty()) {
+            log.warn("No recipients provided for ticketId={}", request.getTicketId());
+            return recipients;
+        }
+
+        log.info("Processing {} recipients", request.getRecipients().size());
+
+        for (ReminderRecipientRequestDto r : request.getRecipients()) {
+
+            ReminderRecipient rec = new ReminderRecipient();
+
+            rec.setUserId(r.getUserId());
+            rec.setChannelType(mapChannel(r.getChannelType()));
+            rec.setStatus(1);
+            rec.setRetryCount(0);
+            rec.setReminder(reminder);
+
+            log.info("Recipient added userId={}, channelType={}",
+                    rec.getUserId(), rec.getChannelType());
+
+            log.debug("Recipient raw input channelType={}", r.getChannelType());
+
+            recipients.add(rec);
+        }
+
+        return recipients;
+    }
+
+    private MasterContext buildMasterContext() {
+
+        Map<Integer, String> statusMap = mastersRepository
+                .findByColumnNameIgnoreCase("reminder status")
+                .stream()
+                .collect(Collectors.toMap(
+                        Masters::getColumnValue,
+                        Masters::getValueDesc
+                ));
+
+        Map<Integer, String> channelMap = mastersRepository
+                .findByColumnNameIgnoreCase("channel type")
+                .stream()
+                .collect(Collectors.toMap(
+                        Masters::getColumnValue,
+                        Masters::getValueDesc
+                ));
+
+        log.info("Master data loaded successfully");
+        log.debug("Status map={}", statusMap);
+        log.debug("Channel map={}", channelMap);
+
+        return new MasterContext(null, statusMap, channelMap);
+    }
+
     private Integer mapChannel(String channel) {
 
-        if (channel == null) return 0;
+        if (channel == null) {
+            log.warn("Channel type is null");
+            return 0;
+        }
+
+        log.debug("Mapping channelType={}", channel);
 
         if ("EMAIL".equalsIgnoreCase(channel)) return 1;
         if ("WHATSAPP".equalsIgnoreCase(channel)) return 2;
         if ("SMS".equalsIgnoreCase(channel)) return 3;
 
+        log.warn("Unknown channel type received={}", channel);
 
         return 0;
     }
@@ -151,17 +188,17 @@ public class ReminderServiceImpl implements ReminderService {
             for (TicketReminder reminder : reminders) {
 
                 log.info("Processing reminder id={}, nextRunTime={}",
-                        reminder.getId(), reminder.getNextRunTime());
+                        reminder.getTicketReminderId(), reminder.getNextRunTime());
 
                 try {
 
                     if (reminder.getRecipients() == null || reminder.getRecipients().isEmpty()) {
-                        log.warn("No recipients found for reminder id={}", reminder.getId());
+                        log.warn("No recipients found for reminder id={}", reminder.getTicketReminderId());
                         continue;
                     }
 
                     log.info("Recipients count for reminder {} = {}",
-                            reminder.getId(), reminder.getRecipients().size());
+                            reminder.getTicketReminderId(), reminder.getRecipients().size());
 
                     for (ReminderRecipient recipient : reminder.getRecipients()) {
 
@@ -173,19 +210,19 @@ public class ReminderServiceImpl implements ReminderService {
                         recipient.setStatus(3);
                         recipient.setSentAt(LocalDateTime.now());
 
-                        log.info("Notification sent. Updated recipient userId={}, sentAt={}",
+                        log.info("Notification sent for userId={}, sentAt={}",
                                 recipient.getUserId(), recipient.getSentAt());
                     }
 
                     if (Boolean.TRUE.equals(reminder.getIsRecurring())) {
 
-                        log.info("Reminder id={} is recurring", reminder.getId());
+                        log.info("Reminder id={} is recurring", reminder.getTicketReminderId());
                         updateNextRun(reminder);
 
                     } else {
 
                         reminder.setStatus(3);
-                        log.info("Reminder id={} marked as completed", reminder.getId());
+                        log.info("Reminder id={} marked as completed", reminder.getTicketReminderId());
                     }
 
                 } catch (Exception e) {
@@ -193,7 +230,7 @@ public class ReminderServiceImpl implements ReminderService {
                     reminder.setRetryCount(reminder.getRetryCount() + 1);
                     reminder.setLastError(e.getMessage());
 
-                    log.error("Error processing reminder id={}", reminder.getId(), e);
+                    log.error("Error processing reminder id={}", reminder.getTicketReminderId(), e);
                 }
             }
 
