@@ -20,26 +20,12 @@ public class ReminderRecipient extends AuditEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reminderRecipientId;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
     @Column(name = "channel_type_id", nullable = false)
     private Integer channelType;
-
-    @Column(name = "status", nullable = false)
-    private Integer status;
-
-    @Column(name = "sent_at")
-    private LocalDateTime sentAt;
-
-    @Column(name = "retry_count")
-    private Integer retryCount;
-
-    @Column(name = "last_error")
-    private String lastError;
-
-    @Column(name = "user_role")
-    private String userRole;
 
     @Column(name = "is_active")
     private Boolean isActive;
