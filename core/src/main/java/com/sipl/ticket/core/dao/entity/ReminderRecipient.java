@@ -41,6 +41,12 @@ public class ReminderRecipient extends AuditEntity {
     @Column(name = "user_role")
     private String userRole;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reminder_id", nullable = false)
     private TicketReminder reminder;

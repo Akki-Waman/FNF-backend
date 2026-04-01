@@ -24,6 +24,8 @@ public class ReminderResponseDto extends AuditDto {
 
     private Integer status;
     private String statusLabel;
+    private boolean isActive;
+    private boolean isDeleted;
 
     private List<ReminderRecipientResponseDto> recipients;
 }

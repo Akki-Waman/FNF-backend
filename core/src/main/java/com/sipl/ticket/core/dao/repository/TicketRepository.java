@@ -176,7 +176,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("SELECT t FROM Ticket t WHERE t.status NOT IN :statuses ORDER BY t.ticketId DESC")
     List<Ticket> findByStatusNotIn(@Param("statuses") List<Integer> statuses);
 
-
+    @Query("SELECT t FROM Ticket t WHERE t.ticketId = :id")
+    Optional<Ticket> findExactById(@Param("id") Long id);
 
 }
 

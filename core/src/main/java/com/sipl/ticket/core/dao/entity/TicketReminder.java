@@ -52,6 +52,12 @@ public class TicketReminder extends AuditEntity {
     @Column(name = "last_error")
     private String lastError;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
     @OneToMany(
             mappedBy = "reminder",
             cascade = CascadeType.ALL,

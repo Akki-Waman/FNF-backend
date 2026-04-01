@@ -76,7 +76,7 @@ public class ReminderServiceImpl implements ReminderService {
         TicketReminder reminder = new TicketReminder();
         log.info("Checking ticketId: {}", request.getTicketId());
         log.info("Ticket exists? {}", ticketRepository.existsById(request.getTicketId()));
-        Ticket ticket = ticketRepository.findById(request.getTicketId())
+        Ticket ticket = ticketRepository.findExactById(request.getTicketId())
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
         reminder.setTicket(ticket);
@@ -88,6 +88,8 @@ public class ReminderServiceImpl implements ReminderService {
         reminder.setStatus(1);
         reminder.setRetryCount(0);
         reminder.setMaxRetry(3);
+        reminder.setIsActive(true);
+        reminder.setIsDeleted(false);
 
         log.info("Reminder initialized for ticketId={}", request.getTicketId());
         log.debug("Reminder details: time={}, nextRunTime={}, recurring={}",
@@ -120,6 +122,8 @@ public class ReminderServiceImpl implements ReminderService {
             rec.setStatus(1);
             rec.setRetryCount(0);
             rec.setReminder(reminder);
+            rec.setIsActive(true);
+            rec.setIsDeleted(false);
 
             log.info("Recipient added userId={}, channelType={}",
                     rec.getUserId(), rec.getChannelType());

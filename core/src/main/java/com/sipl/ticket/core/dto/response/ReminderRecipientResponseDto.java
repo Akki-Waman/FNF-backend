@@ -15,4 +15,6 @@ public class ReminderRecipientResponseDto extends AuditDto {
     private String statusLabel;
     private String channelTypeLabel;
     private LocalDateTime sentAt;
+    private boolean isActive;
+    private boolean isDeleted;
 }
