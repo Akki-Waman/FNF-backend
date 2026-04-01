@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,30 +32,58 @@ public class ReminderServiceImpl implements ReminderService {
     private final TicketRepository ticketRepository;
     private final UsersRepository usersRepository;
 
-    @Override
-    public ApiResponseDTO<ReminderResponseDto> createReminder(
-            ReminderCreateRequestDto request) {
+    private Map<Integer, String> recurrenceCache;
 
-        log.info("Creating reminder for ticketId={}", request.getTicketId());
+    @PostConstruct
+    public void init() {
+        recurrenceCache = mastersRepository
+                .findByColumnNameIgnoreCase("recurrence interval")
+                .stream()
+                .collect(Collectors.toMap(
+                        Masters::getColumnValue,
+                        Masters::getValueDesc
+                ));
+        log.debug("Recurrence cache loaded={}", recurrenceCache);
+    }
+
+    @Override
+    public ApiResponseDTO<ReminderResponseDto> createReminder(ReminderCreateRequestDto request) {
+
+        log.info("Create reminder request received ticketId={}, reminderTime={}",
+                request.getTicketId(), request.getReminderTime());
+
+        log.debug("Incoming request payload={}", request);
 
         try {
 
+            normalizeRequest(request);
+
+            validateDuplicate(request);
+
+            validateDateOverlap(request);
+
             TicketReminder reminder = buildReminder(request);
 
+            log.debug("Reminder entity after build={}", reminder);
+
             List<ReminderRecipient> recipients = buildRecipients(request, reminder);
+
+            log.debug("Recipients prepared count={}", recipients.size());
+
             reminder.setRecipients(recipients);
 
             TicketReminder saved = reminderRepository.save(reminder);
 
-            log.info("Reminder saved with id={}", saved.getTicketReminderId());
+            log.info("Reminder successfully created id={}", saved.getTicketReminderId());
 
             MasterContext context = buildMasterContext();
 
-            ReminderResponseDto responseDto =
-                    reminderMapper.toDto(saved, context);
+            ReminderResponseDto response = reminderMapper.toDto(saved, context);
+
+            log.debug("Response DTO generated={}", response);
 
             return new ApiResponseDTO<>(
-                    responseDto,
+                    response,
                     "Reminder created successfully",
                     HttpStatus.CREATED,
                     false
@@ -62,30 +91,116 @@ public class ReminderServiceImpl implements ReminderService {
 
         } catch (Exception e) {
 
-            log.error("Error while creating reminder", e);
+            log.error("Error while creating reminder ticketId={}", request.getTicketId(), e);
 
             return new ApiResponseDTO<>(
                     null,
-                    "Failed to create reminder",
+                    e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     true
             );
         }
     }
 
+    private void normalizeRequest(ReminderCreateRequestDto request) {
+
+        if (Boolean.FALSE.equals(request.getIsRecurring())) {
+            request.setRecurrenceInterval(null);
+            request.setRecurrenceEndTime(null);
+            log.debug("Recurring false → interval & endTime cleared");
+        }
+    }
+
+    private void validateDuplicate(ReminderCreateRequestDto request) {
+
+        Long count = reminderRepository.countReminder(
+                request.getTicketId(),
+                request.getReminderTime()
+        );
+
+        log.debug("Duplicate count={}", count);
+
+        if (count != null && count > 0) {
+            throw new RuntimeException("Reminder already exists for same ticket and time");
+        }
+    }
+
+    private void validateDateOverlap(ReminderCreateRequestDto request) {
+
+        List<TicketReminder> existing = reminderRepository
+                .findByTicket_TicketIdAndIsDeletedFalse(request.getTicketId());
+
+        LocalDateTime newStart = request.getReminderTime();
+        LocalDateTime newEnd = request.getRecurrenceEndTime();
+
+        boolean isNewRecurring = Boolean.TRUE.equals(request.getIsRecurring());
+
+        for (TicketReminder r : existing) {
+
+            LocalDateTime existingStart = r.getReminderTime();
+            LocalDateTime existingEnd = r.getRecurrenceEndTime();
+
+            boolean isExistingRecurring = Boolean.TRUE.equals(r.getIsRecurring());
+
+            log.debug("Checking overlap newStart={}, newEnd={}, existingStart={}, existingEnd={}",
+                    newStart, newEnd, existingStart, existingEnd);
+
+            if (isNewRecurring && isExistingRecurring) {
+
+                if (existingEnd == null || newEnd == null) continue;
+
+                boolean overlap =
+                        (newStart.isBefore(existingEnd) || newStart.isEqual(existingEnd)) &&
+                                (newEnd.isAfter(existingStart) || newEnd.isEqual(existingStart));
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+            } else if (!isNewRecurring && isExistingRecurring) {
+
+                if (existingEnd == null) continue;
+
+                boolean overlap =
+                        (newStart.isAfter(existingStart) || newStart.isEqual(existingStart)) &&
+                                (newStart.isBefore(existingEnd) || newStart.isEqual(existingEnd));
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+            } else if (isNewRecurring && !isExistingRecurring) {
+
+                if (newEnd == null) continue;
+
+                boolean overlap =
+                        (existingStart.isAfter(newStart) || existingStart.isEqual(newStart)) &&
+                                (existingStart.isBefore(newEnd) || existingStart.isEqual(newEnd));
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+            } else {
+
+                if (newStart.isEqual(existingStart)) {
+                    throw new RuntimeException("Reminder already exists for same time");
+                }
+            }
+        }
+    }
+
     private TicketReminder buildReminder(ReminderCreateRequestDto request) {
 
-        TicketReminder reminder = new TicketReminder();
-        log.info("Checking ticketId: {}", request.getTicketId());
-        log.info("Ticket exists? {}", ticketRepository.existsById(request.getTicketId()));
         Ticket ticket = ticketRepository.findExactById(request.getTicketId())
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        TicketReminder reminder = new TicketReminder();
 
         reminder.setTicket(ticket);
         reminder.setReminderTime(request.getReminderTime());
         reminder.setNextRunTime(request.getReminderTime());
         reminder.setIsRecurring(request.getIsRecurring());
-        reminder.setRecurrenceInterval(request.getRecurrenceInterval());
+
+        Integer interval = resolveRecurrenceInterval(request);
+        reminder.setRecurrenceInterval(interval);
         reminder.setRecurrenceEndTime(request.getRecurrenceEndTime());
         reminder.setStatus(1);
         reminder.setRetryCount(0);
@@ -93,13 +208,27 @@ public class ReminderServiceImpl implements ReminderService {
         reminder.setIsActive(true);
         reminder.setIsDeleted(false);
 
-        log.info("Reminder initialized for ticketId={}", request.getTicketId());
-        log.debug("Reminder details: time={}, nextRunTime={}, recurring={}",
-                reminder.getReminderTime(),
-                reminder.getNextRunTime(),
-                reminder.getIsRecurring());
-
         return reminder;
+    }
+
+    private Integer resolveRecurrenceInterval(ReminderCreateRequestDto request) {
+
+        if (!Boolean.TRUE.equals(request.getIsRecurring())) return null;
+
+        Integer interval = request.getRecurrenceInterval();
+
+        if (interval == null) {
+            if (!recurrenceCache.containsKey(1)) {
+                throw new RuntimeException("Default recurrence interval not configured");
+            }
+            return 1;
+        }
+
+        if (!recurrenceCache.containsKey(interval)) {
+            throw new RuntimeException("Invalid recurrence interval");
+        }
+
+        return interval;
     }
 
     private List<ReminderRecipient> buildRecipients(
@@ -109,30 +238,21 @@ public class ReminderServiceImpl implements ReminderService {
         List<ReminderRecipient> recipients = new ArrayList<>();
 
         if (request.getRecipients() == null || request.getRecipients().isEmpty()) {
-            log.warn("No recipients provided for ticketId={}", request.getTicketId());
             return recipients;
         }
 
-        log.info("Processing {} recipients", request.getRecipients().size());
-
         for (ReminderRecipientRequestDto r : request.getRecipients()) {
-
-            ReminderRecipient rec = new ReminderRecipient();
 
             Users user = usersRepository.findById(r.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
+            ReminderRecipient rec = new ReminderRecipient();
+
             rec.setUser(user);
             rec.setChannelType(mapChannel(r.getChannelType()));
-
             rec.setReminder(reminder);
             rec.setIsActive(true);
             rec.setIsDeleted(false);
-
-            log.info("Notification sent for userId={}, sentAt={}",
-                    rec.getUser().getId(), rec.getChannelType());
-
-            log.debug("Recipient raw input channelType={}", r.getChannelType());
 
             recipients.add(rec);
         }
@@ -158,128 +278,17 @@ public class ReminderServiceImpl implements ReminderService {
                         Masters::getValueDesc
                 ));
 
-        log.info("Master data loaded successfully");
-        log.debug("Status map={}", statusMap);
-        log.debug("Channel map={}", channelMap);
-
-        return new MasterContext(null, statusMap, channelMap);
+        return new MasterContext(null, statusMap, channelMap, recurrenceCache);
     }
 
     private Integer mapChannel(String channel) {
 
-        if (channel == null) {
-            log.warn("Channel type is null");
-            return 0;
-        }
-
-        log.debug("Mapping channelType={}", channel);
+        if (channel == null) return 0;
 
         if ("EMAIL".equalsIgnoreCase(channel)) return 1;
         if ("WHATSAPP".equalsIgnoreCase(channel)) return 2;
         if ("SMS".equalsIgnoreCase(channel)) return 3;
 
-        log.warn("Unknown channel type received={}", channel);
-
         return 0;
-    }
-
-    public void processReminders() {
-
-        log.info("Processing reminders started at {}", LocalDateTime.now());
-
-        try {
-
-            List<TicketReminder> reminders =
-                    reminderRepository.findDueReminders(LocalDateTime.now());
-
-            log.info("Total reminders fetched={}", reminders.size());
-
-            for (TicketReminder reminder : reminders) {
-
-                log.info("Processing reminder id={}, nextRunTime={}",
-                        reminder.getTicketReminderId(), reminder.getNextRunTime());
-
-                try {
-
-                    if (reminder.getRecipients() == null || reminder.getRecipients().isEmpty()) {
-                        log.warn("No recipients found for reminder id={}", reminder.getTicketReminderId());
-                        continue;
-                    }
-
-                    log.info("Recipients count for reminder {} = {}",
-                            reminder.getTicketReminderId(), reminder.getRecipients().size());
-
-                    for (ReminderRecipient recipient : reminder.getRecipients()) {
-
-                        log.info("Notification sent for userId={},channelType={} ",
-                                recipient.getUser().getId(), recipient.getChannelType());
-
-                        sendNotification(recipient);
-
-
-                        log.info("Notification sent for userId={}",
-                                recipient.getUser().getId());
-                    }
-
-                    if (Boolean.TRUE.equals(reminder.getIsRecurring())) {
-
-                        log.info("Reminder id={} is recurring", reminder.getTicketReminderId());
-                        updateNextRun(reminder);
-
-                    } else {
-
-                        reminder.setStatus(3);
-                        log.info("Reminder id={} marked as completed", reminder.getTicketReminderId());
-                    }
-
-                } catch (Exception e) {
-
-                    reminder.setRetryCount(reminder.getRetryCount() + 1);
-                    reminder.setLastError(e.getMessage());
-
-                    log.error("Error processing reminder id={}", reminder.getTicketReminderId(), e);
-                }
-            }
-
-            reminderRepository.saveAll(reminders);
-
-            log.info("All reminders processed and saved");
-
-        } catch (Exception e) {
-            log.error("Error processing reminders", e);
-        }
-    }
-
-    private void sendNotification(ReminderRecipient recipient) {
-
-        log.info("Sending notification to userId={} ,channelType={}",
-                recipient.getUser().getId(),
-                recipient.getChannelType());
-    }
-
-    private void updateNextRun(TicketReminder reminder) {
-
-        LocalDateTime next = reminder.getNextRunTime();
-
-        Integer type = reminder.getRecurrenceInterval();
-
-        if (type != null) {
-            if (type == 1) {
-                next = next.plusDays(1);
-            } else if (type == 2) {
-                next = next.plusWeeks(1);
-            } else if (type == 3) {
-                next = next.plusMonths(1);
-            }
-        }
-
-        if (reminder.getRecurrenceEndTime() != null &&
-                next.isAfter(reminder.getRecurrenceEndTime())) {
-
-            reminder.setStatus(3);
-
-        } else {
-            reminder.setNextRunTime(next);
-        }
     }
 }

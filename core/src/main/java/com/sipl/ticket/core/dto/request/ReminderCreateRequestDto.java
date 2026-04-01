@@ -15,7 +15,7 @@ public class ReminderCreateRequestDto {
     private Boolean isRecurring;
     private Integer recurrenceInterval;
     private LocalDateTime recurrenceEndTime;
-    private boolean isActive;
-    private boolean isDeleted;
+    private Boolean isActive;
+    private Boolean isDeleted;
     private List<ReminderRecipientRequestDto> recipients;
 }

@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TicketResponseServiceImpl implements TicketResponseService {
 
+    public static final Long SLA_TYPE_RESPONSE_ID = 1L;
     private final TicketResponseMapper ticketResponseMapper;
     private final TicketResponseRepository ticketResponseRepository;
     private final TicketRepository ticketRepository;
@@ -71,14 +72,10 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private final TicketMapper ticketMapper;
     private final MastersRepository mastersRepository;
     private final TicketNoteRepository ticketNoteRepository;
-
     @Value("${ticket_response}")
     private Long templateId;
-
     @Value("${sender_mail}")
     private String senderMail;
-
-    public static final Long SLA_TYPE_RESPONSE_ID = 1L;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -168,8 +165,8 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     private TicketResponse saveTicketResponse(TicketResponseRequestDTO dto) {
         validateTicketResponseRequest(dto);
         Map<Integer, String> priorityMap = masterService.getTicketPriorityMap();
-        Map<Integer, String> statusMap   = masterService.getTicketStatusMap();
-        MasterContext masterContext = new MasterContext(priorityMap, statusMap,null);
+        Map<Integer, String> statusMap = masterService.getTicketStatusMap();
+        MasterContext masterContext = new MasterContext(priorityMap, statusMap, null, null);
         if (!statusMap.containsKey(dto.getStatus())) {
             throw new IllegalArgumentException("Invalid status code: " + dto.getStatus());
         }
@@ -485,7 +482,6 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     }
 
 
-
     private TicketResponseSentMailRequestDto buildTicketResponseMailDto(
             TicketResponse response,
             List<TicketResponseCc> ccs) {
@@ -493,10 +489,10 @@ public class TicketResponseServiceImpl implements TicketResponseService {
         TicketResponseSentMailRequestDto dto = new TicketResponseSentMailRequestDto();
         dto.setTicketResponseId(response.getTicketResponseId());
 
-        // Build TicketsResponseDTO
         MasterContext masterContext = new MasterContext(
                 masterService.getTicketPriorityMap(),
                 masterService.getTicketStatusMap(),
+                null,
                 null
         );
         dto.setTicket(ticketMapper.toTicketDto(response.getTicket(), masterContext));
@@ -532,7 +528,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
     }
 
 
-    private void applyResponseSlaLogic(Ticket  ticket ) {
+    private void applyResponseSlaLogic(Ticket ticket) {
         log.info("SLA START for ticketId={}", ticket.getTicketId());
 
         if (ticket.getResponseDateTime() != null) {
@@ -543,7 +539,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             );
             return;
         }
-            ticket.setResponseDateTime(LocalDateTime.now());
+        ticket.setResponseDateTime(LocalDateTime.now());
         /* ---------- STEP 1 : Branch ---------- */
         Integer branchId = Optional.ofNullable(ticket.getBranch())
                 .map(Branches::getBranchId)
@@ -614,7 +610,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
 
         double responseHours =
                 Duration.between(ticket.getCreatedTime(), LocalDateTime.now())
-                        .toMinutes() /60.0;
+                        .toMinutes() / 60.0;
 
         boolean withinSla = responseHours <= slaHours;
 
@@ -635,7 +631,7 @@ public class TicketResponseServiceImpl implements TicketResponseService {
             double penaltyMinutes =
                     Math.max(0, responseHours - slaHours - graceMinutes);
 
-            BigDecimal calculatedPenaltyPercentage  =
+            BigDecimal calculatedPenaltyPercentage =
                     BigDecimal.valueOf(penaltyMinutes)
                             .multiply(BigDecimal.valueOf(penaltyPercentPerMinute));
 

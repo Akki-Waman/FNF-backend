@@ -25,6 +25,10 @@ public interface TicketReminderMapper extends AuditEntityMapper {
             expression = "java(context != null ? context.resolveStatus(entity.getStatus()) : null)"
     )
     @Mapping(
+            target = "recurrenceIntervalLabel",
+            expression = "java(entity.getRecurrenceInterval() != null && context != null ? context.resolveRecurrence(entity.getRecurrenceInterval()) : null)"
+    )
+    @Mapping(
             target = "ticketId",
             source = "ticket.ticketId"
     )

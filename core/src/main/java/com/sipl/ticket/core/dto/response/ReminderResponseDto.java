@@ -20,12 +20,14 @@ public class ReminderResponseDto extends AuditDto {
     private LocalDateTime nextRunTime;
     private Boolean isRecurring;
     private Integer recurrenceInterval;
+    private String recurrenceIntervalLabel;
+
     private LocalDateTime recurrenceEndTime;
 
     private Integer status;
     private String statusLabel;
-    private boolean isActive;
-    private boolean isDeleted;
+    private Boolean isActive;
+    private Boolean isDeleted;
 
     private List<ReminderRecipientResponseDto> recipients;
 }
