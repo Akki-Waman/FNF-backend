@@ -4,6 +4,7 @@ import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.MastersRepository;
 import com.sipl.ticket.core.dao.repository.TicketReminderRepository;
 import com.sipl.ticket.core.dao.repository.TicketRepository;
+import com.sipl.ticket.core.dao.repository.UsersRepository;
 import com.sipl.ticket.core.dto.request.ReminderCreateRequestDto;
 import com.sipl.ticket.core.dto.request.ReminderRecipientRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
@@ -28,6 +29,7 @@ public class ReminderServiceImpl implements ReminderService {
     private final TicketReminderMapper reminderMapper;
     private final MastersRepository mastersRepository;
     private final TicketRepository ticketRepository;
+    private final UsersRepository usersRepository;
 
     @Override
     public ApiResponseDTO<ReminderResponseDto> createReminder(
@@ -117,16 +119,18 @@ public class ReminderServiceImpl implements ReminderService {
 
             ReminderRecipient rec = new ReminderRecipient();
 
-            rec.setUserId(r.getUserId());
+            Users user = usersRepository.findById(r.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            rec.setUser(user);
             rec.setChannelType(mapChannel(r.getChannelType()));
-            rec.setStatus(1);
-            rec.setRetryCount(0);
+
             rec.setReminder(reminder);
             rec.setIsActive(true);
             rec.setIsDeleted(false);
 
-            log.info("Recipient added userId={}, channelType={}",
-                    rec.getUserId(), rec.getChannelType());
+            log.info("Notification sent for userId={}, sentAt={}",
+                    rec.getUser().getId(), rec.getChannelType());
 
             log.debug("Recipient raw input channelType={}", r.getChannelType());
 
@@ -207,16 +211,14 @@ public class ReminderServiceImpl implements ReminderService {
 
                     for (ReminderRecipient recipient : reminder.getRecipients()) {
 
-                        log.info("Sending notification to userId={}, channelType={}",
-                                recipient.getUserId(), recipient.getChannelType());
+                        log.info("Notification sent for userId={},channelType={} ",
+                                recipient.getUser().getId(), recipient.getChannelType());
 
                         sendNotification(recipient);
 
-                        recipient.setStatus(3);
-                        recipient.setSentAt(LocalDateTime.now());
 
-                        log.info("Notification sent for userId={}, sentAt={}",
-                                recipient.getUserId(), recipient.getSentAt());
+                        log.info("Notification sent for userId={}",
+                                recipient.getUser().getId());
                     }
 
                     if (Boolean.TRUE.equals(reminder.getIsRecurring())) {
@@ -250,8 +252,8 @@ public class ReminderServiceImpl implements ReminderService {
 
     private void sendNotification(ReminderRecipient recipient) {
 
-        log.info("Sending notification to userId={} channelType={}",
-                recipient.getUserId(),
+        log.info("Sending notification to userId={} ,channelType={}",
+                recipient.getUser().getId(),
                 recipient.getChannelType());
     }
 
