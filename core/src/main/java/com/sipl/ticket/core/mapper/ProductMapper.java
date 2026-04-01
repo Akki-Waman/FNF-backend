@@ -3,10 +3,7 @@ package com.sipl.ticket.core.mapper;
 
 import com.sipl.ticket.core.dao.entity.Products;
 import com.sipl.ticket.core.dto.response.ProductDto;
-import org.mapstruct.InheritConfiguration;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -36,5 +33,8 @@ public interface ProductMapper extends AuditEntityMapper {
     Products updateEntity(@MappingTarget Products existingEntity, ProductDto productDto);
 
     List<ProductDto> mapProductsListToDtoList(List<Products> productsList);
+
+    List<ProductDto> toDtoList(List<Products> content);
+
 }
 

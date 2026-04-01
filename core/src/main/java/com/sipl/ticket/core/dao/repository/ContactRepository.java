@@ -33,22 +33,49 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
     @Query(
             "SELECT c FROM Contact c " +
-                    "JOIN c.department d " +
-                    "WHERE (:query IS NULL OR " +
-                    "   LOWER(c.contactName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-                    "   LOWER(c.emailAddress) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-                    "   c.mobileNo LIKE CONCAT('%', :query, '%') OR " +
-                    "   LOWER(d.departmentName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-                    "   CONCAT('', c.contactId) = :query OR " +
-                    "   CONCAT('', d.departmentId) = :query " +
-                    ") " +
-                    "AND c.isActive = true"
+                    "JOIN c.branch b " +
+                    "WHERE c.isDelete = false " +
+                    "AND ( :isActive IS NULL OR c.isActive = :isActive ) " +
+                    "AND ( :contactId IS NULL OR c.contactId = :contactId ) " +
+                    "AND ( :branchId IS NULL OR b.branchId = :branchId ) " +
+                    "AND ( :query IS NULL OR :query = '' " +
+                    "   OR LOWER(c.contactName) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "   OR LOWER(c.emailAddress) LIKE CONCAT('%', LOWER(:query), '%') " +
+                    "   OR c.mobileNo LIKE CONCAT('%', :query, '%') " +
+                    "   OR CAST(c.contactId AS string) LIKE CONCAT('%', :query, '%') " +
+                    ")"
     )
     Page<Contact> searchContacts(
+            @Param("contactId") Long contactId,
+            @Param("branchId") Integer branchId,
             @Param("query") String query,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
 
 
+
+    @Query(
+            "SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Contact c " +
+                    "WHERE LOWER(c.contactName) = LOWER(:contactName) " +
+                    "AND c.branch.branchId = :branchId " +
+                    "AND c.isDelete = false"
+    )
+    boolean existsActiveContactInDepartment(
+            @Param("contactName") String contactName,
+            @Param("branchId") Integer branchId
+    );
+
+    @Query(
+            "SELECT c FROM Contact c " +
+                    "WHERE c.isDelete = false " +
+                    "AND c.isActive = true " +
+                    "AND (:branchId IS NULL OR c.branch.branchId = :branchId) " +
+                    "ORDER BY c.contactName ASC"
+    )
+    List<Contact> findContacts(
+            @Param("branchId") Integer branchId
+    );
 
 }

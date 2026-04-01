@@ -1,14 +1,19 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Tags;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.TagsRepository;
 import com.sipl.ticket.core.dto.request.TagsRequestDto;
 import com.sipl.ticket.core.dto.request.TagsSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.TagExcelGenerator;
 import com.sipl.ticket.core.mapper.TagsMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.TagsService;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,27 +40,44 @@ public class TagsServiceImpl implements TagsService {
 
     private final TagsRepository repository;
     private final TagsMapper mapper;
+    private final BranchRepository branchRepository;
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "TAG",
+            description = "Tag {0} created successfully"
+    )
     public ApiResponseDTO<TagResponseDto> saveTag(TagsRequestDto dto) {
 
         try {
             String name = dto.getTagName().trim();
 
-            if (repository.existsByTagNameIgnoreCase(name)) {
+            if (repository.existsTagByNameAndBranch(name, dto.getBranchId())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Tag '" + name + "' already exists",
+                        "Tag '" + name + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
-
             Tags tag = new Tags();
+
+            Optional<Branches> branchesOpt = branchRepository.findById(dto.getBranchId());
+            if(!branchesOpt.isPresent()){
+                return new ApiResponseDTO<>(
+                        null,
+                        "Branch not found",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }else {
+              tag.setBranch(branchesOpt.get());
+            }
             tag.setTagName(name);
             tag.setIsActive(true);
-
+            tag.setIsDelete(false);
             Tags saved = repository.save(tag);
 
             return new ApiResponseDTO<>(
@@ -79,81 +100,65 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "TAG",
+            description = "Tag {0} updated successfully"
+    )
     public ApiResponseDTO<TagResponseDto> updateTag(TagsRequestDto dto) {
 
-        try {
-            if (dto.getTagId() == null ||
-                    dto.getTagName() == null ||
-                    dto.getTagName().trim().isEmpty()) {
+        if (dto == null || dto.getTagId() == null || dto.getTagName() == null || dto.getTagName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Tag ID and name are required");
+        }
 
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        Tags tag = repository.findById(dto.getTagId())
+                .orElseThrow(() -> new ResourceNotFoundException("Tag"));
 
-            Tags tag = repository.findById(dto.getTagId()).orElse(null);
+        EntityStateValidator.checkNotDeleted(
+                tag.getIsDelete(),
+                "Tag",
+                tag.getTagName()
+        );
 
-            if (tag == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
+        if (Boolean.FALSE.equals(tag.getIsActive())) {
+            throw new IllegalStateException("Inactive tag cannot be updated");
+        }
 
-            if (Boolean.FALSE.equals(tag.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive tag cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
+        String name = dto.getTagName().trim();
+        Integer branchId = tag.getBranch().getBranchId();
 
-            String name = dto.getTagName().trim();
-
-            if (repository.existsByTagNameIgnoreCaseAndTagIdNot(
-                    name, dto.getTagId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Tag '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            tag.setTagName(name);
-            Tags updated = repository.save(tag);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Tag updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateTag error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
+        if (repository.existsTagByNameAndBranchAndNotSameId(
+                name,
+                branchId,
+                tag.getTagId()
+        )) {
+            throw new IllegalStateException(
+                    "Tag '" + name + "' already exists."
             );
         }
+
+        tag.setTagName(name);
+        tag.setIsActive(dto.getIsActive());
+        Tags updated = repository.save(tag);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Tag updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<TagResponseDto> getById(Long id) {
 
         try {
             return repository.findById(id)
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .filter(t ->
+                            Boolean.TRUE.equals(t.getIsActive()) &&
+                                    Boolean.FALSE.equals(t.getIsDelete())
+                    )
                     .map(t -> new ApiResponseDTO<>(
                             mapper.toDto(t),
                             "Tag found",
@@ -180,6 +185,11 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @CacheEvict(value = "tags", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "TAG",
+            description = "Tag id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {
@@ -204,6 +214,7 @@ public class TagsServiceImpl implements TagsService {
             }
 
             tag.setIsActive(false);
+            tag.setIsDelete(true);
             repository.save(tag);
 
             return new ApiResponseDTO<>(
@@ -226,17 +237,17 @@ public class TagsServiceImpl implements TagsService {
 
     @Override
     @Cacheable("tags")
-    public ApiResponseDTO<TagResponseDto> getAllTags() {
+    public ApiResponseDTO<TagResponseDto> getAllTags(
+            Integer branchId
+    ) {
+
+        log.info("Fetching tags, branchId={}", branchId);
 
         try {
-            List<TagResponseDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "tagId"))
-                    .stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<Tags> tags =
+                    repository.findAllActiveTags(branchId);
 
-            if (list.isEmpty()) {
+            if (tags.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No tags found",
@@ -245,8 +256,11 @@ public class TagsServiceImpl implements TagsService {
                 );
             }
 
+            List<TagResponseDto> response =
+                    mapper.mapTagsListToDtoList(tags);
+
             return new ApiResponseDTO<>(
-                    list,
+                    response,
                     HttpStatus.OK,
                     "Tags fetched successfully",
                     false,
@@ -255,6 +269,7 @@ public class TagsServiceImpl implements TagsService {
 
         } catch (Exception e) {
             log.error("getAllTags error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -277,8 +292,10 @@ public class TagsServiceImpl implements TagsService {
             );
 
             Page<Tags> pageResult =
-                    repository.searchByTagId(
-                            dto.getTagId(),
+                    repository.searchTags(
+                            dto.getQuery(),
+                            dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 
@@ -332,7 +349,10 @@ public class TagsServiceImpl implements TagsService {
         try {
             List<TagResponseDto> tags = repository.findAll()
                     .stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getIsActive()))
+                    .filter(t ->
+                            Boolean.TRUE.equals(t.getIsActive()) &&
+                                    Boolean.FALSE.equals(t.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 

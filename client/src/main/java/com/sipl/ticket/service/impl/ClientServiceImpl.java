@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Client;
 import com.sipl.ticket.core.dao.repository.ClientRepository;
 import com.sipl.ticket.core.dto.request.ClientRequestDto;
@@ -7,8 +8,10 @@ import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.SearchClientRequestDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ClientExcelGenerator;
 import com.sipl.ticket.core.mapper.ClientMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CLIENT",
+            description = "Client {0} created successfully"
+    )
     public ApiResponseDTO<ClientResponseDto> saveClient(ClientRequestDto dto) {
 
         log.info("Saving client with code={}, name={}", dto.getClientCode(), dto.getClientName());
@@ -40,6 +48,7 @@ public class ClientServiceImpl implements ClientService {
         try {
             Client client = mapper.toEntity(dto);
             client.setIsActive(true);
+            client.setIsDelete(false);
 
             Client saved = repository.save(client);
 
@@ -65,46 +74,44 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "CLIENT",
+            description = "Client {0} updated successfully"
+    )
     public ApiResponseDTO<ClientResponseDto> updateClient(ClientRequestDto dto) {
 
-        log.info("Updating client id={}", dto.getClientId());
+        log.info("Updating client id={}",
+                dto != null ? dto.getClientId() : null
+        );
 
-        try {
-            Client client = repository.findById(dto.getClientId()).orElse(null);
-
-            if (client == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Client not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            client.setClientCode(dto.getClientCode());
-            client.setClientName(dto.getClientName());
-
-            Client updated = repository.save(client);
-
-            log.info("Client updated successfully, id={}", updated.getClientId());
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Client updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateClient unexpected error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getClientId() == null) {
+            throw new IllegalArgumentException("Client ID is required");
         }
+
+        Client client = repository.findById(dto.getClientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client"));
+
+        EntityStateValidator.checkNotDeleted(
+                client.getIsDelete(),
+                "Client",
+                client.getClientName()
+        );
+
+        mapper.partialUpdate(dto, client);
+
+        Client updated = repository.save(client);
+
+        log.info("Client updated successfully, id={}", updated.getClientId());
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Client updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
+
 
     @Override
     public ApiResponseDTO<ClientResponseDto> getById(Long id) {
@@ -113,6 +120,7 @@ public class ClientServiceImpl implements ClientService {
 
         try {
             return repository.findById(id)
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDelete()))
                     .map(client -> new ApiResponseDTO<>(
                             mapper.toDto(client),
                             "Client found",
@@ -125,6 +133,7 @@ public class ClientServiceImpl implements ClientService {
                             HttpStatus.NOT_FOUND,
                             true
                     ));
+
 
         } catch (Exception e) {
             log.error("getById unexpected error, id={}", id, e);
@@ -139,6 +148,11 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @CacheEvict(value = "clients", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CLIENT",
+            description = "Client {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deleting client id={}", id);
@@ -155,16 +169,17 @@ public class ClientServiceImpl implements ClientService {
                 );
             }
 
-            if (Boolean.FALSE.equals(client.getIsActive())) {
+            if (Boolean.TRUE.equals(client.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Client already inactive",
+                        "Client already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             client.setIsActive(false);
+            client.setIsDelete(true);
             repository.save(client);
 
             log.info("Client deleted successfully, id={}", id);
@@ -235,7 +250,10 @@ public class ClientServiceImpl implements ClientService {
         log.info("Fetching all clients");
 
         try {
-            List<Client> list = repository.findAll();
+            List<Client> list = repository.findAll()
+                    .stream()
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDelete()))
+                    .collect(Collectors.toList());
 
             if (list.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -273,8 +291,10 @@ public class ClientServiceImpl implements ClientService {
         try {
             List<ClientResponseDto> clients = repository.findAll()
                     .stream()
-                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
-                    .map(mapper::toDto)
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )                    .map(mapper::toDto)
                     .collect(Collectors.toList());
 
             ClientExcelGenerator.generateExcel(clients, response);

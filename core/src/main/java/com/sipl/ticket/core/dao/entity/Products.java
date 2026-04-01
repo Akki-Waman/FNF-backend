@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
+
 import javax.persistence.*;
 
 @Entity
@@ -117,6 +118,11 @@ public class Products extends AuditEntity {
             name = "default_tax_head_id",
             foreignKey = @ForeignKey(name = "fk_products_default_tax_head_id"))
     private GstSlabMaster defaultTaxHead;
+
+    @Column(name = "is_delete")
+    private Boolean isDelete = true;
+
+
 
     private Long dmsDocId;
 

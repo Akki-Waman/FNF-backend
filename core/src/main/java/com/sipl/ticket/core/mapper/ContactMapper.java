@@ -7,48 +7,22 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
-public interface ContactMapper {
-
-    /* ================= CREATE ================= */
+@Mapper(componentModel = "spring", uses = AuditUserMasterMapper.class)
+public interface ContactMapper extends AuditEntityMapper {
 
     @Mapping(target = "contactId", ignore = true)
-    @Mapping(target = "department", ignore = true)
-
-    //  audit fields exist in ENTITY → safe to ignore
+    @Mapping(target = "branch", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
     @Mapping(target = "createdTime", ignore = true)
     @Mapping(target = "modifiedTime", ignore = true)
-
     Contact toEntity(ContactRequestDto dto);
 
-    /* ================= RESPONSE ================= */
-
-    @Mapping(target = "departmentId", source = "department.departmentId")
-    @Mapping(target = "departmentName", source = "department.departmentName")
-
-        //  DO NOT IGNORE AUDIT FIELDS HERE (they don't exist in DTO)
-
+    @Mapping(target = "branchId", source = "branch.branchId")
+    @Mapping(target = "branchName", source = "branch.branchName")
     ContactResponseDto toResponseDto(Contact contact);
 
-    /* ================= UPDATE ================= */
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "department", ignore = true)
-
-    //  audit fields exist in ENTITY → safe to ignore
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "modifiedBy", ignore = true)
-    @Mapping(target = "createdTime", ignore = true)
-    @Mapping(target = "modifiedTime", ignore = true)
-
-    Contact partialUpdate(
-            ContactRequestDto dto,
-            @MappingTarget Contact contact
-    );
-
-    /* ================= LIST ================= */
-
     List<ContactResponseDto> toResponseDtoList(List<Contact> contacts);
+
+
 }

@@ -1,7 +1,10 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Brands;
+import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.repository.BrandRepository;
+import com.sipl.ticket.core.dao.repository.CompanyRepository;
 import com.sipl.ticket.core.dto.request.BrandSearchRequestDto;
 import com.sipl.ticket.core.dto.request.BrandsRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
@@ -13,10 +16,8 @@ import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.BrandsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,13 @@ public class BrandsServiceImpl implements BrandsService {
 
     private final BrandRepository repository;
     private final BrandsMapper mapper;
+    private final CompanyRepository companyRepository;
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "BRAND",
+            description = "Brand {0} created successfully"
+    )
     public ApiResponseDTO<BrandDto> saveBrand(BrandsRequestDto dto) {
 
         log.info("Saving brand with name: {}", dto.getBrandName());
@@ -46,7 +51,10 @@ public class BrandsServiceImpl implements BrandsService {
         try {
             String name = dto.getBrandName().trim();
 
-            if (repository.existsByBrandNameIgnoreCase(name)) {
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+
+            if (repository.existsActiveBrandForCompany(name, dto.getCompanyId())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Brand '" + name + "' already exists.",
@@ -57,7 +65,9 @@ public class BrandsServiceImpl implements BrandsService {
 
             Brands brand = new Brands();
             brand.setBrandName(name);
+            brand.setCompany(company);
             brand.setIsActive(true);
+            brand.setIsDeleted(false);
 
             Brands savedBrand = repository.save(brand);
 
@@ -79,19 +89,27 @@ public class BrandsServiceImpl implements BrandsService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
+
+
+
+
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "BRAND",
+            description = "Brand {0} updated successfully"
+    )
     public ApiResponseDTO<BrandDto> updateBrand(BrandsRequestDto dto) {
 
-        log.info("Updating brand, id={}, name={}", dto.getBrandId(), dto.getBrandName());
+        log.info("Updating brand, id={}, name={}, isActive={}",
+                dto != null ? dto.getBrandId() : null,
+                dto != null ? dto.getBrandName() : null,
+                dto != null ? dto.getIsActive() : null);
 
         try {
-            if (dto == null || dto.getBrandId() == null ||
-                    dto.getBrandName() == null || dto.getBrandName().trim().isEmpty()) {
-
+            if (dto == null || dto.getBrandId() == null) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand ID and name are required",
+                        "Brand ID is required",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
@@ -108,29 +126,51 @@ public class BrandsServiceImpl implements BrandsService {
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            if (Boolean.TRUE.equals(brand.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Inactive brand cannot be updated",
+                        "Brand is deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            String name = dto.getBrandName().trim();
+            boolean isUpdated = false;
 
-            if (repository.existsByBrandNameIgnoreCaseAndBrandIdNot(
-                    name, dto.getBrandId())) {
+            if (dto.getBrandName() != null &&
+                    !dto.getBrandName().trim().isEmpty()) {
 
+                String name = dto.getBrandName().trim();
+
+                if (repository.existsByBrandNameIgnoreCaseAndBrandIdNot(
+                        name, dto.getBrandId())) {
+
+                    return new ApiResponseDTO<>(
+                            null,
+                            "Brand with the name '" + name + "' already exists.",
+                            HttpStatus.CONFLICT,
+                            true
+                    );
+                }
+
+                brand.setBrandName(name);
+                isUpdated = true;
+            }
+
+            if (dto.getIsActive() != null) {
+                brand.setIsActive(dto.getIsActive());
+                isUpdated = true;
+            }
+
+            if (!isUpdated) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand with the name '" + name + "' already exists.",
-                        HttpStatus.CONFLICT,
+                        "No fields provided to update",
+                        HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            brand.setBrandName(name);
             Brands updatedBrand = repository.save(brand);
 
             return new ApiResponseDTO<>(
@@ -159,6 +199,7 @@ public class BrandsServiceImpl implements BrandsService {
         try {
             return repository.findById(id)
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(b -> new ApiResponseDTO<>(
                             mapper.toDto(b),
                             "Brand found",
@@ -183,8 +224,11 @@ public class BrandsServiceImpl implements BrandsService {
         }
     }
 
-    @Override
-    @CacheEvict(value = "brands", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "BRAND",
+            description = "Brand {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating brand, id={}", id);
@@ -201,16 +245,15 @@ public class BrandsServiceImpl implements BrandsService {
                 );
             }
 
-            if (Boolean.FALSE.equals(brand.getIsActive())) {
+            if (Boolean.TRUE.equals(brand.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Brand is already inactive",
+                        "Brand already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
-
-            brand.setIsActive(false);
+            brand.setIsDeleted(true);
             repository.save(brand);
 
             return new ApiResponseDTO<>(
@@ -232,26 +275,30 @@ public class BrandsServiceImpl implements BrandsService {
     }
 
     @Override
-    @Cacheable("brands")
-    public ApiResponseDTO<BrandDto> getAllBrands() {
+    @Cacheable(
+            value = "brands",
+            key = "#companyId != null ? #companyId : 'ALL'"
+    )
+    public ApiResponseDTO<BrandDto> getAllBrands(Long companyId) {
 
-        log.info("Fetching all active brands");
+        log.info("Fetching brands, companyId={}", companyId);
 
         try {
-            List<BrandDto> list = repository.findAll()
-                    .stream()
-                    .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<Brands> brands =
+                    repository.findBrands(companyId);
 
-            if (list.isEmpty()) {
+            if (brands.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No brands found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
+
+            List<BrandDto> list = brands.stream()
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
 
             return new ApiResponseDTO<>(
                     list,
@@ -263,6 +310,7 @@ public class BrandsServiceImpl implements BrandsService {
 
         } catch (Exception e) {
             log.error("getAllBrands error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -271,6 +319,8 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
+
 
     @Override
     public ApiResponseDTO<PagedResponse<BrandDto>> searchBrands(
@@ -284,10 +334,11 @@ public class BrandsServiceImpl implements BrandsService {
                     dto.getSortDir()
             );
 
-
             Page<Brands> pageResult =
-                    repository.searchByBrandId(
-                            dto.getBrandId(),
+                    repository.searchBrands(
+                            dto.getQuery(),
+                            dto.getIsActive(),
+                            dto.getCompanyId(),
                             pageable
                     );
 
@@ -332,6 +383,7 @@ public class BrandsServiceImpl implements BrandsService {
             );
         }
     }
+
     @Override
     @Transactional(readOnly = true)
     public void exportBrandsCsv(HttpServletResponse response) {
@@ -342,6 +394,7 @@ public class BrandsServiceImpl implements BrandsService {
             List<BrandDto> brands = repository.findAll()
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -355,7 +408,4 @@ public class BrandsServiceImpl implements BrandsService {
             throw new RuntimeException("Failed to export brands CSV", e);
         }
     }
-
-
-
 }

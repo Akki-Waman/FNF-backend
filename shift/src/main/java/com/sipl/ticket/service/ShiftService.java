@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ShiftResponseDTO;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ShiftService {
 
@@ -26,10 +28,10 @@ public interface ShiftService {
             Long shiftId
     );
 
-    ApiResponseDTO<ShiftResponseDTO> getAllShifts();
+    ApiResponseDTO<ShiftResponseDTO> getAllShifts(Integer branchId);
 
     ApiResponseDTO<PagedResponse<ShiftResponseDTO>> searchShifts(
             ShiftSearchRequestDto requestDto
     );
-
+    void downloadShiftsExcel(HttpServletResponse response);
 }

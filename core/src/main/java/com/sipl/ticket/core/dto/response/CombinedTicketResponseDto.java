@@ -15,5 +15,5 @@ public class CombinedTicketResponseDto {
     private List<TicketTagResponseDTO> ticketTagResponseDTOS;
     private List<TicketCcResponseDTO> ticketCcResponseDTOS;
     private List<TicketAttachmentResponseDTO> attachments;
-
+    private List<TicketNoteResponseDTO> notes;
 }

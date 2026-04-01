@@ -9,16 +9,20 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE
+        uses = AuditUserMasterMapper.class
 )
-public interface ShiftMapper {
+public interface ShiftMapper extends AuditEntityMapper  {
 
     @Mapping(target = "shiftId", ignore = true)
     Shift toEntity(ShiftRequestDto dto);
 
+
+
     ShiftResponseDTO toResponseDto(Shift shift);
 
+
     List<ShiftResponseDTO> toResponseDtoList(List<Shift> shifts);
+
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void partialUpdate(
@@ -26,4 +30,3 @@ public interface ShiftMapper {
             @MappingTarget Shift entity
     );
 }
-

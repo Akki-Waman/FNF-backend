@@ -1,13 +1,19 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Locations;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.LocationRepository;
 import com.sipl.ticket.core.dto.request.LocationRequestDTO;
 import com.sipl.ticket.core.dto.request.LocationSearchRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.LocationResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
+import com.sipl.ticket.core.helper.LocationExcelGenerator;
 import com.sipl.ticket.core.mapper.LocationMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.LocationService;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +21,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.stream.Location;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,20 +39,26 @@ public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository repository;
     private final LocationMapper mapper;
-
-    /* ===================== SAVE ===================== */
-
+private final BranchRepository branchRepository;
     @Override
     @CacheEvict(value = "locations", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "LOCATION",
+            description = "Location {0} created successfully"
+    )
     public ApiResponseDTO<LocationResponseDTO> saveLocation(LocationRequestDTO dto) {
 
         try {
             String name = dto.getLocationName().trim();
+            Integer branchId = dto.getBranchId().intValue();
+            Branches branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
 
-            if (repository.existsByLocationNameIgnoreCase(name)) {
+            if (repository.existsActiveLocationForBranch(name, branchId)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location '" + name + "' already exists",
+                        "Location '" + name + "' already exists ",
                         HttpStatus.CONFLICT,
                         true
                 );
@@ -54,10 +66,11 @@ public class LocationServiceImpl implements LocationService {
 
             Locations location = new Locations();
             location.setLocationName(name);
+            location.setBranch(branch);
             location.setIsActive(true);
+            location.setIsDeleted(false);
 
             Locations saved = repository.save(location);
-
             return new ApiResponseDTO<>(
                     mapper.toDto(saved),
                     "Location created successfully",
@@ -76,89 +89,80 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== UPDATE ===================== */
-
     @Override
     @CacheEvict(value = "locations", allEntries = true)
-    public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO locationRequestDTO)  {
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "LOCATION",
+            description = "Location {0} updated successfully"
+    )
+    public ApiResponseDTO<LocationResponseDTO> updateLocation(LocationRequestDTO dto) {
 
-        try {
-            if ( locationRequestDTO == null ||
-                    locationRequestDTO.getLocationName() == null ||
-                    locationRequestDTO.getLocationName().trim().isEmpty()){
+        log.info("Updating location, id={}, name={}, isActive={}",
+                dto != null ? dto.getLocationId() : null,
+                dto != null ? dto.getLocationName() : null,
+                dto != null ? dto.getIsActive() : null
+        );
 
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Locations location = repository.findById(locationRequestDTO.getLocationId()).orElse(null);
-
-            if (location == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(location.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive location cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = locationRequestDTO.getLocationName().trim();
-
-            if (repository.existsByLocationNameIgnoreCaseAndLocationIdNot(
-                    name, locationRequestDTO.getLocationId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Location '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            location.setLocationName(name);
-        //    location.setLocationType(locationRequestDTO.getLocationType());
-
-            Locations updated = repository.save(location);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Location updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateLocation error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getLocationId() == null) {
+            throw new IllegalArgumentException("Location ID is required");
         }
+
+        Locations location = repository.findById(dto.getLocationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Location"));
+
+        EntityStateValidator.checkNotDeleted(
+                location.getIsDeleted(),
+                "Location",
+                location.getLocationName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getLocationName() != null && !dto.getLocationName().trim().isEmpty()) {
+            String name = dto.getLocationName().trim();
+
+            if (repository.existsByLocationNameIgnoreCaseAndBranch_BranchIdAndLocationIdNotAndIsDeletedFalse(
+                    name,
+                    dto.getBranchId(),
+                    dto.getLocationId())) {
+
+                throw new IllegalStateException(
+                        "Location '" + name + "' already exists in this branch");
+            }
+            location.setLocationName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            location.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Locations updated = repository.save(location);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Location updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
-    /* ===================== GET BY ID ===================== */
 
     @Override
     public ApiResponseDTO<LocationResponseDTO> getById(Long id) {
 
         try {
             return repository.findById(id)
-                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
+                    .filter(l ->
+                            Boolean.TRUE.equals(l.getIsActive()) &&
+                                    Boolean.FALSE.equals(l.getIsDeleted())
+                    )
                     .map(l -> new ApiResponseDTO<>(
                             mapper.toDto(l),
                             "Location found",
@@ -183,10 +187,13 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
-    /* ===================== DELETE ===================== */
-
     @Override
     @CacheEvict(value = "locations", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "LOCATION",
+            description = "Location id {0} deactivated successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {
@@ -201,15 +208,16 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            if (Boolean.FALSE.equals(location.getIsActive())) {
+            if (Boolean.TRUE.equals(location.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Location already inactive",
+                        "Location already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
+            location.setIsDeleted(true);
             location.setIsActive(false);
             repository.save(location);
 
@@ -230,36 +238,37 @@ public class LocationServiceImpl implements LocationService {
             );
         }
     }
-
-    /* ===================== GET ALL ===================== */
-
     @Override
     @Cacheable("locations")
-    public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations() {
+    public ApiResponseDTO<PagedResponse<LocationResponseDTO>> getAllLocations(
+            Integer branchId
+    ) {
+
+        log.info("Fetching locations, branchId={}", branchId);
 
         try {
-            List<LocationResponseDTO> list = repository.findAll()
-                    .stream()
-                    .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<Locations> locations =
+                    repository.findActiveLocationsByBranch(branchId);
 
-            if (list.isEmpty()) {
+            if (locations.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No locations found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
 
+            List<LocationResponseDTO> response =
+                    mapper.mapLocationsListToDtoList(locations);
+
             return new ApiResponseDTO<>(
                     new PagedResponse<>(
-                            list,
+                            response,
                             0,
-                            list.size(),
+                            response.size(),
                             1,
-                            list.size(),
+                            response.size(),
                             true
                     ),
                     "Locations fetched successfully",
@@ -268,7 +277,7 @@ public class LocationServiceImpl implements LocationService {
             );
 
         } catch (Exception e) {
-            log.error("getAllLocations error", e);
+            log.error("Unexpected error while fetching locations", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -289,9 +298,12 @@ public class LocationServiceImpl implements LocationService {
                     dto.getSortBy(),
                     dto.getSortDir()
             );
+
             Page<Locations> pageResult =
                     repository.searchLocations(
-                            dto.getLocationId(),
+                            dto.getQuery(),
+                            dto.getIsActive(),
+                            dto.getBranchId(),
                             pageable
                     );
 
@@ -304,10 +316,11 @@ public class LocationServiceImpl implements LocationService {
                 );
             }
 
-            List<LocationResponseDTO> content = pageResult.getContent()
-                    .stream()
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<LocationResponseDTO> content =
+                    pageResult.getContent()
+                            .stream()
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
 
             PagedResponse<LocationResponseDTO> pagedResponse =
                     new PagedResponse<>(
@@ -337,6 +350,33 @@ public class LocationServiceImpl implements LocationService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportLocationExcel(HttpServletResponse response) {
 
+        log.info("Exporting active locations to Excel");
 
+        try {
+            List<LocationResponseDTO> locations =
+                    repository.findAll()
+                            .stream()
+                            .filter(l ->
+                                    Boolean.TRUE.equals(l.getIsActive()) &&
+                                            Boolean.FALSE.equals(l.getIsDeleted())
+                            )
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
+
+            LocationExcelGenerator.generateExcel(locations, response);
+
+            log.info(
+                    "Location Excel export completed | totalRecords={}",
+                    locations.size()
+            );
+
+        } catch (Exception e) {
+            log.error("exportLocationExcel error", e);
+            throw new RuntimeException("Failed to export location Excel", e);
+        }
+    }
 }

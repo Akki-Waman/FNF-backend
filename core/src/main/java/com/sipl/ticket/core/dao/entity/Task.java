@@ -9,6 +9,7 @@ import org.hibernate.envers.Audited;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -65,4 +66,18 @@ public class Task extends AuditEntity {
     @JoinColumn(name = "ticket_id", nullable = false)
     @JsonIgnore
     private Ticket ticket;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "timer_start_time")
+    private LocalDateTime timerStartTime;
+
+    @Column(name = "timer_stop_time")
+    private LocalDateTime timerStopTime;
+
+    @Column(name = "total_tracked_hours", precision = 10, scale = 2)
+    private BigDecimal totalTrackedHours;
+
+    private String comment;
 }

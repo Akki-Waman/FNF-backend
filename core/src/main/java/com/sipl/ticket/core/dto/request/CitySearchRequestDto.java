@@ -4,7 +4,5 @@ import lombok.Data;
 
 @Data
 public class CitySearchRequestDto extends SearchRequestDto {
-    private Long cityId;
-    private Long stateId;
-    private String cityName;
+   private String query;
 }

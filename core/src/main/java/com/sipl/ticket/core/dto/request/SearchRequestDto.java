@@ -14,8 +14,7 @@ import java.util.List;
 @SuperBuilder
 public class SearchRequestDto {
 
-    @Builder.Default
-    private Boolean isActive = true;
+    private Boolean isActive ;
 
     @Builder.Default
     private int page = 0;
@@ -29,5 +28,5 @@ public class SearchRequestDto {
     @Builder.Default
     private String sortDir = "desc";
 
-    //private List<Long> plantIds;
+    private Integer branchId;
 }

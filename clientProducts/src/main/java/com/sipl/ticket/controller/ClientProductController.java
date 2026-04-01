@@ -2,8 +2,10 @@ package com.sipl.ticket.controller;
 
 
 
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.request.DepartmentRequestDto;
+import com.sipl.ticket.core.dto.request.ResolutionPenaltyRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
 import com.sipl.ticket.core.dto.response.DepartmentResponseDTO;
@@ -12,6 +14,7 @@ import io.swagger.annotations.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -37,5 +40,27 @@ public interface ClientProductController {
     );
 
     @GetMapping(" ")
-    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts();
+    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts(
+            @RequestParam(required = false) Integer branchId
+    );
+
+    @PostMapping("/search")
+    ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> searchClientProducts(
+            @RequestBody ClientProductSearchRequestDto requestDto
+    );
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportClientProductsExcel(HttpServletResponse response);
+
+    @GetMapping("/get/{clientProductId}")
+    ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> getById(
+            @PathVariable Long clientProductId
+    );
+
+    @PostMapping("/export")
+    ResponseEntity<Void> exportClientProducts(
+            @RequestBody ClientProductSearchRequestDto requestDto,
+            @RequestParam String format,
+            HttpServletResponse response
+    );
 }

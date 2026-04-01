@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class ProductCategorySearchRequestDto extends SearchRequestDto {
 
-    private Long productCategoryId;
+    private String query;
 }

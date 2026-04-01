@@ -60,7 +60,10 @@ public interface ServiceController {
             response = ServiceResponseDTO.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices();
+    ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices(
+            @RequestParam(required = false) Long companyId
+
+    );
 
     @ApiOperation(
             value = "Export services to Excel"

@@ -11,7 +11,8 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = AuditUserMasterMapper.class
+        uses = {AuditUserMasterMapper.class,
+        TicketMapper.class}
 )
 public interface TicketAttachmentMapper {
     @Mapping(target = "attachmentId", ignore = true)
@@ -19,8 +20,15 @@ public interface TicketAttachmentMapper {
     TicketAttachment toEntity(TicketAttachmentResponseDTO dto, Ticket ticket,  Users uploadedBy);
 
     @InheritConfiguration(name = "toDto")
+    @Mapping(source = "ticket.ticketId", target = "ticket")
+    @Mapping(source = "dmsDocument.fileName", target = "fileName")
+    @Mapping(source = "dmsDocument.documentId", target = "documentId")
+    @Mapping(source = "dmsDocument.filePath", target = "filePath")
+    @Mapping(source = "dmsDocument.fileType", target = "contentType")
     TicketAttachmentResponseDTO toDto(TicketAttachment ticketAttachment);
 
     List<TicketAttachmentResponseDTO> mapTagsListToDtoList(List<TicketAttachment> ticketAttachmentList);
 
+    @Mapping(source = "ticket.ticketId", target = "ticketId")
+    List<TicketAttachmentResponseDTO> toDtoList(List<TicketAttachment> byTicketId);
 }

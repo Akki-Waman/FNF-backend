@@ -28,7 +28,7 @@ public interface ServiceService {
             Long serviceId
     );
 
-    ApiResponseDTO<ServiceResponseDTO> getAllServices();
+    ApiResponseDTO<ServiceResponseDTO> getAllServices(Long companyId);
 
     void exportServicesExcel(HttpServletResponse response);
 

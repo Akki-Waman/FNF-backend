@@ -1,16 +1,16 @@
 package com.sipl.ticket.service;
 
-import com.sipl.ticket.core.dto.request.DeleteTicketsRequestDTO;
-import com.sipl.ticket.core.dto.request.TicketSearchRequestDto;
+import com.sipl.ticket.core.dto.request.*;
 import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
 public interface TicketService {
-    ApiResponseDTO<CombinedTicketResponseDto> addTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
+    ApiResponseDTO<CombinedTicketResponseDto> addTickets(String ticketRequestDto, List<MultipartFile> multipartFile);
 
     ApiResponseDTO<Void> deleteTickets(DeleteTicketsRequestDTO requestDTO);
 
@@ -18,7 +18,22 @@ public interface TicketService {
             TicketSearchRequestDto requestDto
     );
 
-    ApiResponseDTO<CombinedTicketResponseDto> updateTickets(Long ticketId, String ticketRequestDto, List<MultipartFile> multipartFile);
+    ApiResponseDTO<CombinedTicketResponseDto> updateTickets( String ticketRequestDto, List<MultipartFile> multipartFile);
 
     ApiResponseDTO<SummaryKpiResponseDTO> getTikctSummary();
+
+    void exportTickets(
+            ExportSearchRequestDTO request,
+            HttpServletResponse response
+    );
+
+    ApiResponseDTO<Long> getAllTicketIds();
+
+    ApiResponseDTO<CombinedTicketNoteResponseDto> getByTicketId(Long ticketId);
+
+    ApiResponseDTO<TicketCombinedResponseDto> updateTicketStatus(TicketStatusRequestDTO ticketStatusRequestDTO);
+
+    ApiResponseDTO<String> requestTicketApproval(ApprovalRequestDTO dto);
+
+    ApiResponseDTO<TicketCustomResponseDto> getAllTicketCustomDetails();
 }

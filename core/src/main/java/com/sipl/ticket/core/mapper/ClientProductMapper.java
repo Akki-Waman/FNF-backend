@@ -12,17 +12,28 @@ import org.mapstruct.*;
 import java.util.List;
 
 @Mapper(componentModel = "spring",
-        uses = {AuditUserMasterMapper.class})
-public interface ClientProductMapper{
+        uses = {AuditUserMasterMapper.class,
+                ProductMapper.class,
+                AuditEntityMapper.class
+        })
+public interface ClientProductMapper {
     @Mapping(target = "products", ignore = true)
     @Mapping(target = "region", ignore = true)
     @Mapping(target = "zone", ignore = true)
     @Mapping(target = "division", ignore = true)
     @Mapping(target = "unit", ignore = true)
     @Mapping(target = "clientProductId", ignore = true)
+    @Mapping(target = "branch", ignore = true)
     ClientProducts toEntity(ClientProductsRequestDTO clientProductsRequestDTO);
 
-
+    @Mapping(source = "products", target = "product")
+    @Mapping(source = ".", target = ".")
+    @Mapping(source = "createdBy.userName", target = "createdBy")
+    @Mapping(source = "modifiedBy.userName", target = "modifiedBy")
+    @Mapping(source = "createdTime", target = "createdTime")
+    @Mapping(source = "modifiedTime", target = "modifiedTime")
+    @Mapping(target = "branchId", source = "branch.branchId")
+    @Mapping(target = "branchName", source = "branch.branchName")
     ClientProductsResponseDTO toDto(ClientProducts clientProducts);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

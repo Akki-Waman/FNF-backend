@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.ProductCategories;
 import com.sipl.ticket.core.dao.repository.ProductCategoryRepository;
 import com.sipl.ticket.core.dto.request.ProductCategoryRequestDto;
@@ -38,9 +39,14 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     private final ProductCategoryRepository repository;
     private final ProductCategoryMapper mapper;
 
+
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
-    public ApiResponseDTO<ProductCategoryDto> saveProductCategory(
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category {0} created successfully"
+    ) public ApiResponseDTO<ProductCategoryDto> saveProductCategory(
             ProductCategoryRequestDto dto) {
 
         log.info("Saving product category with name: {}", dto.getProductCategoryName());
@@ -50,7 +56,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
 
             Optional<ProductCategories> activeCategory =
-                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, true);
+                    repository.findByNameAndIsActive(name, true);
 
             if (activeCategory.isPresent()) {
                 return new ApiResponseDTO<>(
@@ -63,12 +69,12 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
 
             Optional<ProductCategories> inactiveCategory =
-                    repository.findByProductCategoryNameIgnoreCaseAndIsActive(name, false);
+                    repository.findByNameAndIsActive(name, false);
 
             if (inactiveCategory.isPresent()) {
                 ProductCategories category = inactiveCategory.get();
                 category.setIsActive(true);
-
+                category.setIsDeleted(false);
                 ProductCategories updatedCategory = repository.save(category);
 
                 return new ApiResponseDTO<>(
@@ -82,6 +88,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             ProductCategories category = new ProductCategories();
             category.setProductCategoryName(name);
             category.setIsActive(true);
+            category.setIsDeleted(false);
 
             ProductCategories savedCategory = repository.save(category);
 
@@ -103,9 +110,13 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         }
     }
 
-
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category {0} updated successfully"
+    )
     public ApiResponseDTO<ProductCategoryDto> updateProductCategory(
             ProductCategoryRequestDto dto) {
 
@@ -139,16 +150,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                         true
                 );
             }
-
-            if (Boolean.FALSE.equals(category.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive product category cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             String name = dto.getProductCategoryName().trim();
 
             if (repository.existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNot(
@@ -163,6 +164,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             }
 
             category.setProductCategoryName(name);
+            category.setIsActive(dto.getIsActive());
             ProductCategories updatedCategory = repository.save(category);
 
             return new ApiResponseDTO<>(
@@ -191,6 +193,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             return repository.findById(id)
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ApiResponseDTO<>(
                             mapper.toDto(c),
                             "Product category found",
@@ -217,6 +220,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @CacheEvict(value = "productCategories", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "PRODUCT_CATEGORY",
+            description = "Product category id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         log.info("Deactivating product category, id={}", id);
@@ -232,19 +240,9 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                         true
                 );
             }
-
-            if (Boolean.FALSE.equals(category.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Product category is already inactive",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             category.setIsActive(false);
+            category.setIsDeleted(true);
             repository.save(category);
-
             return new ApiResponseDTO<>(
                     null,
                     "Product category deleted successfully",
@@ -269,9 +267,10 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
         try {
             List<ProductCategoryDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "productCategoryId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "productCategoryName"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -312,6 +311,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             List<ProductCategoryDto> categories = repository.findAll()
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ProductCategoryDto(
                             c.getProductCategoryId(),
                             c.getProductCategoryName(),
@@ -346,8 +346,9 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                     dto.getSortDir()
             );
             Page<ProductCategories> pageResult =
-                    repository.searchByProductCategoryId(
-                            dto.getProductCategoryId(),
+                    repository.searchProductCategories(
+                            dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 

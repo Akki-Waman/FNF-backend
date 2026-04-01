@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class CompaniesRequestDto {
     private Long companyId;
     private String companyName;
+    private Boolean isActive;
 }

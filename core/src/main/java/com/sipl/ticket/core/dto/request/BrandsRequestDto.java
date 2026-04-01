@@ -19,4 +19,7 @@ public class BrandsRequestDto {
 
     private Boolean isActive;
 
+    private Long companyId;
+
+
 }

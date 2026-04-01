@@ -1,11 +1,13 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Country;
 import com.sipl.ticket.core.dao.repository.CountryRepository;
 import com.sipl.ticket.core.dto.request.CountryRequestDto;
 import com.sipl.ticket.core.dto.request.CountrySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CountryResponseDto;
+import com.sipl.ticket.core.helper.CountryExcelGenerator;
 import com.sipl.ticket.core.mapper.CountryMapper;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.CountryService;
@@ -14,13 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +39,11 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "COUNTRY",
+            description = "Country {0} created successfully"
+    )
     public ApiResponseDTO<CountryResponseDto> createCountry(CountryRequestDto dto) {
 
         log.info("Creating country={}", dto);
@@ -43,85 +51,136 @@ public class CountryServiceImpl implements CountryService {
         try {
             String name = dto.getCountryName().trim();
 
-            if (repository.existsByCountryNameIgnoreCase(name)) {
-                log.warn("Country creation failed, duplicate name={}", name);
-                return new ApiResponseDTO<>(null,
+            if (repository.countActiveCountry(name) > 0) {
+                return new ApiResponseDTO<>(
+                        null,
                         "Country already exists",
                         HttpStatus.CONFLICT,
-                        true);
+                        true
+                );
             }
+
 
             Country country = mapper.toEntity(dto);
             country.setCountryName(name);
             country.setIsActive(true);
+            country.setIsDeleted(false);
 
             Country saved = repository.save(country);
 
-            log.info("Country created successfully, id={}, name={}",
-                    saved.getCountryId(), saved.getCountryName());
-
-            return new ApiResponseDTO<>(mapper.toDto(saved),
+            return new ApiResponseDTO<>(
+                    mapper.toDto(saved),
                     "Country created successfully",
                     HttpStatus.CREATED,
-                    false);
+                    false
+            );
 
         } catch (Exception e) {
-            log.error("createCountry unexpected error, payload={}", dto, e);
-            return new ApiResponseDTO<>(null,
+            log.error("createCountry error", e);
+            return new ApiResponseDTO<>(
+                    null,
                     "Internal server error",
                     HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
+                    true
+            );
         }
     }
 
     @Override
     @CacheEvict(value = "countries", allEntries = true)
-    public ApiResponseDTO<CountryResponseDto> updateCountry(Long id, CountryRequestDto dto) {
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "COUNTRY",
+            description = "Country {0} updated successfully"
+    )
+    public ApiResponseDTO<CountryResponseDto> updateCountry(
+            Long id,
+            CountryRequestDto dto
+    ) {
 
-        log.info("Updating country, id={}, payload={}", id, dto);
-
-        try {
-            Country country = repository.findById(id).orElse(null);
-
-            if (country == null) {
-                return new ApiResponseDTO<>(null,
-                        "Country not found",
-                        HttpStatus.NOT_FOUND,
-                        true);
-            }
-
-            if (dto.getCountryName() != null) {
-                String name = dto.getCountryName().trim();
-                if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(name, id)) {
-                    log.warn("Update failed, duplicate country name={}, id={}", name, id);
-                    return new ApiResponseDTO<>(null,
-                            "Duplicate country name",
-                            HttpStatus.CONFLICT,
-                            true);
-                }
-                country.setCountryName(name);
-            }
-
-            if (dto.getIsActive() != null) country.setIsActive(dto.getIsActive());
-            if (dto.getIsForeign() != null) country.setIsForeign(dto.getIsForeign());
-            if (dto.getTaxType() != null) country.setTaxType(dto.getTaxType().trim());
-
-            Country updated = repository.save(country);
-
-            log.info("Country updated successfully, id={}", updated.getCountryId());
-
-            return new ApiResponseDTO<>(mapper.toDto(updated),
-                    "Country updated successfully",
-                    HttpStatus.OK,
-                    false);
-
-        } catch (Exception e) {
-            log.error("updateCountry unexpected error, id={}", id, e);
-            return new ApiResponseDTO<>(null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true);
+        if (id == null || dto == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Country ID is required",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
         }
+
+        Country country = repository.findById(id).orElse(null);
+
+        if (country == null) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Country not found",
+                    HttpStatus.NOT_FOUND,
+                    true
+            );
+        }
+
+        if (Boolean.TRUE.equals(country.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Country is deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        boolean isUpdated = false;
+
+        if (dto.getCountryName() != null &&
+                !dto.getCountryName().trim().isEmpty()) {
+
+            String name = dto.getCountryName().trim();
+
+            if (repository.existsByCountryNameIgnoreCaseAndCountryIdNot(name, id)) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Country '" + name + "' already exists",
+                        HttpStatus.CONFLICT,
+                        true
+                );
+            }
+
+            country.setCountryName(name);
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            country.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (dto.getIsForeign() != null) {
+            country.setIsForeign(dto.getIsForeign());
+            isUpdated = true;
+        }
+
+        if (dto.getTaxType() != null &&
+                !dto.getTaxType().trim().isEmpty()) {
+
+            country.setTaxType(dto.getTaxType().trim());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "No fields provided to update",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+        Country updated = repository.save(country);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Country updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
@@ -132,13 +191,12 @@ public class CountryServiceImpl implements CountryService {
     )
     public ApiResponseDTO<CountryResponseDto> getCountryById(Long countryId) {
 
-        log.info("Fetching country by id={}", countryId);
-
         try {
             Country country = repository.findById(countryId).orElse(null);
 
-            if (country == null || Boolean.FALSE.equals(country.getIsActive())) {
-                log.warn("Country not found or inactive, id={}", countryId);
+            if (country == null
+                    || Boolean.FALSE.equals(country.getIsActive())
+                    || Boolean.TRUE.equals(country.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Country not found",
@@ -146,9 +204,6 @@ public class CountryServiceImpl implements CountryService {
                         true
                 );
             }
-
-            log.info("Country found, id={}, name={}",
-                    country.getCountryId(), country.getCountryName());
 
             return new ApiResponseDTO<>(
                     mapper.toDto(country),
@@ -158,7 +213,7 @@ public class CountryServiceImpl implements CountryService {
             );
 
         } catch (Exception e) {
-            log.error("getCountryById unexpected error, id={}", countryId, e);
+            log.error("getCountryById error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -168,8 +223,6 @@ public class CountryServiceImpl implements CountryService {
         }
     }
 
-
-
     @Override
     @Cacheable(
             value = "allCountries",
@@ -177,18 +230,16 @@ public class CountryServiceImpl implements CountryService {
     )
     public ApiResponseDTO<CountryResponseDto> getAllCountries() {
 
-        log.info("Fetching all active countries");
-
         try {
             List<CountryResponseDto> countries =
-                    repository.findAll()
+                    repository.findAll(Sort.by(Sort.Direction.ASC, "countryName"))
                             .stream()
                             .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                            .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                             .map(mapper::toDto)
                             .collect(Collectors.toList());
 
             if (countries.isEmpty()) {
-                log.warn("No active countries found");
                 return new ApiResponseDTO<>(
                         null,
                         "No countries found",
@@ -197,7 +248,6 @@ public class CountryServiceImpl implements CountryService {
                 );
             }
 
-            log.info("Active countries fetched successfully, count={}", countries.size());
             return new ApiResponseDTO<>(
                     countries,
                     HttpStatus.OK,
@@ -207,7 +257,7 @@ public class CountryServiceImpl implements CountryService {
             );
 
         } catch (Exception e) {
-            log.error("getAllCountries unexpected error", e);
+            log.error("getAllCountries error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -217,30 +267,19 @@ public class CountryServiceImpl implements CountryService {
         }
     }
 
-
-
-
     @Override
     @CacheEvict(value = "countries", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "COUNTRY",
+            description = "Country id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteCountry(Long countryId) {
 
-        log.info("Deleting country, id={}", countryId);
-
         try {
-            if (countryId == null) {
-                log.warn("deleteCountry failed, countryId is null");
-                return new ApiResponseDTO<>(
-                        null,
-                        "Country id is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
             Country country = repository.findById(countryId).orElse(null);
 
             if (country == null) {
-                log.warn("deleteCountry failed, country not found, id={}", countryId);
                 return new ApiResponseDTO<>(
                         null,
                         "Country not found",
@@ -249,8 +288,7 @@ public class CountryServiceImpl implements CountryService {
                 );
             }
 
-            if (Boolean.FALSE.equals(country.getIsActive())) {
-                log.warn("Country already inactive, id={}", countryId);
+            if (Boolean.TRUE.equals(country.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
                         "Country already deleted",
@@ -260,9 +298,8 @@ public class CountryServiceImpl implements CountryService {
             }
 
             country.setIsActive(false);
+            country.setIsDeleted(true);
             repository.save(country);
-
-            log.info("Country deactivated successfully, id={}", countryId);
 
             return new ApiResponseDTO<>(
                     null,
@@ -272,7 +309,7 @@ public class CountryServiceImpl implements CountryService {
             );
 
         } catch (Exception e) {
-            log.error("deleteCountry unexpected error, id={}", countryId, e);
+            log.error("deleteCountry error", e);
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -282,71 +319,53 @@ public class CountryServiceImpl implements CountryService {
         }
     }
 
-
-
-
     @Override
-    //@Cacheable(value = "countrySearchCache", key = "#requestDto")
     public ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
             CountrySearchRequestDto requestDto) {
 
-        log.info("Searching countries with filters={}", requestDto);
+        Pageable pageable = PaginationUtil.pageable(
+                requestDto.getPage(),
+                requestDto.getSize(),
+                requestDto.getSortBy(),
+                requestDto.getSortDir()
+        );
 
-        try {
-            Pageable pageable = PaginationUtil.pageable(
-                    requestDto.getPage(),
-                    requestDto.getSize(),
-                    requestDto.getSortBy(),
-                    requestDto.getSortDir()
-            );
+        Page<Country> page = repository.searchCountries(
+                requestDto.getQuery(),
+                requestDto.getIsActive(),
+                pageable
+        );
 
-            Page<Country> countryPage = repository.searchCountries(
-                    requestDto.getCountryId(),
-                    requestDto.getCountryName(),
-                    requestDto.getTaxType(),
-                    requestDto.getIsForeign(),
-                    requestDto.getIsActive(),
-                    pageable
-            );
+        Page<CountryResponseDto> responsePage = page.map(mapper::toDto);
 
-            if (countryPage.isEmpty()) {
-                log.warn("searchCountries returned no results for filters={}", requestDto);
-                return ResponseEntity.ok(
-                        new ApiResponseDTO<>(
-                                "No countries found",
-                                HttpStatus.NOT_FOUND,
-                                false
-                        )
-                );
-            }
-
-            Page<CountryResponseDto> responsePage =
-                    countryPage.map(mapper::toDto);
-
-            log.info("Countries search successful, totalElements={}",
-                    responsePage.getTotalElements());
-
-            return ResponseEntity.ok(
-                    new ApiResponseDTO<>(
-                            responsePage,
-                            "Countries fetched successfully",
-                            HttpStatus.OK,
-                            false
-                    )
-            );
-
-        } catch (Exception e) {
-            log.error("searchCountries unexpected error, request={}", requestDto, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponseDTO<>(
-                            "Internal server error",
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            true
-                    ));
-        }
+        return ResponseEntity.ok(
+                new ApiResponseDTO<>(
+                        responsePage,
+                        "Countries fetched successfully",
+                        HttpStatus.OK,
+                        false
+                )
+        );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportCountriesExcel(HttpServletResponse response) {
 
+        try {
+            List<CountryResponseDto> countries =
+                    repository.findAll()
+                            .stream()
+                            .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                            .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
+                            .map(mapper::toDto)
+                            .collect(Collectors.toList());
 
+            CountryExcelGenerator.generateExcel(countries, response);
 
+        } catch (Exception e) {
+            log.error("exportCountriesExcel error", e);
+            throw new RuntimeException("Failed to export countries Excel", e);
+        }
+    }
 }

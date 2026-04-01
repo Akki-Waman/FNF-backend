@@ -5,6 +5,7 @@ import com.sipl.ticket.core.dao.entity.Ticket;
 import com.sipl.ticket.core.dao.entity.TicketTag;
 import com.sipl.ticket.core.dto.response.TagResponseDto;
 import com.sipl.ticket.core.dto.response.TicketTagResponseDTO;
+import com.sipl.ticket.core.dto.response.TicketsResponseDTO;
 import org.mapstruct.Context;
 import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
@@ -14,10 +15,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(
         componentModel = "spring",
-        uses = AuditUserMasterMapper.class
+        uses = {AuditUserMasterMapper.class,
+                TicketMapper.class}
 )
 public interface TicketTagMapper extends AuditEntityMapper{
 
@@ -30,4 +33,5 @@ public interface TicketTagMapper extends AuditEntityMapper{
 
     List<TicketTagResponseDTO> mapTagsListToDtoList(List<TicketTag> ticketTagList);
 
+    List<TicketTagResponseDTO> toDtoList(List<TicketTag> byTicketId);
 }

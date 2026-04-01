@@ -17,10 +17,19 @@ import java.util.Optional;
 public interface ProductSubCategoryRepository
         extends JpaRepository<ProductSubCategories, Long> {
 
-    boolean existsByProductSubCategoryNameIgnoreCase(String name);
+    @Query(
+            "SELECT CASE WHEN COUNT(psc) > 0 THEN true ELSE false END " +
+                    "FROM ProductSubCategories psc " +
+                    "WHERE LOWER(psc.productSubCategoryName) = LOWER(:name) " +
+                    "AND psc.isActive = true " +
+                    "AND psc.isDeleted = false"
+    )
+    boolean existsActiveByName(
+            @Param("name") String name
+    );
 
     boolean existsByProductSubCategoryNameIgnoreCaseAndProductSubCategoryIdNot(
-            String name, Long productSubCategoryId
+            @Param("name") String name, @Param("productSubCategoryId") Long productSubCategoryId
     );
 
     // optional & clean
@@ -29,12 +38,17 @@ public interface ProductSubCategoryRepository
     @Query(
             "SELECT psc " +
                     "FROM ProductSubCategories psc " +
-                    "WHERE psc.isActive = true " +
-                    "AND (:productSubCategoryId IS NULL OR psc.productSubCategoryId = :productSubCategoryId) "
+                    "WHERE psc.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR psc.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(psc.productSubCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(psc.productCategories.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
-    Page<ProductSubCategories> searchByProductSubCategoryId(
-            @Param("productSubCategoryId") Long productSubCategoryId,
+    Page<ProductSubCategories> searchProductSubCategories(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
 }
 

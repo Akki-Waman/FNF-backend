@@ -1,31 +1,36 @@
 package com.sipl.ticket.core.dao.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "rbac_user_role_mapping")
-public class UserRoles{
+@ToString
+@Table(name = "rbac_user_roles")
+public class UserRoles {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "user_role_id")
+    private Integer userUserRoleId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private Users user;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_user_role_id")
+    private RbacUserRoles userRole;
 
-    @Column(nullable = false)
-    private boolean isActive = false;
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
 }

@@ -34,4 +34,8 @@ public class ClientProductsRequestDTO {
     private LocalDate warrantyPeriodStartDate;
     private LocalDate warrantyPeriodEndDate;
     private Boolean isActive = true;
+    private Integer branchId;
+    private String branchName;
+    private String deliveryNumber;
+    private LocalDate deliveryDate;
 }

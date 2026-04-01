@@ -9,10 +9,7 @@ import lombok.ToString;
 @ToString
 public class CountrySearchRequestDto extends SearchRequestDto {
 
-    private Long countryId;
-    private String countryName;
-    private String taxType;
-    private Boolean isForeign;
+    private String query;
 
 
 }

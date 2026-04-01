@@ -15,12 +15,12 @@ public class CountryRequestDto {
     @Size(min = 2, max = 100, message = "Country name must be between 2 and 100 characters")
     private String countryName;
 
-    @NotBlank(message = "Tax type is mandatory")
+
     private String taxType;
 
-    @NotNull(message = "isForeign is mandatory")
+
     private Boolean isForeign;
 
-    @NotNull(message = "isActive is mandatory")
+
     private Boolean isActive;
 }

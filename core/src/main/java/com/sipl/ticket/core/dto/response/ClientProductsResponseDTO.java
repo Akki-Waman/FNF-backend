@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ClientProductsResponseDTO extends AuditDto{
 
     private Long clientProductId;
@@ -56,5 +55,11 @@ public class ClientProductsResponseDTO extends AuditDto{
     private LocalDate warrantyPeriodEndDate;
 
     private Boolean isActive = true;
+
+    private Integer branchId;
+    private String branchName;
+
+    private String deliveryNumber;
+    private LocalDate deliveryDate;
 
 }

@@ -10,14 +10,26 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstance,Integer> {
+
     @Query(
-            "SELECT w FROM WorkflowInstance w "
-                    + "WHERE (:entityType IS NULL OR w.entityType = :entityType) "
-                    + "AND (:status IS NULL OR w.workFlowStatus = :status) "
-                    + "AND (:roleId IS NULL OR w.currentStep.role.id = :roleId)")
-    Page<WorkflowInstance> findByEntityTypeAndStatusAndRole(
+            "SELECT wi FROM WorkflowInstance wi " +
+                    "JOIN wi.currentStep ws " +
+                    "LEFT JOIN ws.role r " +
+                    "LEFT JOIN wi.workflow w " +
+                    "WHERE (:entityType IS NULL OR wi.entityType = :entityType) " +
+                    "AND (:status IS NULL OR wi.workFlowStatus = :status) " +
+                    "AND ( " +
+                    "   (ws.assignmentMode = 2 AND wi.assignedUser.id = :userId) " +     // USER
+                    "   OR " +
+                    "   (ws.assignmentMode = 1 AND r.id = :roleId) " +                   // ROLE
+                    ")"
+    )
+    Page<WorkflowInstance> findByFilters(
             @Param("entityType") String entityType,
             @Param("status") Integer status,
-            @Param("roleId") Long roleId,
-            Pageable pageable);
+            @Param("userId") Long userId,
+            @Param("roleId") Integer roleId,
+            Pageable pageable
+    );
+
 }

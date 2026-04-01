@@ -12,9 +12,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -39,7 +41,7 @@ public class CountryControllerImpl implements CountryController {
 
     @Override
     public ResponseEntity<ApiResponseDTO<CountryResponseDto>> updateCountry(
-            Long countryId,
+            @PathVariable("countryId") Long countryId,
             @Valid @RequestBody CountryRequestDto requestDto) {
 
         log.info("<<Start>>updateCountry endpoint called<<Start>>");
@@ -100,6 +102,17 @@ public class CountryControllerImpl implements CountryController {
         return countryService.searchCountries(requestDto);
     }
 
+    @Override
+    public ResponseEntity<Void> exportCountriesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCountriesExcel endpoint called <<Start>>");
+
+        countryService.exportCountriesExcel(response);
+
+        log.info("<<End>> exportCountriesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
 
 
 }

@@ -19,4 +19,7 @@ public class DepartmentResponseDTO extends AuditDto {
 
     private Boolean isActive;
 
+    private Integer branchId;
+    private String branchName;
+
 }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -59,13 +60,18 @@ public class ContactControllerImpl implements ContactController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> getAllContacts() {
+    public ResponseEntity<ApiResponseDTO<ContactResponseDto>> getAllContacts(Integer branchId) {
+
         log.info("<<Start>> getAllContacts endpoint called <<Start>>");
-        ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> response =
-                ResponseEntity.ok(contactService.getAllContacts());
+
+        ResponseEntity<ApiResponseDTO<ContactResponseDto>> response =
+                ResponseEntity.ok(contactService.getAllContacts(branchId));
+
         log.info("<<End>> getAllContacts endpoint called <<End>>");
+
         return response;
     }
+
 
     @Override
     public ResponseEntity<ApiResponseDTO<PagedResponse<ContactResponseDto>>> searchContacts(
@@ -83,5 +89,16 @@ public class ContactControllerImpl implements ContactController {
         return response;
     }
 
+    @Override
+    public ResponseEntity<Void> exportContactsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportContactsExcel <<Start>>");
+
+        contactService.exportContactsExcel(response);
+
+        log.info("<<End>> exportContactsExcel <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
 
 }

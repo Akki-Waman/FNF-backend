@@ -64,7 +64,7 @@ public interface TagsController {
             response = TagResponseDto.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<TagResponseDto>> getAllTags();
+    ResponseEntity<ApiResponseDTO<TagResponseDto>> getAllTags(@RequestParam(required = false) Integer branchId);
 
     @ApiOperation(
             value = "Search tags",

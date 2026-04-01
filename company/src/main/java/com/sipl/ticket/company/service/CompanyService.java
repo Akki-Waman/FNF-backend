@@ -8,6 +8,7 @@ import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
@@ -33,4 +34,5 @@ public interface CompanyService {
     ApiResponseDTO<PagedResponse<CompanyDto>> searchCompanies(
             CompanySearchRequestDto requestDto
     );
+    void exportCompanies(HttpServletResponse response);
 }

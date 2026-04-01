@@ -14,19 +14,58 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Products, Long> {
 
-  @Query("from Products p where p.productName= :productName and p.isActive=true")
-  Optional<Products> findByProductName(@Param("productName") String productName);
+    @Query("from Products p where p.productName = :productName and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductName(@Param("productName") String productName);
 
-  @Query("from Products p where p.productId= :productId and p.isActive=true")
-  Optional<Products> findByProductId(@Param("productId") Long productId);
 
-  @Query("from Products p where p.productCode= :productCode and p.isActive=true")
-  Optional<Products> findByProductCode(@Param("productCode") String productCode);
+    @Query("from Products p where p.productId = :productId and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductId(@Param("productId") Long productId);
 
-  @Query(
+    @Query("from Products p where p.productCode = :productCode and p.isActive = true and p.isDelete = false")
+    Optional<Products> findByProductCode(@Param("productCode") String productCode);
+
+
+    @Query(
       "SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM Products p WHERE p.productCode = :productCode")
   boolean existsByProductCode(@Param("productCode") String productCode);
 
-    @Query("from Products p where p.isActive=true")
+    @Query(
+            "from Products p " +
+                    "where p.isActive = true " +
+                    "and p.isDelete = false " +
+                    "order by p.productName asc"
+    )
     List<Products> findByIsActiveTrue();
+
+
+
+    @Query(
+            "SELECT p " +
+                    "FROM Products p " +
+                    "WHERE p.isActive = true AND p.isDelete = false " +
+
+                    "AND ( :#{#productId == null || #productId.isEmpty()} = true " +
+                    "      OR p.productId IN :productId ) " +
+
+                    "AND ( :#{#brandIds == null || #brandIds.isEmpty()} = true " +
+                    "      OR p.brands.brandId IN :brandIds ) " +
+
+                    "AND ( :#{#originIds == null || #originIds.isEmpty()} = true " +
+                    "      OR p.origins.originId IN :originIds ) " +
+
+                    "AND ( :#{#categoryIds == null || #categoryIds.isEmpty()} = true " +
+                    "      OR p.productCategory.productCategoryId IN :categoryIds ) " +
+
+                    "AND ( :#{#subCategoryIds == null || #subCategoryIds.isEmpty()} = true " +
+                    "      OR p.productSubCategory.productSubCategoryId IN :subCategoryIds ) "
+    )
+    Page<Products> searchProducts(
+            @Param("productId") List<Long> productId,
+            @Param("brandIds") List<Long> brandIds,
+            @Param("originIds") List<Long> originIds,
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("subCategoryIds") List<Long> subCategoryIds,
+            Pageable pageable
+    );
+
 }

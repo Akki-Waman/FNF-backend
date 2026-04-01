@@ -50,6 +50,26 @@
         <groupId>com.sipl.ticket</groupId>
         <artifactId>core</artifactId>
     </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>activityLog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>master</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>activityLog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>workflow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketResolution</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

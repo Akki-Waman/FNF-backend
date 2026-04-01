@@ -38,6 +38,6 @@ public class AuditEntity implements Serializable {
     private LocalDateTime createdTime;
 
     @LastModifiedDate
-    @Column(name = "modified_on", updatable = false)
+    @Column(name = "modified_on")
     private LocalDateTime modifiedTime;
 }

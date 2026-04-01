@@ -1,12 +1,17 @@
 package com.sipl.ticket.task.service;
 
 import com.sipl.ticket.core.dao.entity.Users;
+import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TaskStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Service
@@ -18,8 +23,10 @@ public interface TaskService {
     );
 
     ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>> searchTasks(
-            TaskSearchRequestDto requestDto
+            TaskSearchRequestDto requestDto,
+            HttpServletRequest request
     );
+
 
     ApiResponseDTO<CombinedTaskResponseDto> updateTask(
             String taskRequestDto,
@@ -27,5 +34,20 @@ public interface TaskService {
 
     ApiResponseDTO<List<TaskStatusCountDto>> getTaskSummary(Users user);
 
+    ApiResponseDTO<Void> deleteTasks(DeleteTasksRequestDTO requestDTO);
+
+    void exportTasks(
+            ExportSearchRequestDTO request,
+            HttpServletResponse response
+    );
+
+    ApiResponseDTO<Long> getAllTaskIds();
+
+    ApiResponseDTO<TaskDto> startStopTaskTimer(Long taskId);
+
+    ApiResponseDTO<CombinedTaskResponseDto> getTaskById(Long taskId);
+
+    ApiResponseDTO<TaskDto> updateTaskStatus(
+            TaskStatusRequestDTO taskStatusRequestDTO);
 
 }

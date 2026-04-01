@@ -17,5 +17,8 @@ public class ServiceRequestDto {
     @NotBlank(message = "Service name is required")
     @Size(min = 2, max = 100, message = "Service name must be between 2 and 100 characters")
     private String serviceName;
+    private Long companyId;
+
+    private Boolean isActive;
 }
 

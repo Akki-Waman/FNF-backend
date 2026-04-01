@@ -14,23 +14,47 @@ import java.util.Optional;
 @Repository
 public interface StateRepository extends JpaRepository<State, Long> {
 
-    boolean existsByStateNameIgnoreCase(String stateName);
-
-    boolean existsByStateNameIgnoreCaseAndStateIdNot(
-            String stateName,
-            Long stateId
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM State s " +
+                    "WHERE LOWER(s.stateName) = LOWER(:stateName) " +
+                    "AND s.country.countryId = :countryId "+
+            "AND s.isDeleted = false"
+    )
+    boolean existsByStateNameAndCountry(
+            @Param("stateName") String stateName,
+            @Param("countryId") Long countryId
     );
+
+
+    @Query(
+            "SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
+                    "FROM State s " +
+                    "WHERE LOWER(s.stateName) = LOWER(:stateName) " +
+                    "AND s.stateId <> :stateId"
+    )
+    boolean existsByStateNameIgnoreCaseAndStateIdNot(
+            @Param("stateName") String stateName,
+            @Param("stateId") Long stateId
+    );
+
 
     List<State> findByIsActiveTrue();
 
     @Query(
             "SELECT s " +
                     "FROM State s " +
-                    "WHERE s.isActive = true " +
-                    "AND (:stateId IS NULL OR s.stateId = :stateId) "
+                    "WHERE s.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR s.isActive = :isActive ) " +
+                    "AND ( :search IS NULL OR :search = '' " +
+                    "   OR LOWER(s.stateName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   OR LOWER(s.country.countryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
     Page<State> searchStates(
-            @Param("stateId") Long stateId,
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+
 }

@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class ShiftSearchRequestDto extends SearchRequestDto{
-    private  Long shiftId;
+    private String query;
+    private Integer branchId;
 }

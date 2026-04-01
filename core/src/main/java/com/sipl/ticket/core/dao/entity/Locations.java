@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,4 +28,13 @@ public class Locations extends AuditEntity {
 
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnore
+    private Branches branch;
+
 }

@@ -17,4 +17,7 @@ public interface TaskFollowerRepository extends JpaRepository<TaskFollower, Long
     List<TaskFollower> findByTaskTaskId(@Param("taskId") Long taskId);
 
     List<TaskFollower> findByTask(Task task);
+
+    List<TaskFollower> findByUser_Id(Long userId);
+
 }

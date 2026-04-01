@@ -1,5 +1,6 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Unit;
 import com.sipl.ticket.core.dao.repository.UnitRepository;
 import com.sipl.ticket.core.dto.request.UnitRequestDto;
@@ -7,24 +8,24 @@ import com.sipl.ticket.core.dto.request.UnitSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.UnitDto;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.UnitExcelGenerator;
 import com.sipl.ticket.core.mapper.UnitMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.cache.annotation.Cacheable;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,11 +40,16 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "UNIT",
+            description = "Unit {0} created successfully"
+    )
     public ApiResponseDTO<UnitDto> createUnit(UnitRequestDto dto) {
         try {
             String name = dto.getUnitName().trim();
 
-            if (repository.existsByUnitNameIgnoreCase(name)) {
+            if (repository.existsActiveUnitByName(name)) {
                 return new ApiResponseDTO<>(
                         null,
                         "Unit '" + name + "' already exists",
@@ -55,6 +61,7 @@ public class UnitServiceImpl implements UnitService {
             Unit unit = new Unit();
             unit.setUnitName(name);
             unit.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
+            unit.setIsDelete(false);
 
             Unit saved = repository.save(unit);
 
@@ -75,70 +82,46 @@ public class UnitServiceImpl implements UnitService {
             );
         }
     }
-
     @Override
-    @CacheEvict(value = "units", allEntries = true)
     public ApiResponseDTO<UnitDto> updateUnit(Long unitId, UnitRequestDto dto) {
-        try {
-            if (unitId == null || dto.getUnitName() == null || dto.getUnitName().trim().isEmpty()) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
 
-            Unit unit = repository.findById(unitId).orElse(null);
-
-            if (unit == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(unit.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive unit cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getUnitName().trim();
-
-            if (repository.existsByUnitNameIgnoreCaseAndUnitIdNot(name, unitId)) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Unit '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            unit.setUnitName(name);
-            Unit updated = repository.save(unit);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Unit updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateUnit error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || unitId == null) {
+            throw new IllegalArgumentException("Unit ID is required");
         }
+
+        Unit unit = repository.findById(unitId)
+                .orElseThrow(() -> new ResourceNotFoundException("Unit"));
+
+        EntityStateValidator.checkNotDeleted(
+                unit.getIsDelete(),
+                "Unit",
+                unit.getUnitName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getUnitName() != null && !dto.getUnitName().trim().isEmpty()) {
+            unit.setUnitName(dto.getUnitName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            unit.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Unit updated = repository.save(unit);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Unit updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
@@ -146,6 +129,7 @@ public class UnitServiceImpl implements UnitService {
         try {
             return repository.findById(unitId)
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
                     .map(u -> new ApiResponseDTO<>(
                             mapper.toDto(u),
                             "Unit found",
@@ -171,6 +155,11 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     @CacheEvict(value = "units", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "UNIT",
+            description = "Unit id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteUnit(Long unitId) {
         try {
             Unit unit = repository.findById(unitId).orElse(null);
@@ -184,16 +173,18 @@ public class UnitServiceImpl implements UnitService {
                 );
             }
 
-            if (Boolean.FALSE.equals(unit.getIsActive())) {
+            if (Boolean.TRUE.equals(unit.getIsDelete())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Unit already inactive",
+                        "Unit already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
             unit.setIsActive(false);
+            unit.setIsDelete(true);
+
             repository.save(unit);
 
             return new ApiResponseDTO<>(
@@ -217,11 +208,11 @@ public class UnitServiceImpl implements UnitService {
     @Override
     @Cacheable("units")
     public ApiResponseDTO<List<UnitDto>> getAllUnits() {
-
         try {
-            List<UnitDto> list = repository.findAll()
+            List<UnitDto> list = repository.findAll(Sort.by(Sort.Direction.ASC, "unitName"))
                     .stream()
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -241,7 +232,6 @@ public class UnitServiceImpl implements UnitService {
                     false
             );
 
-
         } catch (Exception e) {
             log.error("getAllUnits error", e);
             return new ApiResponseDTO<>(
@@ -252,41 +242,60 @@ public class UnitServiceImpl implements UnitService {
             );
         }
     }
+
+
     @Override
     public void exportUnitsExcel(HttpServletResponse response) {
 
-        log.info("Exporting active units to Excel");
+        log.info("<<START>> Export Units Excel");
 
         try {
-            List<UnitDto> units = repository.findAll()
+            List<Unit> unitList = repository.findAll()
                     .stream()
                     .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
-                    .map(u -> {
-                        UnitDto dto = new UnitDto();
-                        dto.setUnitId(u.getUnitId());
-                        dto.setUnitName(u.getUnitName());
-                        dto.setIsActive(u.getIsActive());
-                        return dto;
-                    })
-                    .collect(Collectors.toList()); // Java 8 safe
+                    .filter(u -> Boolean.FALSE.equals(u.getIsDelete()))
+                    .collect(Collectors.toList());
+
+            log.info("Total active & not-deleted units fetched from DB: {}", unitList.size());
+
+            if (!unitList.isEmpty()) {
+                Unit sample = unitList.get(0);
+                log.debug("Sample Unit from DB -> id={}, createdBy={}, createdTime={}",
+                        sample.getUnitId(),
+                        sample.getCreatedBy() != null ? sample.getCreatedBy().getUserName() : "NULL",
+                        sample.getCreatedTime());
+            }
+
+            List<UnitDto> units = mapper.mapUnitListToDtoList(unitList);
+
+            log.info("Units mapped to DTOs: {}", units.size());
+
+            units.forEach(u -> {
+                log.debug("UnitDto -> id={}, createdBy={}, createdTime={}, modifiedBy={}, modifiedTime={}",
+                        u.getUnitId(),
+                        u.getCreatedBy(),
+                        u.getCreatedTime(),
+                        u.getModifiedBy(),
+                        u.getModifiedTime());
+            });
 
             UnitExcelGenerator.generateExcel(units, response);
 
-            log.info(
-                    "Units Excel export completed successfully, totalRecords={}",
-                    units.size()
-            );
+            log.info("<<SUCCESS>> Units Excel exported. Records={}", units.size());
 
         } catch (Exception e) {
-            log.error("exportUnitsExcel unexpected error", e);
+            log.error("<<ERROR>> Failed to export Units Excel", e);
             throw new RuntimeException("Failed to export units Excel", e);
         }
     }
 
-    @Override
-    public ApiResponseDTO<PagedResponse<UnitDto>> searchUnits(
-            UnitSearchRequestDto dto) {
 
+
+
+    // ================= SEARCH =================
+
+    @Override
+    public ApiResponseDTO<PagedResponse<UnitDto>> searchUnits(UnitSearchRequestDto dto) {
         try {
             Pageable pageable = PaginationUtil.pageable(
                     dto.getPage(),
@@ -295,12 +304,11 @@ public class UnitServiceImpl implements UnitService {
                     dto.getSortDir()
             );
 
-
-            Page<Unit> pageResult =
-                    repository.searchByUnitId(
-                            dto.getUnitId(),
-                            pageable
-                    );
+            Page<Unit> pageResult = repository.searchUnits(
+                    dto.getQuery(),
+                    dto.getIsActive(),
+                    pageable
+            );
 
             if (pageResult.isEmpty()) {
                 return new ApiResponseDTO<>(
@@ -344,5 +352,3 @@ public class UnitServiceImpl implements UnitService {
         }
     }
 }
-
-

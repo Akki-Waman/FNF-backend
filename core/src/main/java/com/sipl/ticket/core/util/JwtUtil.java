@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Slf4j
 @Component
 public class JwtUtil {
-    public static final String SECRET = "wn0GSOkq62sJ4IgnX8W1nNLpqpJ8apFOIX2Wv3ZszQETj1R2Zq";
+    public static final String SECRET = "n8Xq2lF0wJ7vH5pQ9yDkRmZ4Lb7GtK2QhP6rVsJ9bTxYfN3CvL8sH1wMjAzQpRfVdGzNhUkXmYtBqWnFJpLkSw==";
     private final int TOKEN_TIMEOUT = (1000 * 60 * 30);
 
 
@@ -80,24 +80,42 @@ public class JwtUtil {
 
 
     public Boolean validateToken(String token, UserDetails userDetails, HttpServletRequest request) {
-        final String username = extractUsername(token);
-        Map<String, Object> claims = extractAllClaims(token);
-        HashMap<String, Boolean> urlList = (HashMap<String, Boolean>) claims.get("urlList");
-        String requestURL = request.getRequestURI();
+        try {
+            final String username = extractUsername(token);
+            log.info("Username After extraction: {}", username);
+            Map<String, Object> claims = extractAllClaims(token);
+            HashMap<String, Boolean> urlList = (HashMap<String, Boolean>) claims.get("urlList");
 
-        AntPathMatcher pathMatcher = new AntPathMatcher();
-
-        Boolean valueMappedAgainstURL = null;
-
-        for (String urlPattern : urlList.keySet()) {
-
-            if (pathMatcher.match(urlPattern, requestURL)) {
-
-                valueMappedAgainstURL = urlList.get(urlPattern);
-
-                break;
+            String requestURL = request.getRequestURI().trim().toLowerCase();
+            if (urlList == null || urlList.isEmpty()) {
+                log.error("urlList is null or empty");
+                return false;
             }
+
+            AntPathMatcher pathMatcher = new AntPathMatcher();
+            Boolean valueMappedAgainstURL = null;
+
+            for (String urlPattern : urlList.keySet()) {
+
+                String cleanPattern = urlPattern.trim().toLowerCase();
+
+                if (pathMatcher.match(cleanPattern, requestURL)) {
+                    valueMappedAgainstURL = urlList.get(urlPattern);
+                    break;
+                }
+            }
+
+            return username.equalsIgnoreCase(userDetails.getUsername())
+                    && !isTokenExpired(token)
+                    && Boolean.TRUE.equals(valueMappedAgainstURL);
+
+        } catch (Exception e) {
+            log.error("Error validating token", e);
+            return false;
         }
-        return  (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && valueMappedAgainstURL!=null);
     }
+//    public Boolean validateTokenWithUrlCheck(String token, UserDetails userDetails) {
+//        final String username = extractUsername(token);
+//        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+//    }
 }

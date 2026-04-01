@@ -1,7 +1,10 @@
 package com.sipl.ticket.task.controller;
 
 import com.sipl.ticket.core.dao.entity.Users;
+import com.sipl.ticket.core.dto.request.DeleteTasksRequestDTO;
+import com.sipl.ticket.core.dto.request.ExportSearchRequestDTO;
 import com.sipl.ticket.core.dto.request.TaskSearchRequestDto;
+import com.sipl.ticket.core.dto.request.TaskStatusRequestDTO;
 import com.sipl.ticket.core.dto.response.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -9,7 +12,9 @@ import io.swagger.annotations.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RequestMapping("/api/v1/tasks")
@@ -30,8 +35,10 @@ public interface TaskController {
 
     @PostMapping("/search")
     ResponseEntity<ApiResponseDTO<PagedResponse<TaskCombinedSearchResponseDTO>>> searchTasks(
-            @RequestBody TaskSearchRequestDto requestDto
+            @RequestBody TaskSearchRequestDto requestDto,
+            HttpServletRequest request
     );
+
 
     @ApiOperation(
             value = "Update a existing task",
@@ -48,6 +55,50 @@ public interface TaskController {
             HttpServletRequest request
     );
 
+
+    @DeleteMapping("/delete")
+    ResponseEntity<ApiResponseDTO<Void>> deleteTasks(
+            @RequestBody DeleteTasksRequestDTO requestDTO
+    );
+
+    @ApiOperation("Export tasks in Excel / CSV / PDF")
+    @PostMapping("/tasks/export")
+    ResponseEntity<Void> exportTasks(
+            @RequestBody ExportSearchRequestDTO request,
+            HttpServletResponse response
+    );
+
+    @ApiOperation(
+            value = "Get list of all task IDs",
+            notes = "Fetches list of active task IDs"
+    )
+    @GetMapping("/tasks/ids")
+    ResponseEntity<ApiResponseDTO<Long>> getAllTaskIds();
+
+    @ApiOperation(
+            value = "Start or Stop task timer",
+            notes = "Start timer if not started, otherwise stop timer and calculate tracked hours"
+    )
+    @PostMapping("/timer/{taskId}")
+    public ResponseEntity<ApiResponseDTO<TaskDto>> startStopTaskTimer(
+            @PathVariable Long taskId
+    );
+
+    @ApiOperation(
+            value = "Get task details by task id",
+            notes = "Fetch task with assignees, followers, tags and attachments"
+    )
+    @GetMapping("/{taskId}")
+    public ResponseEntity<ApiResponseDTO<CombinedTaskResponseDto>> getTaskById(
+            @PathVariable Long taskId
+    );
+
+    @ApiOperation(
+            value = "Update existing task status",
+            notes = "Provide taskId and new status")
+    @PutMapping("/task/status")
+    public ResponseEntity<ApiResponseDTO<TaskDto>> updateTaskStatus(
+            @RequestBody TaskStatusRequestDTO taskStatusRequestDTO);
 
 
 }

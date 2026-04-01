@@ -1,5 +1,6 @@
 package com.sipl.ticket.company.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.company.service.CompanyService;
 import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.repository.CompanyRepository;
@@ -8,7 +9,10 @@ import com.sipl.ticket.core.dto.request.CompanySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CompanyDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
+import com.sipl.ticket.core.helper.CompanyExcelGenerator;
 import com.sipl.ticket.core.mapper.CompanyMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +42,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "COMPANY",
+            description = "Company {0} created successfully"
+    )
     public ApiResponseDTO<CompanyDto> saveCompany(CompaniesRequestDto dto) {
 
         try {
@@ -54,6 +64,8 @@ public class CompanyServiceImpl implements CompanyService {
             Companies company = new Companies();
             company.setCompanyName(name);
             company.setIsActive(true);
+            company.setIsDeleted(false);
+
 
             Companies saved = repository.save(company);
 
@@ -77,73 +89,52 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "COMPANY",
+            description = "Company {0} updated successfully"
+    )
     public ApiResponseDTO<CompanyDto> updateCompany(CompaniesRequestDto dto) {
 
-        try {
-            if (dto.getCompanyId() == null ||
-                    dto.getCompanyName() == null ||
-                    dto.getCompanyName().trim().isEmpty()) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company ID and name are required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Companies company = repository.findById(dto.getCompanyId()).orElse(null);
-
-            if (company == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            if (Boolean.FALSE.equals(company.getIsActive())) {
-                return new ApiResponseDTO<>(
-                        null,
-                        "Inactive company cannot be updated",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            String name = dto.getCompanyName().trim();
-
-            if (repository.existsByCompanyNameIgnoreCaseAndCompanyIdNot(
-                    name, dto.getCompanyId())) {
-
-                return new ApiResponseDTO<>(
-                        null,
-                        "Company '" + name + "' already exists",
-                        HttpStatus.CONFLICT,
-                        true
-                );
-            }
-
-            company.setCompanyName(name);
-            Companies updated = repository.save(company);
-
-            return new ApiResponseDTO<>(
-                    mapper.toDto(updated),
-                    "Company updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error("updateCompany error", e);
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getCompanyId() == null) {
+            throw new IllegalArgumentException("Company ID is required");
         }
+
+        Companies company = repository.findById(dto.getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company"));
+
+        EntityStateValidator.checkNotDeleted(
+                company.getIsDeleted(),
+                "Company",
+                company.getCompanyName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getCompanyName() != null &&
+                !dto.getCompanyName().trim().isEmpty()) {
+
+            company.setCompanyName(dto.getCompanyName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            company.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Companies updated = repository.save(company);
+
+        return new ApiResponseDTO<>(
+                mapper.toDto(updated),
+                "Company updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
     @Override
@@ -152,6 +143,7 @@ public class CompanyServiceImpl implements CompanyService {
         try {
             return repository.findById(id)
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(c -> new ApiResponseDTO<>(
                             mapper.toDto(c),
                             "Company found",
@@ -178,6 +170,11 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @CacheEvict(value = "companies", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "COMPANY",
+            description = "Company id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long id) {
 
         try {
@@ -192,16 +189,16 @@ public class CompanyServiceImpl implements CompanyService {
                 );
             }
 
-            if (Boolean.FALSE.equals(company.getIsActive())) {
+            if (Boolean.TRUE.equals(company.getIsDeleted())) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Company already inactive",
+                        "Company already deleted",
                         HttpStatus.BAD_REQUEST,
                         true
                 );
             }
 
-            company.setIsActive(false);
+            company.setIsDeleted(true);
             repository.save(company);
 
             return new ApiResponseDTO<>(
@@ -228,9 +225,10 @@ public class CompanyServiceImpl implements CompanyService {
 
         try {
             List<CompanyDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "companyId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "companyName"))
                     .stream()
                     .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -271,10 +269,13 @@ public class CompanyServiceImpl implements CompanyService {
                     dto.getSize(),
                     dto.getSortBy(),
                     dto.getSortDir()
-            );
+
+                    );
             Page<Companies> pageResult =
-                    repository.searchByCompanyId(
-                            dto.getCompanyId(),
+                    repository.searchCompanies(
+                            dto.getQuery(),
+                            dto.getBranchId(),
+                            dto.getIsActive(),
                             pageable
                     );
 
@@ -318,6 +319,32 @@ public class CompanyServiceImpl implements CompanyService {
                     true
             );
         }
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public void exportCompanies(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCompaniesExcel <<Start>>");
+
+        try {
+            List<CompanyDto> companies = repository.findAll(
+                            Sort.by(Sort.Direction.DESC, "companyId"))
+                    .stream()
+                    .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                    .filter(c -> Boolean.FALSE.equals(c.getIsDeleted()))
+                    .map(mapper::toDto)
+                    .collect(Collectors.toList());
+
+            CompanyExcelGenerator.generateExcel(companies, response);
+
+            log.info("<<Success>> exportCompaniesExcel <<Success>>");
+
+        } catch (Exception e) {
+            log.error("<<Error>> exportCompaniesExcel failed", e);
+            throw new RuntimeException("Failed to export companies excel", e);
+        }
+
+        log.info("<<End>> exportCompaniesExcel <<End>>");
     }
 
 }

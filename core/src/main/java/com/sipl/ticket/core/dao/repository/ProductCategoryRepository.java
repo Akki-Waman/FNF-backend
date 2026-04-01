@@ -16,26 +16,38 @@ import java.util.Optional;
 public interface ProductCategoryRepository
         extends JpaRepository<ProductCategories, Long> {
 
-    boolean existsByProductCategoryNameIgnoreCase(String name);
-
     boolean existsByProductCategoryNameIgnoreCaseAndProductCategoryIdNot(
-            String name, Long productCategoryId
+            @Param("name") String name, @Param("productCategoryId") Long productCategoryId
     );
 
 
     List<ProductCategories> findByIsActiveTrue();
+    
     @Query(
             "SELECT pc " +
                     "FROM ProductCategories pc " +
-                    "WHERE pc.isActive = true " +
-                    "AND (:productCategoryId IS NULL OR pc.productCategoryId = :productCategoryId) "
+                    "WHERE pc.isDeleted = false " +
+                    "AND ( :isActive IS NULL OR pc.isActive = :isActive ) " +
+                    "AND ( :search IS NULL " +
+                    "   OR LOWER(pc.productCategoryName) LIKE LOWER(CONCAT('%', :search, '%')) )"
     )
-    Page<ProductCategories> searchByProductCategoryId(
-            @Param("productCategoryId") Long productCategoryId,
+    Page<ProductCategories> searchProductCategories(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             Pageable pageable
     );
 
+    @Query(
+            "SELECT pc " +
+                    "FROM ProductCategories pc " +
+                    "WHERE LOWER(pc.productCategoryName) = LOWER(:name) " +
+                    "AND pc.isActive = :isActive " +
+                    "AND pc.isDeleted = false"
+    )
+    Optional<ProductCategories> findByNameAndIsActive(
+            @Param("name") String name,
+            @Param("isActive") boolean isActive
+    );
 
-    Optional<ProductCategories> findByProductCategoryNameIgnoreCaseAndIsActive(String name, boolean b);
 }
 

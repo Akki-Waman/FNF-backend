@@ -1,7 +1,10 @@
 package com.sipl.ticket.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Branches;
 import com.sipl.ticket.core.dao.entity.Contact;
 import com.sipl.ticket.core.dao.entity.Department;
+import com.sipl.ticket.core.dao.repository.BranchRepository;
 import com.sipl.ticket.core.dao.repository.ContactRepository;
 import com.sipl.ticket.core.dao.repository.DepartmentRepository;
 import com.sipl.ticket.core.dto.request.ContactRequestDto;
@@ -9,19 +12,28 @@ import com.sipl.ticket.core.dto.request.ContactSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
+import com.sipl.ticket.core.helper.ContactExcelGenerator;
 import com.sipl.ticket.core.mapper.ContactMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.service.ContactService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import com.sipl.ticket.core.util.PaginationUtil;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,10 +45,15 @@ public class ContactServiceImpl implements ContactService {
     private final ContactRepository contactRepository;
     private final DepartmentRepository departmentRepository;
     private final ContactMapper contactMapper;
-
+    private final BranchRepository branchRepository;
 
 
     @Override
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "CONTACT",
+            description = "Contact {0} created successfully"
+    )
     public ApiResponseDTO<ContactResponseDto> saveContact(ContactRequestDto dto) {
 
         log.info(
@@ -47,41 +64,29 @@ public class ContactServiceImpl implements ContactService {
         );
 
         try {
-            if (dto == null || dto.getContactName() == null || dto.getContactName().trim().isEmpty()) {
-                log.warn("Contact creation failed – contact name is missing");
+
+            String name = dto.getContactName().trim();
+
+            Integer branchId = dto.getBranchId().intValue();
+
+            Branches branch = branchRepository.findById(branchId)
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
+
+            if (contactRepository.existsActiveContactInDepartment(name, branchId)) {
                 return new ApiResponseDTO<>(
                         null,
-                        "Contact name is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Department department = departmentRepository.findById(dto.getDepartmentId())
-                    .orElse(null);
-
-            if (department == null) {
-                log.warn(
-                        "Contact creation failed – department not found [departmentId={}]",
-                        dto.getDepartmentId()
-                );
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department not found",
-                        HttpStatus.NOT_FOUND,
+                        "Contact '" + name + "' already exists",
+                        HttpStatus.CONFLICT,
                         true
                 );
             }
 
             Contact contact = contactMapper.toEntity(dto);
-            contact.setDepartment(department);
+            contact.setBranch(branch);
             contact.setIsActive(true);
+            contact.setIsDelete(false);
 
             Contact saved = contactRepository.save(contact);
-            log.info(
-                    "Contact created successfully [id={}]",
-                    saved.getContactId()
-            );
 
             return new ApiResponseDTO<>(
                     contactMapper.toResponseDto(saved),
@@ -99,7 +104,6 @@ public class ContactServiceImpl implements ContactService {
                     true
             );
         }
-
     }
 
 
@@ -107,85 +111,51 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ApiResponseDTO<ContactResponseDto> updateContact(ContactRequestDto dto) {
 
-        log.info(
-                "Updating contact [id={}, name={}]",
-                dto != null ? dto.getContactId() : null,
-                dto != null ? dto.getContactName() : null
-        );
-
-        try {
-            if (dto == null || dto.getContactId() == null) {
-                log.warn("Contact update failed – contact ID is missing");
-                return new ApiResponseDTO<>(
-                        null,
-                        "Contact ID is required",
-                        HttpStatus.BAD_REQUEST,
-                        true
-                );
-            }
-
-            Contact contact = contactRepository.findById(dto.getContactId())
-                    .orElse(null);
-
-            if (contact == null) {
-                log.warn(
-                        "Contact update failed – contact not found [id={}]",
-                        dto.getContactId()
-                );
-                return new ApiResponseDTO<>(
-                        null,
-                        "Contact not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            Department department = departmentRepository.findById(dto.getDepartmentId())
-                    .orElse(null);
-
-            if (department == null) {
-                log.warn(
-                        "Contact update failed – department not found [departmentId={}]",
-                        dto.getDepartmentId()
-                );
-                return new ApiResponseDTO<>(
-                        null,
-                        "Department not found",
-                        HttpStatus.NOT_FOUND,
-                        true
-                );
-            }
-
-            contactMapper.partialUpdate(dto, contact);
-            contact.setDepartment(department);
-
-            Contact updated = contactRepository.save(contact);
-            log.info(
-                    "Contact updated successfully [id={}]",
-                    updated.getContactId()
-            );
-
-
-            return new ApiResponseDTO<>(
-                    contactMapper.toResponseDto(updated),
-                    "Contact updated successfully",
-                    HttpStatus.OK,
-                    false
-            );
-
-        } catch (Exception e) {
-            log.error(
-                    "Unexpected error while updating contact [id={}]",
-                    dto != null ? dto.getContactId() : null,
-                    e
-            );
-            return new ApiResponseDTO<>(
-                    null,
-                    "Internal server error",
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    true
-            );
+        if (dto == null || dto.getContactId() == null) {
+            throw new IllegalArgumentException("Contact ID is required");
         }
+
+        Contact contact = contactRepository.findById(dto.getContactId())
+                .orElseThrow(() -> new ResourceNotFoundException("Contact"));
+
+        if (Boolean.TRUE.equals(contact.getIsDelete())) {
+            throw new IllegalStateException("Contact is deleted");
+        }
+
+        boolean isUpdated = false;
+
+        if (dto.getContactName() != null && !dto.getContactName().isBlank()) {
+            contact.setContactName(dto.getContactName().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getEmailAddress() != null && !dto.getEmailAddress().isBlank()) {
+            contact.setEmailAddress(dto.getEmailAddress().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getMobileNo() != null && !dto.getMobileNo().isBlank()) {
+            contact.setMobileNo(dto.getMobileNo().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            contact.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Contact updated = contactRepository.save(contact);
+
+        return new ApiResponseDTO<>(
+                contactMapper.toResponseDto(updated),
+                "Contact updated successfully",
+                HttpStatus.OK,
+                false
+        );
     }
 
 
@@ -196,6 +166,10 @@ public class ContactServiceImpl implements ContactService {
 
         try {
             return contactRepository.findById(contactId)
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )
                     .map(contact -> new ApiResponseDTO<>(
                             contactMapper.toResponseDto(contact),
                             "Contact found",
@@ -227,6 +201,11 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "CONTACT",
+            description = "Contact id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long contactId) {
 
         log.info("Deactivating contact [id={}]", contactId);
@@ -254,7 +233,16 @@ public class ContactServiceImpl implements ContactService {
                         true
                 );
             }
+            if (Boolean.TRUE.equals(contact.getIsDelete())) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "Contact already deleted",
+                        HttpStatus.BAD_REQUEST,
+                        true
+                );
+            }
 
+            contact.setIsDelete(true);
             contact.setIsActive(false);
             contactRepository.save(contact);
 
@@ -285,47 +273,40 @@ public class ContactServiceImpl implements ContactService {
 
 
     @Override
-    public ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts() {
+    public ApiResponseDTO<ContactResponseDto> getAllContacts(
+            Integer branchId
+    ) {
 
-        log.info("Fetching all contacts");
+        log.info("Fetching contacts, branchId={}", branchId);
 
         try {
-            List<Contact> contacts = contactRepository.findAll();
+            List<Contact> contacts =
+                    contactRepository.findContacts(branchId);
 
             if (contacts.isEmpty()) {
-                log.warn("No contacts found");
                 return new ApiResponseDTO<>(
                         null,
                         "No contacts found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
 
-            List<ContactResponseDto> response =
-                    contactMapper.toResponseDtoList(contacts);
-
-            log.info(
-                    "Contacts fetched successfully, totalRecords={}",
-                    response.size()
-            );
+            List<ContactResponseDto> list = contacts.stream()
+                    .map(contactMapper::toResponseDto)
+                    .collect(Collectors.toList());
 
             return new ApiResponseDTO<>(
-                    new PagedResponse<>(
-                            response,
-                            0,
-                            response.size(),
-                            1,
-                            response.size(),
-                            true
-                    ),
-                    "Contacts fetched successfully",
+                    list,
                     HttpStatus.OK,
-                    false
+                    "Contacts fetched successfully",
+                    false,
+                    LocalDateTime.now()
             );
 
         } catch (Exception e) {
-            log.error("Unexpected error while fetching all contacts", e);
+            log.error("getAllContacts error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -341,19 +322,36 @@ public class ContactServiceImpl implements ContactService {
             ContactSearchRequestDto dto
     ) {
 
-        log.info("Contact search initiated [query='{}']", dto.getQuery());
+        log.info("Contact search initiated [request={}]", dto);
 
         try {
-            Pageable pageable = PaginationUtil.pageable(
+
+            String sortBy = dto.getSortBy();
+
+            if ("departmentId".equalsIgnoreCase(sortBy)) {
+                sortBy = "department.departmentId";
+            } else if ("contactId".equalsIgnoreCase(sortBy)) {
+                sortBy = "contactId";
+            } else if ("contactName".equalsIgnoreCase(sortBy)) {
+                sortBy = "contactName";
+            }
+
+            Sort sort = "asc".equalsIgnoreCase(dto.getSortDir())
+                    ? Sort.by(sortBy).ascending()
+                    : Sort.by(sortBy).descending();
+
+            Pageable pageable = PageRequest.of(
                     dto.getPage(),
                     dto.getSize(),
-                    dto.getSortBy(),
-                    dto.getSortDir()
+                    sort
             );
 
             Page<Contact> pageResult =
                     contactRepository.searchContacts(
+                            dto.getContactId(),
+                            dto.getBranchId(),
                             dto.getQuery(),
+                            dto.getIsActive(),
                             pageable
                     );
 
@@ -372,7 +370,7 @@ public class ContactServiceImpl implements ContactService {
                             .map(contactMapper::toResponseDto)
                             .collect(Collectors.toList());
 
-            PagedResponse<ContactResponseDto> pagedResponse =
+            return new ApiResponseDTO<>(
                     new PagedResponse<>(
                             content,
                             pageResult.getNumber(),
@@ -380,13 +378,7 @@ public class ContactServiceImpl implements ContactService {
                             pageResult.getTotalPages(),
                             pageResult.getSize(),
                             pageResult.isLast()
-                    );
-
-            log.info("Contact search successful [totalRecords={}]",
-                    pageResult.getTotalElements());
-
-            return new ApiResponseDTO<>(
-                    pagedResponse,
+                    ),
                     "Contacts fetched successfully",
                     HttpStatus.OK,
                     false
@@ -403,6 +395,32 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void exportContactsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active contacts to Excel");
+
+        try {
+            List<ContactResponseDto> contacts = contactRepository.findByIsActiveTrue()
+                    .stream()
+                    .filter(c ->
+                            Boolean.TRUE.equals(c.getIsActive()) &&
+                                    Boolean.FALSE.equals(c.getIsDelete())
+                    )
+                    .map(contactMapper::toResponseDto)
+                    .collect(Collectors.toList());
+
+            ContactExcelGenerator.generateExcel(contacts, response);
+
+            log.info("Contacts Excel export completed successfully, totalRecords={}",
+                    contacts.size());
+
+        } catch (Exception e) {
+            log.error("exportContactsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export contacts Excel", e);
+        }
+    }
 
 
 

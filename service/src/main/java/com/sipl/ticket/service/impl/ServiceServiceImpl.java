@@ -1,15 +1,20 @@
 package com.sipl.ticket.service.impl;
 
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
+import com.sipl.ticket.core.dao.entity.Companies;
 import com.sipl.ticket.core.dao.entity.ServiceEntity;
+import com.sipl.ticket.core.dao.repository.CompanyRepository;
 import com.sipl.ticket.core.dao.repository.ServiceRepository;
 import com.sipl.ticket.core.dto.request.ServiceRequestDto;
 import com.sipl.ticket.core.dto.request.ServiceSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.core.dto.response.ServiceResponseDTO;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
 import com.sipl.ticket.core.helper.ServiceExcelGenerator;
 import com.sipl.ticket.core.mapper.ServiceMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.service.ServiceService;
 import lombok.RequiredArgsConstructor;
@@ -37,23 +42,36 @@ public class ServiceServiceImpl implements ServiceService {
 
     private final ServiceRepository repository;
     private final ServiceMapper mapper;
+    private final CompanyRepository companyRepository;
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "SERVICE",
+            description = "Service {0} created successfully"
+    )
     public ApiResponseDTO<ServiceResponseDTO> saveService(ServiceRequestDto dto) {
 
         try {
-            if (repository.existsByServiceNameIgnoreCase(dto.getServiceName())) {
+
+            Companies company = companyRepository.findById(dto.getCompanyId())
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+            if (repository.existsActiveServiceForCompany(
+                    dto.getServiceName(), dto.getCompanyId())) {
+
                 return new ApiResponseDTO<>(
                         null,
-                        "Service with name already exists",
+                        "Service '" + dto.getServiceName() + "' already exists.",
                         HttpStatus.CONFLICT,
                         true
                 );
             }
 
             ServiceEntity service = mapper.toEntity(dto);
+            service.setCompany(company);
             service.setIsActive(true);
+            service.setIsDelete(false);
 
             ServiceEntity saved = repository.save(service);
 
@@ -77,32 +95,49 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "SERVICE",
+            description = "Service {0} updated successfully"
+    )
     public ApiResponseDTO<ServiceResponseDTO> updateService(ServiceRequestDto dto) {
 
-        ServiceEntity service =
-                repository.findById(dto.getServiceId()).orElse(null);
-
-        if (service == null) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Service not found",
-                    HttpStatus.NOT_FOUND,
-                    true
-            );
+        if (dto == null || dto.getServiceId() == null) {
+            throw new IllegalArgumentException("Service ID is required");
         }
 
-        if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
-                dto.getServiceName(), dto.getServiceId())) {
+        ServiceEntity service = repository.findById(dto.getServiceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service"));
 
-            return new ApiResponseDTO<>(
-                    null,
-                    "Service name already exists",
-                    HttpStatus.CONFLICT,
-                    true
-            );
+        EntityStateValidator.checkNotDeleted(
+                service.getIsDelete(),
+                "Service",
+                service.getServiceName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getServiceName() != null && !dto.getServiceName().trim().isEmpty()) {
+            String name = dto.getServiceName().trim();
+
+            if (repository.existsByServiceNameIgnoreCaseAndServiceIdNot(
+                    name, dto.getServiceId())) {
+                throw new IllegalStateException("Service '" + name + "' already exists");
+            }
+
+            service.setServiceName(name);
+            isUpdated = true;
         }
 
-        service.setServiceName(dto.getServiceName());
+        if (dto.getIsActive() != null) {
+            service.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
         ServiceEntity saved = repository.save(service);
 
         return new ApiResponseDTO<>(
@@ -113,12 +148,17 @@ public class ServiceServiceImpl implements ServiceService {
         );
     }
 
+
+
     @Override
     @Cacheable(value = "services", key = "#serviceId")
     public ApiResponseDTO<ServiceResponseDTO> getById(Long serviceId) {
 
         return repository.findById(serviceId)
-                .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                .filter(s ->
+                        Boolean.TRUE.equals(s.getIsActive()) &&
+                                Boolean.FALSE.equals(s.getIsDelete())
+                )
                 .map(s -> new ApiResponseDTO<>(
                         mapper.toDto(s),
                         "Service found",
@@ -135,6 +175,11 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @CacheEvict(value = "services", allEntries = true)
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "SERVICE",
+            description = "Service id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Long serviceId) {
 
         ServiceEntity service = repository.findById(serviceId).orElse(null);
@@ -147,8 +192,16 @@ public class ServiceServiceImpl implements ServiceService {
                     true
             );
         }
-
+        if (Boolean.TRUE.equals(service.getIsDelete())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Service already deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
         service.setIsActive(false);
+        service.setIsDelete(true);
         repository.save(service);
 
         return new ApiResponseDTO<>(
@@ -172,8 +225,9 @@ public class ServiceServiceImpl implements ServiceService {
 
         Page<ServiceEntity> pageResult =
                 repository.searchServices(
-                        dto.getServiceId(),
+                        dto.getQuery(),
                         dto.getIsActive(),
+                        dto.getCompanyId(),
                         pageable
                 );
 
@@ -208,25 +262,29 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "services")
-    public ApiResponseDTO<ServiceResponseDTO> getAllServices() {
+    @Cacheable(
+            value = "services",
+            key = "#companyId != null ? #companyId : 'ALL'"
+    )
+    public ApiResponseDTO<ServiceResponseDTO> getAllServices(Long companyId) {
+
+        log.info("Fetching services, companyId={}", companyId);
 
         try {
-            List<ServiceResponseDTO> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "serviceId"))
-                    .stream()
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
-                    .map(mapper::toDto)
-                    .collect(Collectors.toList());
+            List<ServiceEntity> services =
+                    repository.findServices(companyId);
 
-            if (list.isEmpty()) {
+            if (services.isEmpty()) {
                 return new ApiResponseDTO<>(
                         null,
                         "No services found",
-                        HttpStatus.NOT_FOUND,
-                        true
+                        HttpStatus.OK,
+                        false
                 );
             }
+
+            List<ServiceResponseDTO> list =
+                    mapper.mapServicesListToDtoList(services);
 
             return new ApiResponseDTO<>(
                     list,
@@ -237,7 +295,9 @@ public class ServiceServiceImpl implements ServiceService {
             );
 
         } catch (Exception e) {
+
             log.error("getAllServices error", e);
+
             return new ApiResponseDTO<>(
                     null,
                     "Internal server error",
@@ -247,6 +307,8 @@ public class ServiceServiceImpl implements ServiceService {
         }
     }
 
+
+
     @Override
     @CacheEvict(value = "services", allEntries = true)
     public void exportServicesExcel(HttpServletResponse response) {
@@ -254,7 +316,10 @@ public class ServiceServiceImpl implements ServiceService {
         try {
             List<ServiceResponseDTO> services = repository.findAll()
                     .stream()
-                    .filter(s -> Boolean.TRUE.equals(s.getIsActive()))
+                    .filter(s ->
+                            Boolean.TRUE.equals(s.getIsActive()) &&
+                                    Boolean.FALSE.equals(s.getIsDelete())
+                    )
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 

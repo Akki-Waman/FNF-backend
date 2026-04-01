@@ -45,7 +45,10 @@ public interface DepartmentController {
             response = DepartmentResponseDTO.class
     )
     @GetMapping("")
-    ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments();
+    ResponseEntity<ApiResponseDTO<DepartmentResponseDTO>> getAllDepartments(
+            @RequestParam(required = false) Integer branchId
+
+    );
 
     @ApiOperation(
             value = "Search departments",

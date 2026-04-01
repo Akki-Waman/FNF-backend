@@ -12,15 +12,18 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ShiftResponseDTO {
+public class ShiftResponseDTO extends AuditDto {
 
         private Long shiftId;
         private String shiftName;
         private LocalTime startTime;
         private LocalTime endTime;
-    }
+        private Boolean isActive;
+        private Boolean isDeleted;
+        private BranchDto branch;
+}
+
 
 
 

@@ -1,6 +1,7 @@
 package com.sipl.ticket.controller.impl;
 
 import com.sipl.ticket.controller.ClientProductController;
+import com.sipl.ticket.core.dto.request.ClientProductSearchRequestDto;
 import com.sipl.ticket.core.dto.request.ClientProductsRequestDTO;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ClientProductsResponseDTO;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,11 +50,61 @@ public class ClientProductControllerImpl implements ClientProductController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts() {
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> getAllClientProducts(Integer branchId) {
         log.info("<<Start>>getAllClientProducts endpoint called<<Start>>");
         ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> response =
-                ResponseEntity.ok(clientProductService.getAllClientProducts());
+                ResponseEntity.ok(clientProductService.getAllClientProducts(branchId));
         log.info("<<End>>getAllClientProducts endpoint called<<End>>");
         return response;
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> searchClientProducts(
+            ClientProductSearchRequestDto requestDto) {
+
+        log.info("<<Start>> searchClientProducts endpoint called <<Start>>");
+
+        ResponseEntity<ApiResponseDTO<PagedResponse<ClientProductsResponseDTO>>> response =
+                ResponseEntity.ok(clientProductService.searchClientProducts(requestDto));
+
+        log.info("<<End>> searchClientProducts endpoint called <<End>>");
+        return response;
+    }
+
+    @Override
+    public ResponseEntity<Void> exportClientProductsExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportClientProductsExcel endpoint called <<Start>>");
+
+        clientProductService.exportClientProductsExcel(response);
+
+        log.info("<<End>> exportClientProductsExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
+
+    @Override
+    public ResponseEntity<ApiResponseDTO<ClientProductsResponseDTO>> getById(
+            Long clientProductId) {
+
+        log.info("<<Start>> getById <<Start>>");
+
+        ApiResponseDTO<ClientProductsResponseDTO> response =
+                clientProductService.getById(clientProductId);
+
+        log.info("<<End>> getById <<End>>");
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<Void> exportClientProducts(ClientProductSearchRequestDto requestDto, String format, HttpServletResponse response) {
+        log.info("<<START>> exportClientProducts <<START>>");
+
+        clientProductService.exportClientProducts(requestDto, format, response);
+
+        log.info("<<END>> exportClientProducts <<END>>");
+        return ResponseEntity.ok().build();
+    }
+
 }

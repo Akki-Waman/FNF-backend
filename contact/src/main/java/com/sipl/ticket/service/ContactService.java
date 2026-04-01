@@ -7,6 +7,8 @@ import com.sipl.ticket.core.dto.response.ContactResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Service
 public interface ContactService {
 
@@ -26,10 +28,13 @@ public interface ContactService {
             Long contactId
     );
 
-    ApiResponseDTO<PagedResponse<ContactResponseDto>> getAllContacts();
+    ApiResponseDTO<ContactResponseDto> getAllContacts(Integer branchId);
 
 
     ApiResponseDTO<PagedResponse<ContactResponseDto>> searchContacts(
             ContactSearchRequestDto dto
     );
+
+    void exportContactsExcel(HttpServletResponse response);
+
 }

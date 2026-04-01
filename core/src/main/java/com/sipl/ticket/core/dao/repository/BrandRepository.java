@@ -14,10 +14,22 @@ import java.util.Optional;
 @Repository
 public interface BrandRepository extends JpaRepository<Brands, Long> {
 
-    boolean existsByBrandNameIgnoreCase(String brandName);
+    boolean existsByBrandNameIgnoreCase(@Param("brandName") String brandName);
 
     boolean existsByBrandNameIgnoreCaseAndBrandIdNot(
-            String brandName, Long brandId
+           @Param("brandName") String brandName,@Param("brandId") Long brandId
+    );
+
+    @Query(
+            "SELECT CASE WHEN COUNT(b) > 0 THEN TRUE ELSE FALSE END " +
+                    "FROM Brands b " +
+                    "WHERE LOWER(b.brandName) = LOWER(:brandName) " +
+                    "AND b.company.companyId = :companyId " +
+                    "AND b.isDeleted = false"
+    )
+    boolean existsActiveBrandForCompany(
+            @Param("brandName") String brandName,
+            @Param("companyId") Long companyId
     );
 
     List<Brands> findByIsActiveTrue();
@@ -25,13 +37,35 @@ public interface BrandRepository extends JpaRepository<Brands, Long> {
     @Query("From Brands b where b.brandId = :brandId")
     Optional<Brands> findByBrandId(@Param("brandId") Long brandId);
 
-    @Query("SELECT b " +
-            "FROM Brands b " +
-            "WHERE b.isActive = true " +
-            "AND (:brandId IS NULL OR b.brandId = :brandId)")
-    Page<Brands> searchByBrandId(
-            @Param("brandId") Long brandId,
+
+    @Query(
+            "SELECT b FROM Brands b " +
+                    "WHERE b.isDeleted = false " +
+                    "AND ( :companyId IS NULL OR b.company.companyId = :companyId ) " +
+                    "AND ( :isActive IS NULL OR b.isActive = :isActive ) " +
+                    "AND ( :query IS NULL OR :query = '' " +
+                    "      OR LOWER(b.brandName) LIKE CONCAT('%', LOWER(:query), '%') )"
+    )
+    Page<Brands> searchBrands(
+            @Param("query") String query,
+            @Param("isActive") Boolean isActive,
+            @Param("companyId") Long companyId,
             Pageable pageable
     );
+
+
+    @Query(
+            "SELECT b FROM Brands b " +
+                    "WHERE b.isDeleted = false " +
+                    "AND b.isActive = true " +
+                    "AND (:companyId IS NULL OR b.company.companyId = :companyId) " +
+                    "ORDER BY b.brandName ASC"
+    )
+    List<Brands> findBrands(
+            @Param("companyId") Long companyId
+    );
+
+
+
 
 }

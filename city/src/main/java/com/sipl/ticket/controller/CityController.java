@@ -4,11 +4,14 @@ import com.sipl.ticket.core.dto.request.CityRequestDto;
 import com.sipl.ticket.core.dto.request.CitySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CityResponseDto;
+import com.sipl.ticket.core.dto.response.CitySearchResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RequestMapping("/api/v1/cities")
 @RestController
@@ -80,8 +83,11 @@ public interface CityController {
             response = CityResponseDto.class
     )
     @PostMapping("/search")
-    ResponseEntity<ApiResponseDTO<PagedResponse<CityResponseDto>>> searchCities(
+    ResponseEntity<ApiResponseDTO<PagedResponse<CitySearchResponseDto>>> searchCities(
             @RequestBody CitySearchRequestDto requestDto
     );
+
+    @GetMapping("/export")
+    ResponseEntity<Void> exportCitiesExcel(HttpServletResponse response);
 
 }

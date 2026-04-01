@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -53,7 +54,7 @@ public class ClientProducts extends AuditEntity {
     @Column(name = "serial_number", unique = true)
     private String serialNumber;
 
-    @Column(name = "imei_no", unique = true)
+    @Column(name = "imei_no", nullable = true)
     private String imeiNo;
 
     @Column(name = "mdm_asset_no", length = 50)
@@ -91,4 +92,12 @@ public class ClientProducts extends AuditEntity {
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    @JsonIgnore
+    private Branches branch;
+
+    private String deliveryNumber;
+    private LocalDate deliveryDate;
 }

@@ -1,6 +1,7 @@
 package com.sipl.ticket.faq.service.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.Faq;
 import com.sipl.ticket.core.dao.entity.FaqCategory;
 import com.sipl.ticket.core.dao.repository.FaqRepository;
@@ -76,7 +77,11 @@ public class FaqServiceImpl implements FaqService {
         }
     }
 
-
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "FAQ",
+            description = "FAQ  {0} created successfully"
+    )
     public String saveFile(MultipartFile file) throws IOException {
         log.info("inside save file" + file);
         if (file != null && !file.isEmpty()) {
@@ -227,6 +232,12 @@ public class FaqServiceImpl implements FaqService {
             );
         }
     }
+
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "FAQ",
+            description = "FAQ {0} updated successfully"
+    )
     public ApiResponseDTO<String> deleteById(Integer faqId) {
         try {
             Optional<Faq> faq = faqRepository.findById(faqId);

@@ -1,5 +1,6 @@
 package com.sipl.ticket.core.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,16 +30,24 @@ public class Contact extends AuditEntity {
     @Column(name = "mobile_no", length = 15)
     private String mobileNo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "department_id",          // FK column in contact table
-            referencedColumnName = "department_id",
-            foreignKey = @ForeignKey(name = "fk_contact_department")
-    )
-    private Department department;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(
+//            name = "department_id",          // FK column in contact table
+//            referencedColumnName = "department_id",
+//            foreignKey = @ForeignKey(name = "fk_contact_department")
+//    )
+//    private Department department;
 
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "is_delete", nullable = false)
+    private Boolean isDelete;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    @JsonIgnore
+    private Branches branch;
 }

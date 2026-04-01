@@ -27,4 +27,13 @@ public class Brands extends AuditEntity {
 
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Companies company;
+
+
 }

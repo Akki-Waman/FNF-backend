@@ -7,6 +7,8 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,7 @@ public class Ticket extends AuditEntity{
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ClientProducts clientProducts;
 
-    @Column(name = "priority", nullable = false)
+    @Column(name = "priority")
     private Integer priority;
 
     @ManyToOne
@@ -66,7 +68,7 @@ public class Ticket extends AuditEntity{
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ServiceEntity service;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     @JoinColumn(name = "assigned_to")
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Users assignedTo;
@@ -105,5 +107,73 @@ public class Ticket extends AuditEntity{
             orphanRemoval = true
     )
     private List<TicketAttachment> attachments = new ArrayList<>();
+
+    @Column(name = "search_text", columnDefinition = "TEXT")
+    private String searchText;
+
+    /* ===== RESPONSE (REPLY) SLA ===== */
+
+    @Column(name = "response_sla_hours")
+    private Double responseSlaHours;
+
+    @Column(name = "response_time_hours")
+    private Double responseTimeHours;
+
+    @Column(name = "response_within_sla")
+    private Boolean responseWithinSla;
+
+    @Column(name = "response_penalty_time")
+    private Double responsePenaltyTime;
+
+    @Column(name = "response_penalty_percentage")
+    private BigDecimal responsePenaltyPercentage;
+
+    @Column(name = "response_datetime")
+    private LocalDateTime responseDateTime;
+
+    /* ===== RESOLUTION (CLOSE) SLA ===== */
+
+    @Column(name = "resolution_sla_hours")
+    private Double resolutionSlaHours;
+
+    @Column(name = "resolution_time_hours")
+    private Double resolutionTimeHours;
+
+    @Column(name = "resolution_within_sla")
+    private Boolean resolutionWithinSla;
+
+    @Column(name = "resolution_penalty_time")
+    private Double resolutionPenaltyTime;
+
+    @Column(name = "resolution_penalty_percentage")
+    private BigDecimal resolutionPenaltyPercentage;
+
+    @Column(name = "resolution_datetime")
+    private LocalDateTime resolutionDateTime;
+
+    @Column(name = "penalty_allowed")
+    private Boolean penaltyAllowed;
+
+    @ManyToOne
+    @JoinColumn(name = "shift_id")
+    private Shift shift;
+
+    @Column(name = "is_approver_required")
+    private Boolean isApproverRequired = false;
+
+    @Column(name="is_approved")
+    private Boolean isApproved;
+
+    @OneToMany(mappedBy = "ticket")
+    private List<Task> tasks;
+
+    @Column(name = "customer_complaint_datetime")
+    private LocalDateTime customerComplaintDateTime;
+
+    @Column(name = "use_contact_fk")
+    private Boolean useContactFk;
+
+    @OneToMany(mappedBy = "ticket", fetch = FetchType.LAZY)
+    private List<TicketNote> notes;
 
 }

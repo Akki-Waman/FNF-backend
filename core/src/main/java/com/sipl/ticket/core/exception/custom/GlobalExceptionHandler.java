@@ -3,6 +3,7 @@ package com.sipl.ticket.core.exception.custom;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.ErrorDetail;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -175,6 +176,27 @@ public class GlobalExceptionHandler {
         response.setTimestamp(LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(EntityDeletedException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleEntityDeleted(
+            EntityDeletedException ex) {
+
+        return ResponseEntity.badRequest().body(
+                new ApiResponseDTO<>(
+                        null,
+                        ex.getMessage(),
+                        HttpStatus.BAD_REQUEST,
+                        true
+                )
+        );
+    }
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponseDTO<?>> handleBadRequest(BadRequestException ex) {
+        return new ResponseEntity<>(
+                new ApiResponseDTO<>(null, ex.getMessage(), HttpStatus.BAD_REQUEST, true),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
 }

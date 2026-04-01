@@ -11,4 +11,6 @@ public class CityRequestDto {
     private Long cityId;
     private String cityName;
     private Long stateId;
+    private Boolean isActive;
+
 }

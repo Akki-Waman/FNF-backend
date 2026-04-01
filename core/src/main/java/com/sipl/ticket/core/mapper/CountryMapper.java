@@ -33,5 +33,7 @@ public interface CountryMapper {
     @Mapping(target = "isActive", source = "isActive")
     @Mapping(target = "createdTime", source = "createdTime")
     @Mapping(target = "modifiedTime", source = "modifiedTime")
+    @Mapping(target = "createdBy", source = "createdBy.userName")
+    @Mapping(target = "modifiedBy", source = "modifiedBy.userName")
     CountryResponseDto toDto(Country entity);
 }

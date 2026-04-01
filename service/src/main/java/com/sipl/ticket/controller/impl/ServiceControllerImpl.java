@@ -76,12 +76,12 @@ public class ServiceControllerImpl implements ServiceController {
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices() {
+    public ResponseEntity<ApiResponseDTO<ServiceResponseDTO>> getAllServices(Long companyId) {
 
         log.info("<<Start>> getAllServices <<Start>>");
 
         ApiResponseDTO<ServiceResponseDTO> response =
-                serviceService.getAllServices();
+                serviceService.getAllServices(companyId);
 
         log.info("<<End>> getAllServices <<End>>");
         return ResponseEntity.ok(response);

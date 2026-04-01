@@ -49,11 +49,15 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-envers</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.itextpdf</groupId>-->
+<!--            <artifactId>itextpdf</artifactId>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itextpdf</artifactId>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
         </dependency>
-
         <!-- Swagger -->
         <dependency>
             <groupId>io.springfox</groupId>
@@ -76,6 +80,14 @@
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>report</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketResolution</artifactId>
         </dependency>
 
         <dependency>
@@ -152,6 +164,10 @@
         </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
+            <artifactId>slaRuleDetail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
             <artifactId>location</artifactId>
         </dependency>
         <dependency>
@@ -186,15 +202,41 @@
             <groupId>com.sipl.ticket</groupId>
             <artifactId>task</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.sipl.ticket</groupId>-->
-<!--            <artifactId>redisCache</artifactId>-->
-<!--        </dependency>-->
-
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketResponse</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>slaprofile</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>dataFetch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketNote</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>redisCache</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.sipl.ticket</groupId>
             <artifactId>android</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>dashboard</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>workflow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sipl.ticket</groupId>
+            <artifactId>ticketReminder</artifactId>
         </dependency>
         <dependency>
             <groupId>com.opencsv</groupId>

@@ -42,6 +42,8 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
+                // ✅ THIS LINE FIXES THE ERROR
+                .ignoredParameterTypes(Void.class)
                 .securityContexts(Collections.singletonList(securityContext()))
                 .securitySchemes(Collections.singletonList(apiKey()))
                 .select()
@@ -49,6 +51,7 @@ public class SwaggerConfig {
                 .paths(PathSelectors.any())
                 .build();
     }
+
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder().title("Vendor Collaboration Application APIs")

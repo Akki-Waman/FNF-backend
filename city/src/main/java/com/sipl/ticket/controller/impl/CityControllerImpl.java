@@ -5,12 +5,16 @@ import com.sipl.ticket.core.dto.request.CityRequestDto;
 import com.sipl.ticket.core.dto.request.CitySearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.CityResponseDto;
+import com.sipl.ticket.core.dto.response.CitySearchResponseDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
 import com.sipl.ticket.service.CityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +33,7 @@ public class CityControllerImpl implements CityController {
                 cityService.saveCity(dto);
 
         log.info("<<End>> saveCity <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -42,7 +46,7 @@ public class CityControllerImpl implements CityController {
                 cityService.updateCity(dto);
 
         log.info("<<End>> updateCity <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -55,7 +59,7 @@ public class CityControllerImpl implements CityController {
                 cityService.getById(cityId);
 
         log.info("<<End>> getCityById <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -68,7 +72,7 @@ public class CityControllerImpl implements CityController {
                 cityService.deleteById(cityId);
 
         log.info("<<End>> deleteCity <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -80,7 +84,7 @@ public class CityControllerImpl implements CityController {
                 cityService.getAllCities();
 
         log.info("<<End>> getAllCities <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
@@ -93,18 +97,31 @@ public class CityControllerImpl implements CityController {
                 cityService.getCitiesByStateId(stateId);
 
         log.info("<<End>> getCitiesByStateId <<End>>");
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO<PagedResponse<CityResponseDto>>> searchCities(
+    public ResponseEntity<ApiResponseDTO<PagedResponse<CitySearchResponseDto>>> searchCities(
             CitySearchRequestDto requestDto) {
 
         log.info("Searching cities with request: {}", requestDto);
 
-        ApiResponseDTO<PagedResponse<CityResponseDto>> response =
+        ApiResponseDTO<PagedResponse<CitySearchResponseDto>> response =
                 cityService.searchCities(requestDto);
 
-        return ResponseEntity.status(response.getStatus()).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @Override
+    public ResponseEntity<Void> exportCitiesExcel(HttpServletResponse response) {
+
+        log.info("<<Start>> exportCitiesExcel endpoint called <<Start>>");
+
+        cityService.exportCitiesExcel(response);
+
+        log.info("<<End>> exportCitiesExcel endpoint called <<End>>");
+
+        return ResponseEntity.ok().build();
+    }
+
 }

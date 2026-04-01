@@ -1,5 +1,6 @@
 package com.sipl.ticket.branch.service.impl;
 
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.branch.service.BranchService;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
@@ -8,19 +9,22 @@ import com.sipl.ticket.core.dto.request.BranchSearchRequestDto;
 import com.sipl.ticket.core.dto.response.ApiResponseDTO;
 import com.sipl.ticket.core.dto.response.BranchDto;
 import com.sipl.ticket.core.dto.response.PagedResponse;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
+import com.sipl.ticket.core.helper.BranchExcelGenerator;
 import com.sipl.ticket.core.mapper.BranchMapper;
+import com.sipl.ticket.core.util.EntityStateValidator;
 import com.sipl.ticket.core.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +41,12 @@ public class BranchServiceImpl implements BranchService {
     private final CityRepository cityRepository;
     private final CompanyRepository companyRepository;
 
-    @Override
+
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "BRANCH",
+            description = "Branch {0} created successfully"
+    )
     public ApiResponseDTO<BranchDto> saveBranch(BranchRequestDto dto) {
         try {
 
@@ -59,6 +68,7 @@ public class BranchServiceImpl implements BranchService {
             }
 
             branch.setIsActive(true);
+            branch.setIsDeleted(false);
             branch.setIsClient(false);
 
             Branches saved = repository.save(branch);
@@ -121,53 +131,75 @@ public class BranchServiceImpl implements BranchService {
     }
 
     @Override
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "BRANCH",
+            description = "Branch {0} updated successfully"
+    )
     public ApiResponseDTO<BranchDto> updateBranch(BranchRequestDto dto) {
 
-        Branches branch = repository.findById(dto.getBranchId()).orElse(null);
-
-        if (branch == null) {
-            return new ApiResponseDTO<>(
-                    null,
-                    "Branch not found",
-                    HttpStatus.NOT_FOUND,
-                    true
-            );
+        if (dto == null || dto.getBranchId() == null) {
+            throw new IllegalArgumentException("Branch ID is required");
         }
 
-        if (repository.existsByEmailIgnoreCaseAndBranchIdNot(
-                dto.getEmail(), dto.getBranchId())) {
+        Branches branch = repository.findById(dto.getBranchId())
+                .orElseThrow(() -> new ResourceNotFoundException("Branch"));
 
-            return new ApiResponseDTO<>(
-                    null,
-                    "Email already exists",
-                    HttpStatus.CONFLICT,
-                    true
-            );
+        EntityStateValidator.checkNotDeleted(
+                branch.getIsDeleted(),
+                "Branch",
+                branch.getBranchName()
+        );
+
+        boolean isUpdated = false;
+
+        if (dto.getBranchName() != null &&
+                !dto.getBranchName().trim().isEmpty()) {
+
+            branch.setBranchName(dto.getBranchName().trim());
+            isUpdated = true;
         }
 
-        mapper.partialUpdate(dto, branch);
+        if (dto.getEmail() != null &&
+                !dto.getEmail().trim().isEmpty()) {
 
-        ApiResponseDTO<BranchDto> validationError =
-                validateAndSetRelations(branch, dto);
-
-        if (validationError != null) {
-            return validationError;
+            branch.setEmail(dto.getEmail().trim());
+            isUpdated = true;
         }
-        Branches saved = repository.save(branch);
+
+        if (dto.getAddress() != null &&
+                !dto.getAddress().trim().isEmpty()) {
+
+            branch.setAddress(dto.getAddress().trim());
+            isUpdated = true;
+        }
+
+        if (dto.getIsActive() != null) {
+            branch.setIsActive(dto.getIsActive());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new IllegalArgumentException("No fields provided to update");
+        }
+
+        Branches updated = repository.save(branch);
 
         return new ApiResponseDTO<>(
-                mapper.toDto(saved),
+                mapper.toDto(updated),
                 "Branch updated successfully",
                 HttpStatus.OK,
                 false
         );
     }
 
+
     @Override
     public ApiResponseDTO<BranchDto> getById(Integer branchId) {
 
         return repository.findById(branchId)
                 .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                 .map(b -> new ApiResponseDTO<>(
                         mapper.toDto(b),
                         "Branch found",
@@ -182,7 +214,11 @@ public class BranchServiceImpl implements BranchService {
                 ));
     }
 
-    @Override
+    @ActivityLoggable(
+            action = "DELETE",
+            module = "BRANCH",
+            description = "Branch Id {0} deleted successfully"
+    )
     public ApiResponseDTO<String> deleteById(Integer branchId) {
 
         Branches branch = repository.findById(branchId).orElse(null);
@@ -196,7 +232,18 @@ public class BranchServiceImpl implements BranchService {
             );
         }
 
+        if (Boolean.TRUE.equals(branch.getIsDeleted())) {
+            return new ApiResponseDTO<>(
+                    null,
+                    "Branch already deleted",
+                    HttpStatus.BAD_REQUEST,
+                    true
+            );
+        }
+
+
         branch.setIsActive(false);
+        branch.setIsDeleted(true);
         repository.save(branch);
 
         return new ApiResponseDTO<>(
@@ -218,8 +265,8 @@ public class BranchServiceImpl implements BranchService {
                 dto.getSortDir()
         );
         Page<Branches> pageResult = repository.searchBranches(
+                dto.getQuery(),
                 dto.getBranchId(),
-                dto.getCompanyId(),
                 dto.getIsActive(),
                 pageable
         );
@@ -259,9 +306,10 @@ public class BranchServiceImpl implements BranchService {
 
         try {
             List<BranchDto> list = repository
-                    .findAll(Sort.by(Sort.Direction.DESC, "branchId"))
+                    .findAll(Sort.by(Sort.Direction.ASC, "branchName"))
                     .stream()
                     .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                    .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
                     .map(mapper::toDto)
                     .collect(Collectors.toList());
 
@@ -292,5 +340,31 @@ public class BranchServiceImpl implements BranchService {
             );
         }
     }
+        @Override
+        @Transactional(readOnly = true)
+        public void exportBranchesCsv(HttpServletResponse response) {
+
+            log.info("Exporting active branches to Excel");
+
+            try {
+                List<BranchDto> branches = repository.findAll()
+                        .stream()
+                        .filter(b -> Boolean.TRUE.equals(b.getIsActive()))
+                        .filter(b -> Boolean.FALSE.equals(b.getIsDeleted()))
+                        .map(mapper::toDto)
+                        .collect(Collectors.toList());
+
+                BranchExcelGenerator.generateExcel(branches, response);
+
+                log.info("Branches Excel export completed successfully, totalRecords={}",
+                        branches.size());
+
+            } catch (Exception e) {
+                log.error("exportBranchesCsv unexpected error", e);
+                throw new RuntimeException("Failed to export branches Excel", e);
+            }
+        }
+
+
 
 }

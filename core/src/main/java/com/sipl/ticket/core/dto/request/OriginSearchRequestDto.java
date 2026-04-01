@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class OriginSearchRequestDto extends SearchRequestDto {
-    private Long originId;
+    private String query;
 }

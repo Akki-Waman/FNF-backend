@@ -21,9 +21,9 @@ public class LocationRequestDTO {
     @Schema(description = "Location Name", example = "Warehouse A")
     private String locationName;
 
-    @NotNull(message = "Location Type is required")
-    @Schema(description = "Location Type (e.g., Warehouse, Yard, Gate, Dock)", example = "Yard")
-    private String locationType;
+//    @NotNull(message = "Location Type is required")
+//    @Schema(description = "Location Type (e.g., Warehouse, Yard, Gate, Dock)", example = "Yard")
+//    private String locationType;
 
 
 //    @DecimalMin(value = "0.0", inclusive = false, message = "Location Capacity must be greater than 0")
@@ -33,6 +33,10 @@ public class LocationRequestDTO {
 
     private Boolean isActive;
 
+    private Integer branchId;
+
+    private Integer branchName;
     //private Long plantId;
+
 
 }

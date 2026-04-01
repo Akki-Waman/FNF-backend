@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TaskSearchRequestDto extends SearchRequestDto {
     private Long ticketId;
-    private String query; //taskId or taskName subject search
+    private String query;
+    private Integer taskStatus;
 }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 public interface CountryService {
@@ -25,4 +26,6 @@ public interface CountryService {
 
     ResponseEntity<ApiResponseDTO<Page<CountryResponseDto>>> searchCountries(
             CountrySearchRequestDto requestDto);
+    void exportCountriesExcel(HttpServletResponse response);
+
 }

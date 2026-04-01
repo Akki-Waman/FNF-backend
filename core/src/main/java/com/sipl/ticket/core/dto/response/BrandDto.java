@@ -12,6 +12,10 @@ public class BrandDto extends AuditDto {
 
     private String brandName;
 
+    private Long companyId;
+
+    private String companyName;
+
     private Boolean isActive;
 }
 

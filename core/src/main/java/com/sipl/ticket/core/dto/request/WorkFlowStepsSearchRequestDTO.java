@@ -7,14 +7,12 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkFlowStepsSearchRequestDTO {
-    private Integer pageNum;
-    private Integer pageSize;
+public class WorkFlowStepsSearchRequestDTO extends SearchRequestDto{
     private Integer workFlowStepsId;
     private Integer workFlowDefinitionId;
     private Integer stepOrder;
     private String stepName;
-    private Long roleId;
+    private Integer roleId;
     private Boolean isFinalApprover;
 
 }

@@ -24,8 +24,9 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws WHERE ws.workflowDefinition.workFlowDefinitionId = :definitionId AND ws.stepOrder = :nextOrder")
-    Optional<WorkflowSteps> findNextStep(
-            @Param("definitionId") Integer definitionId, @Param("nextOrder") Integer nextOrder);
+    List<WorkflowSteps> findNextStep(
+            @Param("definitionId") Integer definitionId,
+            @Param("nextOrder") Integer nextOrder);
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws WHERE ws.stepOrder = :stepOrder AND ws.workflowDefinition.workFlowDefinitionId = :workflowDefinitionId AND ws.role.id = :roleId")
@@ -42,7 +43,7 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
     boolean existsByStepOrderAndWorkflowDefinitionIdAndRoleId(
             @Param("stepOrder") Integer stepOrder,
             @Param("workflowDefinitionId") Integer workflowDefinitionId,
-            @Param("roleId") Long roleId);
+            @Param("roleId") Integer roleId);
 
     @Query(
             "SELECT ws FROM WorkflowSteps ws "
@@ -54,7 +55,7 @@ public interface WorkflowStepsRepository extends JpaRepository<WorkflowSteps,Int
                     + "AND (:workFlowStepsId IS NULL OR ws.workFlowStepsId = :workFlowStepsId)")
     Page<WorkflowSteps> findBySearchQuery(
             @Param("stepName") String stepName,
-            @Param("roleId") Long roleId,
+            @Param("roleId") Integer roleId,
             @Param("finalApprover") Boolean finalApprover,
             @Param("stepOrder") Integer stepOrder,
             @Param("workFlowDefinitionId") Integer workFlowDefinitionId,

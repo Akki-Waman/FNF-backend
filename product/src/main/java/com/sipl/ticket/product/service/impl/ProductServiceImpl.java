@@ -4,25 +4,43 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sipl.client.dms.dto.response.DmsResponseDTO;
 import com.sipl.client.dms.dto.response.DocumentDTO;
 import com.sipl.client.dms.impl.DocumentClientService;
+import com.sipl.ticket.activityLog.annotation.ActivityLoggable;
 import com.sipl.ticket.core.dao.entity.*;
 import com.sipl.ticket.core.dao.repository.*;
 import com.sipl.ticket.core.dto.request.NewProductRequestDto;
+import com.sipl.ticket.core.dto.request.ProductSearchRequestDto;
 import com.sipl.ticket.core.dto.response.*;
 import com.sipl.ticket.core.exception.custom.CustomException;
 import com.sipl.ticket.core.exception.custom.ProductNotFoundException;
+import com.sipl.ticket.core.exception.custom.ResourceNotFoundException;
+import com.sipl.ticket.core.helper.ProductExcelGenerator;
 import com.sipl.ticket.core.mapper.ProductMapper;
+import com.sipl.ticket.core.mapper.ProductUnitMapper;
+import com.sipl.ticket.core.util.ApkUtil;
 import com.sipl.ticket.core.util.FileUploadUtil;
+import com.sipl.ticket.core.util.PaginationUtil;
 import com.sipl.ticket.product.service.ProductService;
 import com.sipl.ticket.product.service.ProductUnitService;
+import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Cacheable;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,18 +64,31 @@ public class ProductServiceImpl implements ProductService {
     private final OriginsRepository originsRepository;
     private final AccountRepository accountRepository;
     private final ProductUnitRepository productUnitRepository;
+    private final BranchRepository branchesRepository;
+    private final ProductUnitMapper productUnitMapper;
+    private final ApkUtil apkUtil;
+    private final ExcelReaderService excelReaderService;
+
 
     @Override
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
+    @ActivityLoggable(
+            action = "CREATE",
+            module = "PRODUCT",
+            description = "Product {0} created successfully"
+    )
     public ApiResponseDTO<CombinedProductResponseDto> saveOrUpdateProduct(
             Long productId, String productRequestDtoString, MultipartFile multipartFile) {
+        log.info("Incoming productRequestDtoString = {}", productRequestDtoString);
+
         try {
             NewProductRequestDto productRequestDto =
                     objectMapper.readValue(productRequestDtoString, NewProductRequestDto.class);
+            log.info("product dto"+productRequestDto);
             if (productRequestDto.getProductDto() == null) {
                 return new ApiResponseDTO<>(
-                        null,null,null,"Product DTO cannot be null.", HttpStatus.BAD_REQUEST, true,null, null);
+                        null, null, null, "Product DTO cannot be null.", HttpStatus.BAD_REQUEST, true, null, null);
             }
             if (productRequestDto.getProductDto().getProductCategory() == null) {
                 return new ApiResponseDTO<>(
@@ -71,18 +102,6 @@ public class ProductServiceImpl implements ProductService {
                         null
                 );
 
-            }
-            if (productRequestDto.getProductDto().getDefaultTaxHead() == null) {
-                return new ApiResponseDTO<>(
-                        null,
-                        null,
-                        null,
-                        "GST slab cannot be null.",
-                        HttpStatus.BAD_REQUEST,
-                        true,
-                        null,
-                        null
-                );
             }
             validateProductUnits(
                     productRequestDto.getProductUnitDtoList(), productRequestDto.getProductDto().getUnit());
@@ -111,6 +130,8 @@ public class ProductServiceImpl implements ProductService {
                 }
                 log.info("productToBeSaved");
                 productToBeSaved = productMapper.toEntity(productRequestDto.getProductDto());
+                productToBeSaved.setIsDelete(false);
+                productToBeSaved.setIsActive(true);
                 String generatedCode = generateProductCode(productRequestDto, productToBeSaved);
                 log.info("generatedCode");
                 productToBeSaved.setProductCode(generatedCode);
@@ -124,6 +145,9 @@ public class ProductServiceImpl implements ProductService {
                                         () ->
                                                 new ProductNotFoundException(
                                                         "No Product found for the specified productId"));
+                if (Boolean.TRUE.equals(existingProductFromDb.getIsDelete())) {
+                    throw new IllegalArgumentException("Cannot update deleted product");
+                }
 
                 log.info("existingProductFromDb");
 
@@ -342,6 +366,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void setNestedEntities(Products productEntity, ProductDto productDto) {
+
         if (productDto.getProductSubCategory() != null) {
 
             Optional<ProductSubCategories> productSubCategoryFromDb =
@@ -401,8 +426,12 @@ public class ProductServiceImpl implements ProductService {
 //    }
 
 
-
     @Override
+    @ActivityLoggable(
+            action = "UPDATE",
+            module = "PRODUCT",
+            description = "Product id {0} updated successfully"
+    )
     public ApiResponseDTO<ProductDto> deleteProduct(Long productId) {
         try {
 
@@ -427,6 +456,7 @@ public class ProductServiceImpl implements ProductService {
             }
             Products productsToSave = products.get();
             productsToSave.setIsActive(false);
+            productsToSave.setIsDelete(true);
             Products product = productRepository.save(productsToSave);
             ProductDto productToBeSent = productMapper.toDto(product);
             return new ApiResponseDTO<>(
@@ -455,47 +485,41 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ApiResponseDTO<ProductDto> getByProduct(Long productId) {
+    public ApiResponseDTO<CombinedProductResponseDto> getByProduct(Long productId) {
+        log.info("Get product request received. productId={}", productId);
         try {
-            Optional<Products> products = productRepository.findByProductId(productId);
-            if (!products.isPresent()) {
-                return new ApiResponseDTO<>(
-                        null,
-                        null,
-                        null,
-                        "Product not found",
-                        HttpStatus.NOT_FOUND,
-                        true,
-                        null,
-                        null
-                );
+            Products product = productRepository.findByProductId(productId)
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException("Product not found")
+                    );
+            ProductDto productDto = productMapper.toDto(product);
+            CombinedProductResponseDto combinedDto =
+                    new CombinedProductResponseDto();
+            combinedDto.setProductDto(productDto);
+            log.debug("Fetching product units for productId={}", productId);
+            List<ProductUnit> productUnits =
+                    productUnitRepository.findAllByProductId(productId);
+            if (productUnits != null && !productUnits.isEmpty()) {
+                List<ProductUnitDto> productUnitDtos =
+                        productUnitMapper.toProductUnitDtoList(productUnits);
+                combinedDto.setProductUnitDtoList(productUnitDtos);
             }
-            Products productsToSave = products.get();
-            ProductDto productToBeSent = productMapper.toDto(productsToSave);
-
+            log.info("Product fetched successfully with units. productId={}", productId);
             return new ApiResponseDTO<>(
-                    productToBeSent,
-                    null,
-                    null,
-                    "Product found successfully.",
-                    HttpStatus.FOUND,
-                    true,
-                    null,
-                    null
+                    combinedDto,
+                    "Product found successfully",
+                    HttpStatus.OK,
+                    false
             );
         } catch (Exception e) {
-            log.error("Exception occured at getByProduct. ", e);
+            log.error("Error occurred while fetching product. productId={}", productId, e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
         }
-        return new ApiResponseDTO<>(
-                null,
-                null,
-                null,
-                "INTERNAL_SERVER_ERROR",
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                true,
-                null,
-                null
-        );
     }
 
     @Override
@@ -538,6 +562,192 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public ApiResponseDTO<PagedResponse<CombinedProductResponseDto>> searchProducts(
+            ProductSearchRequestDto dto) {
 
+        try {
+            log.info("Searching products with request: {}", dto);
+
+            String sortBy = dto.getSortBy();
+            if ("productSubCategoryId".equalsIgnoreCase(sortBy)) {
+                sortBy = "productSubCategory.productSubCategoryId";
+            } else if ("productCategoryId".equalsIgnoreCase(sortBy)) {
+                sortBy = "productCategory.productCategoryId";
+            } else if ("brandId".equalsIgnoreCase(sortBy)) {
+                sortBy = "brands.brandId";
+            } else if ("originId".equalsIgnoreCase(sortBy)) {
+                sortBy = "origins.originId";
+            } else if ("branchId".equalsIgnoreCase(sortBy)) {
+                sortBy = "branch.branchId";
+            } else {
+                sortBy = "productId";
+            }
+
+            Pageable pageable = PageRequest.of(
+                    dto.getPage(),
+                    dto.getSize(),
+                    Sort.by(
+                            Sort.Direction.fromString(dto.getSortDir()),
+                            sortBy
+                    )
+            );
+
+            Page<Products> pageResult = productRepository.searchProducts(
+                    dto.getProductId(),
+                    dto.getBrandId(),
+                    dto.getOriginId(),
+                    dto.getProductCategoryId(),
+                    dto.getProductSubCategoryId(),
+                    pageable
+            );
+
+            if (pageResult.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        null,
+                        "No products found",
+                        HttpStatus.NOT_FOUND,
+                        true
+                );
+            }
+
+            List<CombinedProductResponseDto> responseList =
+                    pageResult.getContent().stream()
+                            .map(product -> {
+                                CombinedProductResponseDto combinedDto =
+                                        new CombinedProductResponseDto();
+                                ProductDto productDto = productMapper.toDto(product);
+                                combinedDto.setProductDto(productDto);
+                                List<ProductUnit> productUnits =
+                                        productUnitRepository.findAllByProductId(productDto.getProductId());
+                                if (!productUnits.isEmpty()) {
+                                    List<ProductUnitDto> productUnitDtos =
+                                            productUnitMapper.toProductUnitDtoList(productUnits);
+                                    combinedDto.setProductUnitDtoList(productUnitDtos);
+                                }
+                                return combinedDto;
+                            })
+                            .collect(Collectors.toList());
+
+            return new ApiResponseDTO<>(
+                    new PagedResponse<>(
+                            responseList,
+                            pageResult.getNumber(),
+                            pageResult.getTotalElements(),
+                            pageResult.getTotalPages(),
+                            pageResult.getSize(),
+                            pageResult.isLast()
+                    ),
+                    "Products fetched successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+            log.error("searchProducts error", e);
+            return new ApiResponseDTO<>(
+                    null,
+                    "Internal server error",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public void exportProductsExcel(HttpServletResponse response) {
+
+        log.info("Exporting active products to Excel");
+
+        try {
+            List<ProductDto> products = productRepository.findByIsActiveTrue()
+                    .stream()
+                    .map(productMapper::toDto)
+                    .collect(Collectors.toList());
+
+            ProductExcelGenerator.generateExcel(products, response);
+
+            log.info("Products Excel export completed successfully, totalRecords={}",
+                    products.size());
+
+        } catch (Exception e) {
+            log.error("exportProductsExcel unexpected error", e);
+            throw new RuntimeException("Failed to export products Excel", e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadProductFile(String fileName) {
+        log.info("<<START>> downloadProductFile <<START>>");
+
+        Resource file = apkUtil.downloadFile(fileName);
+
+        if (file == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileName + "\"")
+                .body(file);
+    }
+
+
+    @Override
+    public ApiResponseDTO<Void> processExcelFile(MultipartFile file) {
+        File tempFile = null;
+
+        try {
+            if (file == null || file.isEmpty()) {
+                return new ApiResponseDTO<>(
+                        "Uploaded file is empty",
+                        HttpStatus.BAD_REQUEST,
+                        true);
+            }
+
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String filePath =
+                    tempDir + File.separator + file.getOriginalFilename();
+
+            tempFile = new File(filePath);
+            file.transferTo(tempFile);
+
+            excelReaderService.readAndSaveExcelData(filePath);
+
+            return new ApiResponseDTO<>(
+                    "Excel file processed successfully",
+                    HttpStatus.OK,
+                    false);
+
+        } catch (RuntimeException e) {
+            log.error("Runtime exception in processExcelFile", e);
+            return new ApiResponseDTO<>(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true);
+
+        } catch (Exception e) {
+            log.error("Exception in processExcelFile", e);
+            return new ApiResponseDTO<>(
+                    "An error occurred while processing the Excel file",
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true);
+
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                boolean deleted = tempFile.delete();
+                if (!deleted) {
+                    log.warn(
+                            "Failed to delete temporary file: {}",
+                            tempFile.getAbsolutePath());
+                }
+            }
+        }
+    }
 
 }
+
