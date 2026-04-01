@@ -6,5 +6,7 @@ import lombok.Data;
 public class ReminderRecipientRequestDto {
 
     private Long userId;
-    private String channelType; // EMAIL, WHATSAPP
+    private String channelType;
+    private boolean isActive;
+    private boolean isDeleted;
 }
