@@ -27,4 +27,15 @@ public class ReminderControllerImpl implements ReminderController {
 
         return ResponseEntity.ok(reminderService.createReminder(request));
     }
+    @Override
+    public ResponseEntity<ApiResponseDTO<ReminderResponseDto>> updateReminder(
+            Long reminderId,
+            ReminderCreateRequestDto request) {
+
+        log.info("updateReminder called id={}", reminderId);
+
+        return ResponseEntity.ok(
+                reminderService.updateReminder(reminderId, request)
+        );
+    }
 }

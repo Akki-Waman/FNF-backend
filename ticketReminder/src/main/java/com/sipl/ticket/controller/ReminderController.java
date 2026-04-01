@@ -20,4 +20,9 @@ public interface ReminderController {
     ResponseEntity<ApiResponseDTO<ReminderResponseDto>> createReminder(
             @Valid @RequestBody ReminderCreateRequestDto request
     );
+    @PutMapping("/update/{reminderId}")
+    ResponseEntity<ApiResponseDTO<ReminderResponseDto>> updateReminder(
+            @PathVariable Long reminderId,
+            @Valid @RequestBody ReminderCreateRequestDto request
+    );
 }
