@@ -291,4 +291,179 @@ public class ReminderServiceImpl implements ReminderService {
 
         return 0;
     }
+    @Override
+    public ApiResponseDTO<ReminderResponseDto> updateReminder(
+            Long reminderId,
+            ReminderCreateRequestDto request) {
+
+        log.info("Update reminder started id={}", reminderId);
+
+        try {
+
+            TicketReminder existing = reminderRepository
+                    .findByTicketReminderIdAndIsDeletedFalse(reminderId)
+                    .orElseThrow(() -> new RuntimeException("Reminder not found or deleted"));
+
+            if (Boolean.TRUE.equals(existing.getIsDeleted())) {
+                log.warn("Attempt to update deleted reminder id={}", reminderId);
+                throw new RuntimeException("Deleted reminder cannot be updated");
+            }
+
+            log.debug("Existing reminder fetched id={}, currentState={}", reminderId, existing);
+
+            normalizeRequest(request);
+
+            if (request.getReminderTime() != null || request.getTicketId() != null) {
+                validateDuplicateForUpdate(reminderId, request);
+            }
+
+            if (request.getReminderTime() != null) {
+                validateDateOverlapForUpdate(reminderId, request);
+            }
+
+            if (request.getReminderTime() != null) {
+                existing.setReminderTime(request.getReminderTime());
+                existing.setNextRunTime(request.getReminderTime());
+                existing.setRetryCount(0);
+                log.debug("Reminder time updated id={}, newTime={}", reminderId, request.getReminderTime());
+            }
+
+            if (request.getIsRecurring() != null) {
+                existing.setIsRecurring(request.getIsRecurring());
+            }
+
+            if (Boolean.TRUE.equals(request.getIsRecurring())) {
+
+                Integer interval = resolveRecurrenceInterval(request);
+                existing.setRecurrenceInterval(interval);
+
+                if (request.getRecurrenceEndTime() != null) {
+                    existing.setRecurrenceEndTime(request.getRecurrenceEndTime());
+                }
+
+            } else if (Boolean.FALSE.equals(request.getIsRecurring())) {
+
+                existing.setRecurrenceInterval(null);
+                existing.setRecurrenceEndTime(null);
+            }
+
+            if (request.getIsActive() != null) {
+                existing.setIsActive(request.getIsActive());
+                log.debug("Reminder active flag updated id={}, isActive={}", reminderId, request.getIsActive());
+            }
+
+            if (request.getRecipients() != null) {
+
+                existing.getRecipients().clear();
+
+                List<ReminderRecipient> recipients = buildRecipients(request, existing);
+                existing.getRecipients().addAll(recipients);
+
+                log.debug("Recipients updated id={}, count={}", reminderId, recipients.size());
+            }
+
+            TicketReminder saved = reminderRepository.save(existing);
+
+            log.info("Reminder updated successfully id={}", saved.getTicketReminderId());
+
+            MasterContext context = buildMasterContext();
+            ReminderResponseDto response = reminderMapper.toDto(saved, context);
+
+            return new ApiResponseDTO<>(
+                    response,
+                    "Reminder updated successfully",
+                    HttpStatus.OK,
+                    false
+            );
+
+        } catch (Exception e) {
+
+            log.error("Update reminder failed id={}, error={}", reminderId, e.getMessage(), e);
+
+            return new ApiResponseDTO<>(
+                    null,
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    true
+            );
+        }
+    }
+
+    private void validateDuplicateForUpdate(Long reminderId,
+                                            ReminderCreateRequestDto request) {
+
+        Long count = reminderRepository.countDuplicateForUpdate(
+                request.getTicketId(),
+                request.getReminderTime(),
+                reminderId
+        );
+
+        if (count != null && count > 0) {
+            throw new RuntimeException("Reminder already exists for same ticket and time");
+        }
+    }
+
+    private void validateDateOverlapForUpdate(Long reminderId,
+                                              ReminderCreateRequestDto request) {
+
+        List<TicketReminder> existingList = reminderRepository
+                .findByTicket_TicketIdAndIsDeletedFalse(request.getTicketId())
+                .stream()
+                .filter(r -> !r.getTicketReminderId().equals(reminderId))
+                .collect(Collectors.toList());
+
+        LocalDateTime newStart = request.getReminderTime();
+        LocalDateTime newEnd = request.getRecurrenceEndTime();
+        boolean isNewRecurring = Boolean.TRUE.equals(request.getIsRecurring());
+
+        for (TicketReminder r : existingList) {
+
+            LocalDateTime existingStart = r.getReminderTime();
+            LocalDateTime existingEnd = r.getRecurrenceEndTime();
+            boolean isExistingRecurring = Boolean.TRUE.equals(r.getIsRecurring());
+
+            if (isNewRecurring && isExistingRecurring) {
+
+                if (existingEnd == null || newEnd == null) continue;
+
+                boolean overlap =
+                        (newStart.isBefore(existingEnd) || newStart.isEqual(existingEnd)) &&
+                                (newEnd.isAfter(existingStart) || newEnd.isEqual(existingStart));
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+
+            } else if (!isNewRecurring && isExistingRecurring) {
+
+                if (existingEnd == null) continue;
+
+                boolean overlap =
+                        !newStart.isBefore(existingStart) &&
+                                !newStart.isAfter(existingEnd);
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+
+            } else if (isNewRecurring && !isExistingRecurring) {
+
+                if (newEnd == null) continue;
+
+                boolean overlap =
+                        !existingStart.isBefore(newStart) &&
+                                !existingStart.isAfter(newEnd);
+
+                if (overlap) {
+                    throw new RuntimeException("Reminder already exists in given date range");
+                }
+
+            } else {
+
+                if (newStart.isEqual(existingStart)) {
+                    throw new RuntimeException("Reminder already exists for same time");
+                }
+            }
+        }
+    }
 }
