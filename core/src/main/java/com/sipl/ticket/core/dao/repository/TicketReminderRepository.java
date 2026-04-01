@@ -16,7 +16,7 @@ public interface TicketReminderRepository extends JpaRepository<TicketReminder, 
             "AND r.status = 0 " +
             "AND r.isActive = true " +
             "AND r.isDeleted = false")
-    List<TicketReminder> findDueReminders(@Param("now") LocalDateTime now);
+    List<TicketReminder> findDueReminders(@Param("now") LocalDateTime reminderTime);
 
     @Query("SELECT r FROM TicketReminder r " +
             "LEFT JOIN FETCH r.recipients rec " +
