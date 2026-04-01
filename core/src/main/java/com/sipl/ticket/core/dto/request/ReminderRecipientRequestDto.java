@@ -7,6 +7,6 @@ public class ReminderRecipientRequestDto {
 
     private Long userId;
     private String channelType;
-    private boolean isActive;
-    private boolean isDeleted;
+    private Boolean isActive;
+    private Boolean isDeleted;
 }
