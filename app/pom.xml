@@ -1,67 +1,56 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://www.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.sipl.ticket</groupId>
-        <artifactId>vendor</artifactId>
+        <groupId>com.ensf.fnf</groupId>
+        <artifactId>fnf</artifactId>
         <version>1.0.0</version>
     </parent>
 
     <artifactId>app</artifactId>
-    <packaging>war</packaging>
 
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-    </properties>
     <dependencies>
-        <!-- Spring Boot & SQL Server -->
+
+        <!-- Core Module -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <groupId>com.ensf.fnf</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.ensf.fnf</groupId>
+            <artifactId>familyMembers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- MySQL -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-envers</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.itextpdf</groupId>-->
-<!--            <artifactId>itextpdf</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>com.github.librepdf</groupId>
-            <artifactId>openpdf</artifactId>
-            <version>1.3.30</version>
-        </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- Lombok -->
@@ -71,203 +60,58 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Swagger -->
         <dependency>
-            <groupId>net.bull.javamelody</groupId>
-            <artifactId>javamelody-spring-boot-starter</artifactId>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ensf.fnf</groupId>
+            <artifactId>auth</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
 
         <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>report</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ticketResolution</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>master</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>shift</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>activityLog</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>branch</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>unit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>country</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>faq</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>faqCategory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>department</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>contact</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>product</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>tags</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>brand</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>origins</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>shift</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>company</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>slaRuleDetail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>location</artifactId>
-        </dependency>
-        <dependency>
-        <groupId>com.sipl.ticket</groupId>
-        <artifactId>clientProducts</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>city</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>state</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.sipl.ticket</groupId>-->
-<!--            <artifactId>clientProducts</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ProductCategory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ProductSubCategory</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ticket</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>task</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ticketResponse</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>slaprofile</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>dataFetch</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ticketNote</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>redisCache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>android</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>dashboard</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>workflow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.ticket</groupId>
-            <artifactId>ticketReminder</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-            <version>5.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sipl.client</groupId>
+            <groupId>com.ensf.fnf</groupId>
             <artifactId>notification</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.7.0</version>
+            <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-            <version>2.2.4.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>
