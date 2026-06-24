@@ -1,57 +1,48 @@
 package com.ensf.fnf.core.dao.entity;
 
-import com.ensf.fnf.core.enums.Gender;
-import com.ensf.fnf.core.enums.RelationshipType;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "family_members")
+@Table(name = "family_member")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FamilyMemberEntity
-        extends AuditEntity {
+public class FamilyMemberEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "family_member_id")
+    private Long familyMemberId;
 
-    private String fullName;
+    @ManyToOne
+    @JoinColumn(name = "family_id")
+    private FamilyEntity family;
 
-    @Enumerated(EnumType.STRING)
-    private RelationshipType relationshipType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(length = 10)
-    private Gender gender;
-
-    private LocalDate birthDate;
-
-    private LocalDate anniversaryDate;
-
-    private Boolean married;
-
-    private String spouseName;
-
-    private LocalDate spouseBirthDate;
-
-    private LocalDate spouseAnniversaryDate;
-
-    private String mobileNumber;
-
-    private String email;
-
-    private Boolean active;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "user_id",
-            nullable = false
-    )
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @Column(name = "member_name")
+    private String memberName;
+
+    @Column(name = "relationship_type")
+    private String relationshipType;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_member_id")
+    private FamilyMemberEntity parentMember;
 }

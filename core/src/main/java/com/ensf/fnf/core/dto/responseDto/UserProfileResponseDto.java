@@ -1,38 +1,41 @@
 package com.ensf.fnf.core.dto.responseDto;
 
-import com.ensf.fnf.core.enums.Gender;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileResponseDto {
 
-    private Long id;
+    @JsonProperty("user_id")
+    private Long userId;
 
-    private String fullName;
+    @JsonProperty("email_address")
+    private String emailAddress;
 
-    private String email;
-
+    @JsonProperty("mobile_number")
     private String mobileNumber;
 
-    private Gender gender;
+    @JsonProperty("first_name")
+    private String firstName;
 
+    @JsonProperty("last_name")
+    private String lastName;
+
+    @JsonProperty("gender")
+    private String gender;
+
+    @JsonProperty("date_of_birth")
     private LocalDate dateOfBirth;
 
-    private Boolean married;
+    @JsonProperty("profile_photo_url")
+    private String profilePhotoUrl;
 
-    private String spouseName;
-
-    private LocalDate spouseDob;
-
-    private LocalDate anniversaryDate;
-
-    private boolean profileComplete;
+    @JsonProperty("profile_completed")
+    private Boolean profileCompleted;
 }

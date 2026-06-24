@@ -1,6 +1,7 @@
 package com.ensf.fnf.core.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -20,14 +21,14 @@ public class JwtTokenHelper {
             24 * 60 * 60;
 
     public String generateToken(
-            String email) {
+            String username) {
 
         Map<String, Object> claims =
                 new HashMap<>();
 
         return doGenerateToken(
                 claims,
-                email
+                username
         );
     }
 
@@ -36,8 +37,12 @@ public class JwtTokenHelper {
             String subject) {
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
+                .setClaims(
+                        claims
+                )
+                .setSubject(
+                        subject
+                )
                 .setIssuedAt(
                         new Date()
                 )
@@ -59,6 +64,15 @@ public class JwtTokenHelper {
         return getClaimFromToken(
                 token,
                 Claims::getSubject
+        );
+    }
+
+    public Date getExpirationDateFromToken(
+            String token) {
+
+        return getClaimFromToken(
+                token,
+                Claims::getExpiration
         );
     }
 
@@ -95,21 +109,38 @@ public class JwtTokenHelper {
 
         try {
 
-            Jwts.parserBuilder()
-                    .setSigningKey(
-                            getSigningKey()
-                    )
-                    .build()
-                    .parseClaimsJws(
+            Claims claims =
+                    getAllClaimsFromToken(
                             token
                     );
 
-            return true;
+            return !claims
+                    .getExpiration()
+                    .before(
+                            new Date()
+                    );
 
         } catch (Exception ex) {
 
             return false;
         }
+    }
+
+    public boolean validateToken(
+            String token,
+            String username) {
+
+        String tokenUsername =
+                getUsernameFromToken(
+                        token
+                );
+
+        return tokenUsername.equals(
+                username
+        )
+                && validateToken(
+                token
+        );
     }
 
     private SecretKey getSigningKey() {

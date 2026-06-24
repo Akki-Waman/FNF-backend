@@ -10,11 +10,5 @@ import java.util.List;
 @Service
 public interface FamilyMemberService {
 
-    CommonApiResponse<FamilyMemberResponseDto> addFamilyMember(AddFamilyMemberRequestDto dto);
 
-    CommonApiResponse<List<FamilyMemberResponseDto>> getFamilyMembers();
-
-    CommonApiResponse<FamilyMemberResponseDto> updateFamilyMember(Long id, AddFamilyMemberRequestDto dto);
-
-    CommonApiResponse<String> deleteFamilyMember(Long id);
 }

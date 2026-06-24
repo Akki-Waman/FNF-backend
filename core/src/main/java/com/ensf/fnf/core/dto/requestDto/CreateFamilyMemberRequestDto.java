@@ -1,28 +1,31 @@
 package com.ensf.fnf.core.dto.requestDto;
 
-import com.ensf.fnf.core.enums.RelationshipType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateFamilyMemberRequestDto {
 
-    private String fullName;
+    @JsonProperty("member_name")
+    private String memberName;
 
-    private RelationshipType relationshipType;
+    @JsonProperty("relationship_type")
+    private String relationshipType;
 
-    private LocalDate birthDate;
+    @JsonProperty("gender")
+    private String gender;
 
-    private Boolean married;
+    @JsonProperty("date_of_birth")
+    private LocalDate dateOfBirth;
 
-    private LocalDate anniversaryDate;
+    @JsonProperty("profile_photo_url")
+    private String profilePhotoUrl;
 
-    private String spouseName;
-
-    private LocalDate spouseBirthDate;
+    @JsonProperty("parent_member_id")
+    private Long parentMemberId;
 }

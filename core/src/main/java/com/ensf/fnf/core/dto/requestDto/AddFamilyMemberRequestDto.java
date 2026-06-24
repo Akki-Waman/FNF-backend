@@ -1,7 +1,5 @@
 package com.ensf.fnf.core.dto.requestDto;
 
-import com.ensf.fnf.core.enums.Gender;
-import com.ensf.fnf.core.enums.RelationshipType;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,9 +9,9 @@ public class AddFamilyMemberRequestDto {
 
     private String fullName;
 
-    private RelationshipType relationshipType;
+    private String relationshipType;
 
-    private Gender gender;
+    private String gender;
 
     private LocalDate birthDate;
 

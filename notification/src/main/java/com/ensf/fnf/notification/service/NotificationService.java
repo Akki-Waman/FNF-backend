@@ -5,7 +5,8 @@ import com.ensf.fnf.core.dao.entity.UserEntity;
 public interface NotificationService {
     void sendWelcomeEmail(
             String email,
-            String fullName,
+            String firstName,
+            String lastName,
             String mobileNumber
     );
     void sendAccountCreatedNotification(
@@ -14,7 +15,8 @@ public interface NotificationService {
 
     void sendWelcomeSms(
             String mobileNumber,
-            String fullName
+            String firstName,
+            String lastName
     );
 
     void sendOtpEmail(

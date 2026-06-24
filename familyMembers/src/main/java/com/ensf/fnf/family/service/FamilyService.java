@@ -7,13 +7,7 @@ import com.ensf.fnf.core.dto.responseDto.HomeDashboardResponseDto;
 
 import java.util.List;
 
-public interface FamilyMemberService {
+public interface FamilyService {
 
-    CommonApiResponse<String> createFamilyTree(
-            CreateFamilyTreeRequestDto dto
-    );
 
-    CommonApiResponse<List<FamilyMemberResponseDto>> getFamilyMembers();
-
-    CommonApiResponse<HomeDashboardResponseDto> getDashboard();
 }

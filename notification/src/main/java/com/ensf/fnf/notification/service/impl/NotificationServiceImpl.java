@@ -31,26 +31,28 @@ public class NotificationServiceImpl
         try {
 
             sendWelcomeEmail(
-                    user.getEmail(),
-                    user.getFullName(),
-                    user.getMobileNumber()
-            );
+                    user.getEmailAddress(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getMobileNumber());
 
             sendWelcomeSms(
                     user.getMobileNumber(),
-                    user.getFullName()
+                    user.getFirstName(),
+                    user.getLastName()
+
             );
 
             log.info(
                     "Account created notification sent successfully. userId={}",
-                    user.getId()
+                    user.getUserId()
             );
 
         } catch (Exception ex) {
 
             log.error(
                     "Error while sending account created notification. userId={}",
-                    user.getId(),
+                    user.getUserId(),
                     ex
             );
 
@@ -68,7 +70,8 @@ public class NotificationServiceImpl
     @Override
     public void sendWelcomeEmail(
             String email,
-            String fullName,
+            String firstName,
+            String lastName,
             String mobileNumber) {
 
         log.info(
@@ -79,7 +82,8 @@ public class NotificationServiceImpl
 
             emailHelper.sendWelcomeEmail(
                     email,
-                    fullName,
+                    firstName,
+                    lastName,
                     mobileNumber
             );
 
@@ -107,7 +111,8 @@ public class NotificationServiceImpl
     @Override
     public void sendWelcomeSms(
             String mobileNumber,
-            String fullName) {
+            String firstName,
+            String lastName) {
 
         log.info(
                 "<<START>> sendWelcomeSms service <<START>>"
@@ -117,7 +122,8 @@ public class NotificationServiceImpl
 
             smsHelper.sendWelcomeSms(
                     mobileNumber,
-                    fullName
+                    firstName,
+                    lastName
             );
 
             log.info(

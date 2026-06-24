@@ -29,8 +29,9 @@ public class NotificationFacadeImpl
         try {
 
             emailHelper.sendWelcomeEmail(
-                    user.getEmail(),
-                    user.getFullName(),
+                    user.getEmailAddress(),
+                    user.getFirstName(),
+                    user.getLastName(),
                     user.getMobileNumber()
             );
 
@@ -38,7 +39,7 @@ public class NotificationFacadeImpl
 
             log.error(
                     "Welcome email failed. userId={}",
-                    user.getId(),
+                    user.getUserId(),
                     ex
             );
         }
@@ -47,21 +48,22 @@ public class NotificationFacadeImpl
 
             smsHelper.sendWelcomeSms(
                     user.getMobileNumber(),
-                    user.getFullName()
+                    user.getFirstName(),
+                    user.getLastName()
             );
 
         } catch (Exception ex) {
 
             log.error(
                     "Welcome SMS failed. userId={}",
-                    user.getId(),
+                    user.getUserId(),
                     ex
             );
         }
 
         log.info(
                 "Account created notification processed successfully. userId={}",
-                user.getId()
+                user.getUserId()
         );
 
         log.info(
@@ -81,7 +83,7 @@ public class NotificationFacadeImpl
         try {
 
             emailHelper.sendOtpEmail(
-                    user.getEmail(),
+                    user.getEmailAddress(),
                     otp
             );
 
@@ -89,7 +91,7 @@ public class NotificationFacadeImpl
 
             log.error(
                     "OTP email failed. userId={}",
-                    user.getId(),
+                    user.getUserId(),
                     ex
             );
         }
@@ -105,14 +107,14 @@ public class NotificationFacadeImpl
 
             log.error(
                     "OTP SMS failed. userId={}",
-                    user.getId(),
+                    user.getUserId(),
                     ex
             );
         }
 
         log.info(
                 "OTP notification processed successfully. userId={}",
-                user.getId()
+                user.getUserId()
         );
 
         log.info(

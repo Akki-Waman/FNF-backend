@@ -1,23 +1,35 @@
 package com.ensf.fnf.core.mapper;
 
 import com.ensf.fnf.core.dao.entity.UserEntity;
-import com.ensf.fnf.core.dto.requestDto.CreateAccountRequestDto;
-import com.ensf.fnf.core.dto.responseDto.UserResponseDto;
-import org.mapstruct.*;
+import com.ensf.fnf.core.dto.requestDto.CreateProfileRequestDto;
+import com.ensf.fnf.core.dto.responseDto.UserProfileResponseDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = ReportingPolicy.IGNORE
+        nullValuePropertyMappingStrategy =
+                NullValuePropertyMappingStrategy.IGNORE
 )
 public interface UserMapper {
 
     UserEntity toEntity(
-            CreateAccountRequestDto dto
+            CreateProfileRequestDto dto
     );
 
-    UserResponseDto toDto(
+    UserProfileResponseDto toDto(
             UserEntity entity
+    );
+
+    List<UserProfileResponseDto> toDtoList(
+            List<UserEntity> entities
+    );
+
+    void partialUpdate(
+            CreateProfileRequestDto dto,
+            @MappingTarget UserEntity entity
     );
 }

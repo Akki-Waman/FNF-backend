@@ -17,7 +17,8 @@ public class EmailHelper {
 
     public void sendWelcomeEmail(
             String email,
-            String fullName,
+            String firstName,
+            String lastName,
             String mobileNumber) {
 
         log.info(
@@ -44,7 +45,8 @@ public class EmailHelper {
 
             String html =
                     buildWelcomeTemplate(
-                            fullName,
+                            firstName,
+                            lastName,
                             email,
                             mobileNumber
                     );
@@ -82,7 +84,8 @@ public class EmailHelper {
     }
 
     private String buildWelcomeTemplate(
-            String fullName,
+            String firstName,
+            String lastName,
             String email,
             String mobileNumber) {
 
@@ -96,7 +99,9 @@ public class EmailHelper {
                 + "<div style='padding:30px;'>"
 
                 + "<p>Dear <b>"
-                + fullName
+                + firstName
+                + " "
+                + lastName
                 + "</b>,</p>"
 
                 + "<p>Your account has been successfully created.</p>"

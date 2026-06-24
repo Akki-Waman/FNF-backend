@@ -1,6 +1,5 @@
 package com.ensf.fnf.core.dto.requestDto;
 
-import com.ensf.fnf.core.enums.Gender;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -8,9 +7,11 @@ import java.time.LocalDate;
 @Data
 public class UpdateUserProfileRequestDto {
 
-    private String fullName;
+    private String firstName;
 
-    private Gender gender;
+    private String lastName;
+
+    private String gender;
 
     private LocalDate dateOfBirth;
 

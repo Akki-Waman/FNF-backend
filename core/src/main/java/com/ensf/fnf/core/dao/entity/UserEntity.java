@@ -1,54 +1,70 @@
 package com.ensf.fnf.core.dao.entity;
 
-import com.ensf.fnf.core.enums.Gender;
+import com.ensf.fnf.core.enums.AccountStatus;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity extends AuditEntity {
+@Builder
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(nullable = false)
-    private String fullName;
+    @Column(name = "email_address", unique = true)
+    private String emailAddress;
 
-    @Column(unique = true)
-    private String email;
-
-    @Column(unique = true)
+    @Column(name = "mobile_number", unique = true)
     private String mobileNumber;
 
-    private boolean verified;
+    @Column(name = "first_name")
+    private String firstName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 10)
-    private Gender gender;
+    @Column(name = "last_name")
+    private String lastName;
 
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    private Boolean married;
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
 
-    private String spouseName;
+    @Column(name = "profile_completed")
+    private Boolean profileCompleted;
 
-    private LocalDate spouseDob;
+    @Column(name = "mobile_verified")
+    private Boolean mobileVerified;
 
-    private LocalDate anniversaryDate;
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
 
-    /**
-     * Returns true when the user has completed their profile
-     * (gender and DOB are set after the post-login profile setup step).
-     */
-    public boolean isProfileComplete() {
-        return gender != null && dateOfBirth != null;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status")
+    private AccountStatus accountStatus;
+
+    @Column(name = "active")
+    private Boolean active;
+
+    @CreationTimestamp
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
+
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    private LocalDateTime updatedDate;
 }

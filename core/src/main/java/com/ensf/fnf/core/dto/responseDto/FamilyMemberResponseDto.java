@@ -1,7 +1,6 @@
 package com.ensf.fnf.core.dto.responseDto;
 
-import com.ensf.fnf.core.enums.Gender;
-import com.ensf.fnf.core.enums.RelationshipType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,29 +14,24 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class FamilyMemberResponseDto {
 
-    private Long id;
+    @JsonProperty("family_member_id")
+    private Long familyMemberId;
 
-    private String fullName;
+    @JsonProperty("member_name")
+    private String memberName;
 
-    private RelationshipType relationshipType;
+    @JsonProperty("relationship_type")
+    private String relationshipType;
 
-    private Gender gender;
+    @JsonProperty("gender")
+    private String gender;
 
-    private LocalDate birthDate;
+    @JsonProperty("date_of_birth")
+    private LocalDate dateOfBirth;
 
-    private LocalDate anniversaryDate;
+    @JsonProperty("profile_photo_url")
+    private String profilePhotoUrl;
 
-    private Boolean married;
-
-    private String spouseName;
-
-    private LocalDate spouseBirthDate;
-
-    private LocalDate spouseAnniversaryDate;
-
-    private String mobileNumber;
-
-    private String email;
-
-    private Boolean active;
+    @JsonProperty("parent_member_id")
+    private Long parentMemberId;
 }

@@ -17,23 +17,4 @@ public class FamilyMemberControllerImpl implements FamilyMemberController {
 
     private final FamilyMemberService familyMemberService;
 
-    @Override
-    public ResponseEntity<CommonApiResponse<FamilyMemberResponseDto>> addFamilyMember(AddFamilyMemberRequestDto dto) {
-        return ResponseEntity.ok(familyMemberService.addFamilyMember(dto));
-    }
-
-    @Override
-    public ResponseEntity<CommonApiResponse<List<FamilyMemberResponseDto>>> getFamilyMembers() {
-        return ResponseEntity.ok(familyMemberService.getFamilyMembers());
-    }
-
-    @Override
-    public ResponseEntity<CommonApiResponse<FamilyMemberResponseDto>> updateFamilyMember(Long id, AddFamilyMemberRequestDto dto) {
-        return ResponseEntity.ok(familyMemberService.updateFamilyMember(id, dto));
-    }
-
-    @Override
-    public ResponseEntity<CommonApiResponse<String>> deleteFamilyMember(Long id) {
-        return ResponseEntity.ok(familyMemberService.deleteFamilyMember(id));
-    }
 }

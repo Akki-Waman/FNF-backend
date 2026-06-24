@@ -1,17 +1,18 @@
 package com.ensf.fnf.core.dto.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequestDto {
+@Builder
+public class VerifyOtpRequestDto {
 
     @JsonProperty("username")
     private String username;
+
+    @JsonProperty("otp")
+    private String otp;
 }

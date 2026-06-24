@@ -14,19 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/family")
 @Api(tags = "Family Member APIs")
-public interface FamilyMemberController {
+public interface FamilyController {
 
-    @ApiOperation("Add Family Member")
-    @PostMapping("/add")
-    ResponseEntity<CommonApiResponse<String>> createFamilyTree(
-            @RequestBody CreateFamilyTreeRequestDto dto
-    );
 
-    @ApiOperation("Get Family Members")
-    @GetMapping("/get")
-    ResponseEntity<CommonApiResponse<List<FamilyMemberResponseDto>>> getFamilyMembers();
-
-    @ApiOperation("Dashboard")
-    @GetMapping("/dashboard")
-    ResponseEntity<CommonApiResponse<HomeDashboardResponseDto>> getDashboard();
 }

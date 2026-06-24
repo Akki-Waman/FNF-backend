@@ -22,23 +22,30 @@ public class CustomUserDetailsService
 
     @Override
     public UserDetails loadUserByUsername(
-            String email)
+            String username)
             throws UsernameNotFoundException {
 
         UserEntity user =
                 userRepository
-                        .findByEmail(
-                                email
+                        .findByEmailAddress(
+                                username
                         )
-                        .orElseThrow(
+                        .orElseGet(
                                 () ->
-                                        new UsernameNotFoundException(
-                                                "User not found"
-                                        )
+                                        userRepository
+                                                .findByMobileNumber(
+                                                        username
+                                                )
+                                                .orElseThrow(
+                                                        () ->
+                                                                new UsernameNotFoundException(
+                                                                        "User not found"
+                                                                )
+                                                )
                         );
 
         return new User(
-                user.getEmail(),
+                username,
                 "",
                 Collections.singletonList(
                         new SimpleGrantedAuthority(

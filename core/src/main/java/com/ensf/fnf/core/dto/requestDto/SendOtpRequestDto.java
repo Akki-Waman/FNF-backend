@@ -1,15 +1,15 @@
 package com.ensf.fnf.core.dto.requestDto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class SendOtpRequestDto {
 
-    private String email;
-
-    private String mobileNumber;
+    @JsonProperty("username")
+    private String username;
 }

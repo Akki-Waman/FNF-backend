@@ -1,9 +1,13 @@
 package com.ensf.fnf.core.mapper;
 
 import com.ensf.fnf.core.dao.entity.FamilyMemberEntity;
+import com.ensf.fnf.core.dto.requestDto.AddFamilyMemberRequestDto;
 import com.ensf.fnf.core.dto.requestDto.CreateFamilyMemberRequestDto;
 import com.ensf.fnf.core.dto.responseDto.FamilyMemberResponseDto;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
@@ -12,15 +16,6 @@ import java.util.List;
 )
 public interface FamilyMemberMapper {
 
-    @Mappings({
-            @Mapping(source = "fullName", target = "fullName"),
-            @Mapping(source = "relationshipType", target = "relationshipType"),
-            @Mapping(source = "birthDate", target = "birthDate"),
-            @Mapping(source = "married", target = "married"),
-            @Mapping(source = "anniversaryDate", target = "anniversaryDate"),
-            @Mapping(source = "spouseName", target = "spouseName"),
-            @Mapping(source = "spouseBirthDate", target = "spouseBirthDate")
-    })
     FamilyMemberEntity toEntity(
             CreateFamilyMemberRequestDto dto
     );
@@ -38,7 +33,7 @@ public interface FamilyMemberMapper {
                     NullValuePropertyMappingStrategy.IGNORE
     )
     void partialUpdate(
-            CreateFamilyMemberRequestDto dto,
+            AddFamilyMemberRequestDto dto,
             @MappingTarget FamilyMemberEntity entity
     );
 }

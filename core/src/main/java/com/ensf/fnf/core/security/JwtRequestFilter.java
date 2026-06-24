@@ -21,9 +21,11 @@ import java.io.IOException;
 public class JwtRequestFilter
         extends OncePerRequestFilter {
 
-    private final JwtTokenHelper jwtTokenHelper;
+    private final JwtTokenHelper
+            jwtTokenHelper;
 
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService
+            userDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -33,22 +35,17 @@ public class JwtRequestFilter
             throws ServletException,
             IOException {
 
-        String path =
+        String requestPath =
                 request.getServletPath();
 
         log.info(
                 "Request Path : {}",
-                path
+                requestPath
         );
 
-        /*
-         * Swagger & Auth APIs Skip
-         */
-        if (path.contains("/swagger-ui")
-                || path.contains("/v3/api-docs")
-                || path.contains("/swagger-resources")
-                || path.contains("/webjars")
-                || path.contains("/api/v1/auth")) {
+        if (isPublicEndpoint(
+                requestPath
+        )) {
 
             filterChain.doFilter(
                     request,
@@ -58,20 +55,20 @@ public class JwtRequestFilter
             return;
         }
 
-        String requestToken =
+        String authorizationHeader =
                 request.getHeader(
                         "Authorization"
                 );
 
+        String jwtToken = null;
         String username = null;
-        String token = null;
 
-        if (requestToken != null
-                && requestToken.startsWith(
+        if (authorizationHeader != null
+                && authorizationHeader.startsWith(
                 "Bearer ")) {
 
-            token =
-                    requestToken.substring(
+            jwtToken =
+                    authorizationHeader.substring(
                             7
                     );
 
@@ -80,8 +77,13 @@ public class JwtRequestFilter
                 username =
                         jwtTokenHelper
                                 .getUsernameFromToken(
-                                        token
+                                        jwtToken
                                 );
+
+                log.info(
+                        "JWT Username : {}",
+                        username
+                );
 
             } catch (Exception ex) {
 
@@ -104,36 +106,53 @@ public class JwtRequestFilter
                 .getAuthentication()
                 == null) {
 
-            UserDetails userDetails =
-                    userDetailsService
-                            .loadUserByUsername(
-                                    username
+            try {
+
+                UserDetails userDetails =
+                        userDetailsService
+                                .loadUserByUsername(
+                                        username
+                                );
+
+                if (jwtTokenHelper
+                        .validateToken(
+                                jwtToken
+                        )) {
+
+                    UsernamePasswordAuthenticationToken
+                            authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
                             );
 
-            if (jwtTokenHelper
-                    .validateToken(
-                            token
-                    )) {
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(
+                                            request
+                                    )
+                    );
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(
+                                    authentication
+                            );
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(
-                                        request
-                                )
+                    log.info(
+                            "Authentication Success : {}",
+                            username
+                    );
+                }
+
+            } catch (Exception ex) {
+
+                log.error(
+                        "Authentication Failed : {}",
+                        username,
+                        ex
                 );
-
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(
-                                authentication
-                        );
             }
         }
 
@@ -141,5 +160,16 @@ public class JwtRequestFilter
                 request,
                 response
         );
+    }
+
+    private boolean isPublicEndpoint(
+            String requestPath) {
+
+        return requestPath.contains("/auth/send-otp")
+                || requestPath.contains("/auth/verify-otp")
+                || requestPath.contains("/swagger-ui")
+                || requestPath.contains("/swagger-resources")
+                || requestPath.contains("/v3/api-docs")
+                || requestPath.contains("/webjars");
     }
 }

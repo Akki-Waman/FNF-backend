@@ -9,7 +9,8 @@ public class SmsHelper {
 
     public void sendWelcomeSms(
             String mobileNumber,
-            String fullName) {
+            String firstName,
+            String lastName) {
 
         log.info(
                 "<<START>> sendWelcomeSms <<START>>"
@@ -18,7 +19,7 @@ public class SmsHelper {
         try {
 
             String message =
-                    "Hello " + fullName +
+                    "Hello " + firstName +" "+lastName+
                             ", your FNF account has been created successfully.";
 
             /*

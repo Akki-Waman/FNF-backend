@@ -16,38 +16,5 @@ import java.util.List;
 @Api(tags = "Family Members API")
 public interface FamilyMemberController {
 
-    @ApiOperation(
-            value = "Add new family member"
-    )
-    @PostMapping
-    ResponseEntity<CommonApiResponse<FamilyMemberResponseDto>>
-    addFamilyMember(
-            @RequestBody AddFamilyMemberRequestDto dto
-    );
 
-    @ApiOperation(
-            value = "Get all family members for logged in user"
-    )
-    @GetMapping
-    ResponseEntity<CommonApiResponse<List<FamilyMemberResponseDto>>>
-    getFamilyMembers();
-
-    @ApiOperation(
-            value = "Update family member"
-    )
-    @PutMapping("/{id}")
-    ResponseEntity<CommonApiResponse<FamilyMemberResponseDto>>
-    updateFamilyMember(
-            @PathVariable("id") Long id,
-            @RequestBody AddFamilyMemberRequestDto dto
-    );
-
-    @ApiOperation(
-            value = "Delete family member"
-    )
-    @DeleteMapping("/{id}")
-    ResponseEntity<CommonApiResponse<String>>
-    deleteFamilyMember(
-            @PathVariable("id") Long id
-    );
 }

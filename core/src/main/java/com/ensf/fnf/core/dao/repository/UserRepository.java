@@ -4,48 +4,46 @@ import com.ensf.fnf.core.dao.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+@Repository
+public interface UserRepository
+        extends JpaRepository<
+        UserEntity,
+        Long> {
 
     @Query(
-            "SELECT CASE WHEN COUNT(u) > 0 " +
-                    "THEN TRUE ELSE FALSE END " +
+            "SELECT u " +
                     "FROM UserEntity u " +
-                    "WHERE u.mobileNumber = :mobileNumber"
+                    "WHERE u.emailAddress = :email"
     )
-    boolean existsByMobileNumber(
-            @Param("mobileNumber")
-            String mobileNumber
-    );
-
-    @Query(
-            "SELECT CASE WHEN COUNT(u) > 0 " +
-                    "THEN TRUE ELSE FALSE END " +
-                    "FROM UserEntity u " +
-                    "WHERE u.email = :email"
-    )
-    boolean existsByEmail(
+    Optional<UserEntity>
+    findByEmailAddress(
             @Param("email")
             String email
     );
 
     @Query(
-            "SELECT u FROM UserEntity u " +
-                    "WHERE u.email = :email"
+            "SELECT u " +
+                    "FROM UserEntity u " +
+                    "WHERE u.mobileNumber = :mobileNumber"
     )
-    Optional<UserEntity> findByEmail(
-            @Param("email")
-            String email
+    Optional<UserEntity>
+    findByMobileNumber(
+            @Param("mobileNumber")
+            String mobileNumber
     );
 
     @Query(
-            "SELECT u FROM UserEntity u " +
-                    "WHERE u.mobileNumber = :mobileNumber"
+            "SELECT u " +
+                    "FROM UserEntity u " +
+                    "WHERE u.emailAddress = :username " +
+                    "OR u.mobileNumber = :username"
     )
-    Optional<UserEntity> findByMobileNumber(
-            @Param("mobileNumber")
-            String mobileNumber
+    Optional<UserEntity> findByUsername(
+            @Param("username")
+            String username
     );
 }

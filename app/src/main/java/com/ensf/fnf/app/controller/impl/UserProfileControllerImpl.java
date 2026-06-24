@@ -15,13 +15,5 @@ public class UserProfileControllerImpl implements UserProfileController {
 
     private final UserProfileService userProfileService;
 
-    @Override
-    public ResponseEntity<CommonApiResponse<UserProfileResponseDto>> getUserProfile() {
-        return ResponseEntity.ok(userProfileService.getUserProfile());
-    }
 
-    @Override
-    public ResponseEntity<CommonApiResponse<UserProfileResponseDto>> updateUserProfile(UpdateUserProfileRequestDto dto) {
-        return ResponseEntity.ok(userProfileService.updateUserProfile(dto));
-    }
 }
