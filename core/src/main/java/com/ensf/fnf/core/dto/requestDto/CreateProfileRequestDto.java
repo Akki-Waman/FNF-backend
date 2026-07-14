@@ -20,9 +20,6 @@ public class CreateProfileRequestDto {
     @JsonProperty("last_name")
     private String lastName;
 
-    @JsonProperty("email_address")
-    private String emailAddress;
-
     @JsonProperty("date_of_birth")
     private LocalDate dateOfBirth;
 

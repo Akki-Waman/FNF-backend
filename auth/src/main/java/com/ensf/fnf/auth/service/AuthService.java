@@ -1,6 +1,7 @@
 package com.ensf.fnf.auth.service;
 
 import com.ensf.fnf.core.dto.requestDto.CreateProfileRequestDto;
+import com.ensf.fnf.core.dto.requestDto.OAuthLoginRequestDto;
 import com.ensf.fnf.core.dto.requestDto.SendOtpRequestDto;
 import com.ensf.fnf.core.dto.requestDto.VerifyOtpRequestDto;
 import com.ensf.fnf.core.dto.responseDto.CommonApiResponse;
@@ -21,4 +22,5 @@ public interface AuthService {
     createProfile(
             CreateProfileRequestDto dto
     );
+    CommonApiResponse<LoginResponseDto> processOAuthLogin(OAuthLoginRequestDto dto);
 }

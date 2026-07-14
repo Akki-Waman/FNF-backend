@@ -3,6 +3,7 @@ package com.ensf.fnf.auth.controller.impl;
 import com.ensf.fnf.auth.controller.AuthController;
 import com.ensf.fnf.auth.service.AuthService;
 import com.ensf.fnf.core.dto.requestDto.CreateProfileRequestDto;
+import com.ensf.fnf.core.dto.requestDto.OAuthLoginRequestDto;
 import com.ensf.fnf.core.dto.requestDto.SendOtpRequestDto;
 import com.ensf.fnf.core.dto.requestDto.VerifyOtpRequestDto;
 import com.ensf.fnf.core.dto.responseDto.CommonApiResponse;
@@ -91,5 +92,13 @@ public class AuthControllerImpl
         return ResponseEntity.ok(
                 response
         );
+    }
+
+    @Override
+    public ResponseEntity<CommonApiResponse<LoginResponseDto>> oauthLogin(OAuthLoginRequestDto dto) {
+        log.info("<<START>> AuthControllerImpl :: oauthLogin <<START>>");
+        CommonApiResponse<LoginResponseDto> response = authService.processOAuthLogin(dto);
+        log.info("<<END>> AuthControllerImpl :: oauthLogin <<END>>");
+        return ResponseEntity.ok(response);
     }
 }
