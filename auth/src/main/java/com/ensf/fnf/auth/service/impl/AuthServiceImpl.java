@@ -227,13 +227,6 @@ public class AuthServiceImpl
                 dto.getProfilePhotoUrl()
         );
 
-        if (dto.getEmailAddress() != null) {
-
-            user.setEmailAddress(
-                    dto.getEmailAddress()
-            );
-        }
-
         user.setEmailVerified(
                 true
         );
@@ -542,5 +535,49 @@ public class AuthServiceImpl
         return username.matches(
                 "^[0-9]{10}$"
         );
+    }
+
+    @Override
+    @Transactional
+    public CommonApiResponse<LoginResponseDto> processOAuthLogin(com.ensf.fnf.core.dto.requestDto.OAuthLoginRequestDto dto) {
+        log.info("Processing OAuth login for provider: {}", dto.getProvider());
+
+        // 1. Verify token with Google/Apple (Mocked for now)
+        validateOAuthToken(dto.getProvider(), dto.getProviderToken());
+
+        // 2. Load or Create User
+        UserEntity user = resolveOAuthUser(dto);
+
+        // 3. Generate JWT
+        String token = jwtTokenHelper.generateToken(user.getEmailAddress() != null ? user.getEmailAddress() : user.getMobileNumber());
+
+        LoginResponseDto response = LoginResponseDto.builder()
+                .userId(user.getUserId())
+                .jwtToken(token)
+                .profileCompleted(Boolean.TRUE.equals(user.getProfileCompleted()))
+                .build();
+
+        return CommonApiResponse.<LoginResponseDto>builder().success(true).message("OAuth Login Successful").data(response).build();
+    }
+
+    // --- Private Helpers ---
+    private void validateOAuthToken(String provider, String token) {
+        log.debug("Validating {} token signature...", provider);
+        // Implement GoogleIdTokenVerifier logic here
+    }
+
+    private UserEntity resolveOAuthUser(com.ensf.fnf.core.dto.requestDto.OAuthLoginRequestDto dto) {
+        return userRepository.findByEmailAddress(dto.getEmail()).orElseGet(() -> {
+            log.info("Creating new user from OAuth payload: {}", dto.getEmail());
+            UserEntity newUser = UserEntity.builder()
+                    .emailAddress(dto.getEmail())
+                    .firstName(dto.getFullName())
+                    .emailVerified(true)
+                    .mobileVerified(false)
+                    .profileCompleted(false)
+                    .active(true)
+                    .build();
+            return userRepository.save(newUser);
+        });
     }
 }

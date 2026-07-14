@@ -46,4 +46,18 @@ public interface UserRepository
             @Param("username")
             String username
     );
+
+    // --- New: needed for GET /user/me ---
+    @Query("SELECT u FROM UserEntity u " +
+            "WHERE u.emailAddress = :emailAddress OR u.mobileNumber = :mobileNumber")
+    Optional<UserEntity> findByEmailAddressOrMobileNumber(
+            @Param("emailAddress") String emailAddress,
+            @Param("mobileNumber") String mobileNumber
+    );
+    @Query("SELECT u FROM UserEntity u " +
+            "WHERE u.emailAddress = :identifier " +
+            "OR u.mobileNumber = :identifier")
+    Optional<UserEntity> findByIdentifier(
+            @Param("identifier") String identifier
+    );
 }

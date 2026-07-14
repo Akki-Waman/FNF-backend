@@ -11,29 +11,22 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
-@Mapper(
-        componentModel = "spring"
-)
+@Mapper(componentModel = "spring")
 public interface FamilyMemberMapper {
 
-    FamilyMemberEntity toEntity(
-            CreateFamilyMemberRequestDto dto
-    );
+    // 1. Converts the Create DTO
+    FamilyMemberEntity toEntity(CreateFamilyMemberRequestDto dto);
 
-    FamilyMemberResponseDto toDto(
-            FamilyMemberEntity entity
-    );
+    // 2. Converts the Add DTO (Fixes your missing method error)
+    FamilyMemberEntity toEntity(AddFamilyMemberRequestDto dto);
 
-    List<FamilyMemberResponseDto> toDtoList(
-            List<FamilyMemberEntity> entities
-    );
+    // 3. Converts Entity back to Response DTO
+    FamilyMemberResponseDto toDto(FamilyMemberEntity entity);
 
-    @BeanMapping(
-            nullValuePropertyMappingStrategy =
-                    NullValuePropertyMappingStrategy.IGNORE
-    )
-    void partialUpdate(
-            AddFamilyMemberRequestDto dto,
-            @MappingTarget FamilyMemberEntity entity
-    );
+    // 4. Converts Lists
+    List<FamilyMemberResponseDto> toDtoList(List<FamilyMemberEntity> entities);
+
+    // 5. Handles partial updates for existing records
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void partialUpdate(AddFamilyMemberRequestDto dto, @MappingTarget FamilyMemberEntity entity);
 }
